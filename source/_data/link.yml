@@ -1,0 +1,19 @@
+- class_name: 推荐站点
+  class_desc: 常看的主题文档和工具站
+  link_list:
+    - name: Butterfly
+      link: https://butterfly.js.org/
+      avatar: /img/avatar.jpg
+      descr: Hexo Butterfly 主题官方文档
+    - name: Hexo
+      link: https://hexo.io/
+      avatar: /img/avatar.jpg
+      descr: 快速、简洁且高效的博客框架
+
+- class_name: 朋友们
+  class_desc: 这里以后会放朋友们的博客
+  link_list:
+    - name: Your Friend
+      link: https://example.com/
+      avatar: /img/avatar.jpg
+      descr: 等待交换友链
