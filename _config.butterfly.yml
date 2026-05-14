@@ -275,7 +275,7 @@ footer:
     since: 2026
   # Copyright of theme and framework
   copyright:
-    enable: true
+    enable: false
     version: true
   custom_text: 愿每一次记录，都能照亮一点点夜路。
 
