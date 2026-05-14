@@ -754,6 +754,158 @@ blockquote {
     0 10px 24px rgba(133, 135, 242, 0.44);
 }
 
+.anime-page {
+  width: 100%;
+}
+
+.anime-page__header {
+  margin-bottom: 1.3rem;
+}
+
+.anime-page__eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--lijiahao-pink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.anime-page__header h2 {
+  margin: 0 0 0.55rem;
+  color: var(--lijiahao-ink);
+  font-size: 1.75rem;
+}
+
+[data-theme='dark'] .anime-page__header h2 {
+  color: #dfe8ff;
+}
+
+.anime-page__header p {
+  margin: 0;
+  color: var(--lijiahao-muted);
+}
+
+.anime-page__header code {
+  border-radius: 5px;
+  padding: 0.1rem 0.32rem;
+  background: rgba(77, 142, 219, 0.1);
+  color: var(--lijiahao-blue);
+}
+
+.anime-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+}
+
+.anime-card {
+  overflow: hidden;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: var(--panel-bg);
+  box-shadow: 0 14px 34px var(--panel-shadow);
+  backdrop-filter: blur(12px) saturate(1.08);
+}
+
+.anime-card__cover {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.anime-card__cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.anime-card__status {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  border-radius: 999px;
+  background: rgba(17, 24, 43, 0.72);
+  padding: 0.24rem 0.58rem;
+  color: #fff;
+  font-size: 0.76rem;
+}
+
+.anime-card__body {
+  padding: 1rem;
+}
+
+.anime-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 0.45rem;
+  color: var(--lijiahao-muted);
+  font-size: 0.78rem;
+}
+
+.anime-card h3 {
+  margin: 0 0 0.65rem;
+  color: var(--lijiahao-ink);
+  font-size: 1.18rem;
+}
+
+[data-theme='dark'] .anime-card h3 {
+  color: #dfe8ff;
+}
+
+.anime-card__quote {
+  margin: 0 0 0.7rem;
+  border-left: 3px solid var(--lijiahao-pink);
+  padding-left: 0.72rem;
+  color: var(--lijiahao-ink);
+  font-weight: 600;
+}
+
+[data-theme='dark'] .anime-card__quote {
+  color: #dfe8ff;
+}
+
+.anime-card__note {
+  margin: 0 0 0.85rem;
+  color: var(--lijiahao-muted);
+  line-height: 1.75;
+}
+
+.anime-card__section + .anime-card__section {
+  margin-top: 0.65rem;
+}
+
+.anime-card__label {
+  display: block;
+  margin-bottom: 0.38rem;
+  color: var(--lijiahao-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.anime-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.anime-tags span {
+  border: 1px solid rgba(238, 154, 185, 0.22);
+  border-radius: 999px;
+  background: rgba(238, 154, 185, 0.12);
+  padding: 0.18rem 0.52rem;
+  color: var(--lijiahao-ink);
+  font-size: 0.78rem;
+}
+
+[data-theme='dark'] .anime-tags span {
+  border-color: rgba(133, 135, 242, 0.24);
+  background: rgba(133, 135, 242, 0.12);
+  color: #dfe8ff;
+}
+
 @keyframes core-value-float {
   0% {
     opacity: 0;
