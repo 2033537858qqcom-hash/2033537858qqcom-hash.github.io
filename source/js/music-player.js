@@ -64,21 +64,21 @@
       audio: [
         {
           name: '宇宙无星河',
-          artist: '本地音乐',
+          artist: '福合埕在逃牛肉丸',
           url: '/music-files/yu-zhou-wu-xing-he.mp3',
-          cover: '/img/optimized/music-day.webp'
+          cover: '/img/music-covers/yu-zhou-wu-xing-he.jpg'
         },
         {
           name: '萤火之森',
-          artist: '本地音乐',
+          artist: 'CMJ',
           url: '/music-files/ying-huo-zhi-sen.mp3',
-          cover: '/img/optimized/music-night.webp'
+          cover: '/img/music-covers/ying-huo-zhi-sen.jpg'
         },
         {
           name: '瞬间的永恒',
-          artist: '本地音乐',
+          artist: '赵海洋',
           url: '/music-files/shun-jian-de-yong-heng.mp3',
-          cover: '/img/optimized/music-avatar.webp'
+          cover: '/img/music-covers/shun-jian-de-yong-heng.jpg'
         }
       ]
     })
