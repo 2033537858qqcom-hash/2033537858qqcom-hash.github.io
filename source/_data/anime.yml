@@ -1,43 +1,67 @@
-- title: 葬送的芙莉莲
-  year: 2023
-  status: 计划记录
-  cover: /img/optimized/cover-day.webp
-  rating: 9.6
-  characters:
-    - 芙莉莲
-    - 欣梅尔
-  keywords:
-    - 旅途
-    - 时间
-    - 告别
-  quote: 短暂的人生，也能留下很长的回声。
-  note: 适合慢慢看的一部作品，重点不是冒险本身，而是旅途中对时间、记忆和情感的回望。
-
-- title: 孤独摇滚！
+- title: 夏日重现
   year: 2022
-  status: 计划记录
-  cover: /img/optimized/cover-night.webp
-  rating: 9.2
+  status: 已加入
+  cover: /img/anime-covers/summer-time-rendering.png
+  rating: 9.3
   characters:
-    - 后藤一里
-    - 伊地知虹夏
+    - 网代慎平
+    - 小舟潮
+    - 南方日鹤
   keywords:
-    - 音乐
-    - 成长
-    - 表达
-  quote: 把说不出口的话，交给音乐。
-  note: 很适合记录角色成长、演出段落和那些突然被击中的小瞬间。
+    - 悬疑
+    - 时间循环
+    - 小岛
+  quote: 夏天、海岛、葬礼，以及一次次重来的真相。
+  note: 一部节奏很紧的悬疑番。适合记录伏笔、轮回节点和每次重来后信息差带来的紧张感。
 
-- title: 紫罗兰永恒花园
-  year: 2018
-  status: 计划记录
-  cover: /img/optimized/cover-day.webp
-  rating: 9.4
+- title: ReLIFE
+  year: 2016
+  status: 已加入
+  cover: /img/anime-covers/relife.png
+  rating: 8.7
   characters:
-    - 薇尔莉特
+    - 海崎新太
+    - 日代千鹤
+    - 夜明了
   keywords:
-    - 书信
-    - 情感
-    - 治愈
-  quote: 有些心意，需要被认真写下来。
-  note: 可以用来记录台词、画面、音乐，以及每一集里关于“理解情感”的细节。
+    - 青春
+    - 重来
+    - 成长
+  quote: 如果人生能重来一年，你会怎样重新面对自己？
+  note: 把成年人的失落放回高中校园里重新审视。适合写关于选择、关系修复和重新开始的感受。
+
+- title: 电锯人
+  year: 2022
+  status: 已加入
+  cover: /img/anime-covers/chainsaw-man.png
+  rating: 9.1
+  characters:
+    - 电次
+    - 波奇塔
+    - 玛奇玛
+    - 早川秋
+    - 帕瓦
+  keywords:
+    - 恶魔
+    - 欲望
+    - 战斗
+  quote: 很粗粝，也很真诚，像把欲望和孤独都拉到灯下。
+  note: 适合记录打戏、镜头语言和角色关系。它的厉害之处不只在血腥，而在角色简单愿望背后的空洞感。
+
+- title: 关于我转生成史莱姆这档事
+  year: 2018
+  status: 已加入
+  cover: /img/anime-covers/tensei-slime.jpg
+  rating: 8.8
+  characters:
+    - 利姆露
+    - 维鲁德拉
+    - 紫苑
+    - 红丸
+    - 朱菜
+  keywords:
+    - 异世界
+    - 建国
+    - 魔物
+  quote: 从一只史莱姆开始，把相遇慢慢变成一个国家。
+  note: 轻松但很有建设感的异世界作品。适合记录利姆露一路收伙伴、建城镇、处理各方势力的成长路线。
