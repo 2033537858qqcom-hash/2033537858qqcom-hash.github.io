@@ -640,6 +640,94 @@ blockquote {
   filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.3));
 }
 
+#lijiahao-context-menu {
+  position: fixed;
+  z-index: 100004;
+  display: grid;
+  gap: 4px;
+  min-width: 168px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 8px;
+  background: rgba(248, 251, 255, 0.86);
+  padding: 7px;
+  box-shadow: 0 18px 42px rgba(37, 54, 83, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px) scale(0.98);
+  transform-origin: top left;
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease,
+    visibility 0.16s ease;
+  backdrop-filter: blur(16px) saturate(1.12);
+}
+
+#lijiahao-context-menu.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+#lijiahao-context-menu button {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  padding: 0 10px;
+  color: var(--lijiahao-ink);
+  font-size: 0.88rem;
+  line-height: 1;
+  text-align: left;
+}
+
+#lijiahao-context-menu button:hover,
+#lijiahao-context-menu button:focus-visible {
+  outline: none;
+  background: rgba(77, 142, 219, 0.12);
+  color: var(--lijiahao-blue);
+}
+
+#lijiahao-context-menu i {
+  color: var(--lijiahao-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+#lijiahao-context-menu button:hover i,
+#lijiahao-context-menu button:focus-visible i {
+  color: var(--lijiahao-blue);
+}
+
+[data-theme='dark'] #lijiahao-context-menu {
+  border-color: rgba(190, 206, 255, 0.12);
+  background: rgba(17, 24, 43, 0.88);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+[data-theme='dark'] #lijiahao-context-menu button {
+  color: #dfe8ff;
+}
+
+[data-theme='dark'] #lijiahao-context-menu i {
+  color: rgba(223, 232, 255, 0.66);
+}
+
+[data-theme='dark'] #lijiahao-context-menu button:hover,
+[data-theme='dark'] #lijiahao-context-menu button:focus-visible {
+  background: rgba(133, 135, 242, 0.16);
+  color: #bfc6ff;
+}
+
+[data-theme='dark'] #lijiahao-context-menu button:hover i,
+[data-theme='dark'] #lijiahao-context-menu button:focus-visible i {
+  color: #bfc6ff;
+}
+
 @media (max-width: 768px) {
   #page-header.full_page {
     height: 420px !important;
