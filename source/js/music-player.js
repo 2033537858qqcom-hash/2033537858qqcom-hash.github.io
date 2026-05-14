@@ -44,6 +44,27 @@
     document.body.appendChild(script)
   })
 
+  const tryPlay = player => {
+    if (!player || !player.audio) return
+    const playPromise = player.audio.play()
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {})
+    }
+  }
+
+  const enableGestureAutoplay = player => {
+    const unlock = () => {
+      tryPlay(player)
+      document.removeEventListener('click', unlock)
+      document.removeEventListener('touchstart', unlock)
+      document.removeEventListener('keydown', unlock)
+    }
+
+    document.addEventListener('click', unlock, { once: true })
+    document.addEventListener('touchstart', unlock, { once: true, passive: true })
+    document.addEventListener('keydown', unlock, { once: true })
+  }
+
   const initPlayer = () => {
     if (window.__blogMusicPlayer || !window.APlayer) return
 
@@ -55,10 +76,10 @@
       container,
       fixed: true,
       mini: true,
-      autoplay: false,
+      autoplay: true,
       loop: 'all',
       order: 'list',
-      preload: 'none',
+      preload: 'auto',
       volume: 0.45,
       mutex: true,
       audio: [
@@ -82,6 +103,9 @@
         }
       ]
     })
+
+    window.setTimeout(() => tryPlay(window.__blogMusicPlayer), 500)
+    enableGestureAutoplay(window.__blogMusicPlayer)
   }
 
   const start = () => {
