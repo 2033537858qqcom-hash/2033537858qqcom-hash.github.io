@@ -63,21 +63,21 @@
       mutex: true,
       audio: [
         {
-          name: 'Daylight Notes',
-          artist: 'SoundHelix',
-          url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+          name: '宇宙无星河',
+          artist: '本地音乐',
+          url: '/music-files/yu-zhou-wu-xing-he.mp3',
           cover: '/img/optimized/music-day.webp'
         },
         {
-          name: 'Night Lake',
-          artist: 'SoundHelix',
-          url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+          name: '萤火之森',
+          artist: '本地音乐',
+          url: '/music-files/ying-huo-zhi-sen.mp3',
           cover: '/img/optimized/music-night.webp'
         },
         {
-          name: 'Quiet Compile',
-          artist: 'SoundHelix',
-          url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+          name: '瞬间的永恒',
+          artist: '本地音乐',
+          url: '/music-files/shun-jian-de-yong-heng.mp3',
           cover: '/img/optimized/music-avatar.webp'
         }
       ]
