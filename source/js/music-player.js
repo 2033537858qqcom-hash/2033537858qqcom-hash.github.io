@@ -1,5 +1,18 @@
 (function () {
-  if (window.innerWidth < 768) return
+  const onDomReady = callback => {
+    let called = false
+    const run = () => {
+      if (called) return
+      called = true
+      callback()
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', run, { once: true })
+    } else {
+      run()
+    }
+  }
 
   const withTimeout = (promise, ms) => new Promise((resolve, reject) => {
     const timer = window.setTimeout(() => reject(new Error('timeout')), ms)
@@ -78,9 +91,5 @@
     ]), 8000).then(initPlayer).catch(() => {})
   }
 
-  if ('requestIdleCallback' in window) {
-    window.requestIdleCallback(start, { timeout: 1800 })
-  } else {
-    window.setTimeout(start, 900)
-  }
+  onDomReady(() => window.setTimeout(start, 300))
 })()

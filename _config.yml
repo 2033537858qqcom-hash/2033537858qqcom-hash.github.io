@@ -98,6 +98,11 @@ ignore:
 ## Themes: https://hexo.io/themes/
 theme: butterfly
 
+# Butterfly fullpage preloader CSS is compiled from site config.
+preloader:
+  enable: true
+  source: 1
+
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
