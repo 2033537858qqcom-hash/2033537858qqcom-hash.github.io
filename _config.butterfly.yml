@@ -1084,6 +1084,7 @@ inject:
     - <script src="/js/click-values.js?v=20260514-values2"></script>
     - <script src="/js/music-player.js?v=20260514-autoplay1"></script>
     - <script src="/js/live2d-widget-init.js?v=20260514-readygate11"></script>
+    - <script src="/js/user-distance.js?v=20260722"></script>
 
 # CDN Settings
 # Don't modify the following settings unless you know how they work

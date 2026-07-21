@@ -1106,3 +1106,66 @@ code, pre, .highlight, figure.highlight, kbd {
   color: var(--lijiahao-blue);
 }
 
+/* ==========================================================================
+   Poetic Distance Widget Styling (.card-distance)
+   ========================================================================== */
+.card-distance {
+  position: relative;
+  overflow: hidden;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius);
+  padding: 18px 20px;
+  box-shadow: 0 4px 16px var(--panel-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-distance:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px var(--panel-accent);
+}
+
+.card-distance .item-headline {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--font-color);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-distance .item-headline i {
+  color: var(--lijiahao-blue);
+  font-size: 1.1rem;
+}
+
+.card-distance .distance-text {
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--font-color);
+  margin: 0 0 12px 0;
+}
+
+.card-distance .distance-highlight {
+  color: var(--lijiahao-blue);
+  font-weight: 700;
+  padding: 0 3px;
+  border-bottom: 1px dashed var(--lijiahao-pink);
+}
+
+.card-distance .distance-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.card-distance .distance-tag {
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: var(--text-bg-hover);
+  color: var(--lijiahao-muted);
+  font-weight: 500;
+}
+
+
