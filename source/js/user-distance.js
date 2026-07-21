@@ -1,70 +1,73 @@
 /**
- * 访客与站长距离计算与文艺提示卡片 (User Distance Widget)
- * Author: Antigravity AI
+ * Visitor distance widget (IP geolocation, no browser GPS).
+ * Fails silently when the API is unavailable.
  */
 (function () {
-  // 站长坐标 (默认设置为上海：31.2304, 121.4737)
-  const HOST_LAT = 31.2304;
-  const HOST_LNG = 121.4737;
+  // Host coordinates (Shanghai default). Update if needed.
+  const HOST_LAT = 31.2304
+  const HOST_LNG = 121.4737
+  const CACHE_KEY = 'user_distance_cache_v2'
+  const CACHE_TTL = 24 * 60 * 60 * 1000
 
-  /**
-   * 半正矢公式 (Haversine Formula) 计算大圆距离 (km)
-   */
-  function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // 地球半径 km
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  function calculateDistance (lat1, lon1, lat2, lon2) {
+    const R = 6371
+    const dLat = ((lat2 - lat1) * Math.PI) / 180
+    const dLon = ((lon2 - lon1) * Math.PI) / 180
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos((lat1 * Math.PI) / 180) *
         Math.cos((lat2 * Math.PI) / 180) *
         Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return Math.round(R * c);
+        Math.sin(dLon / 2)
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+    return Math.round(R * c)
   }
 
-  /**
-   * 生成文艺风诗意文案
-   */
-  function getLiteraryMessage(distance, city) {
-    const locationText = city ? `来自 <strong class="distance-highlight">${city}</strong> 的朋友，` : '亲爱的朋友，';
+  function getLiteraryMessage (distance, city) {
+    const locationText = city
+      ? `来自 <strong class="distance-highlight">${city}</strong> 的朋友，`
+      : '亲爱的朋友，'
 
     if (distance < 50) {
-      return `${locationText}我们身处同一座城市。相距仅 <strong class="distance-highlight">${distance}</strong> 公里，好巧，能在代码与文字中相遇。`;
-    } else if (distance < 600) {
-      return `${locationText}跨越了 <strong class="distance-highlight">${distance}</strong> 公里的风与云，很高兴你能停下脚步，与我同赏这片风景。`;
-    } else if (distance < 2000) {
-      return `${locationText}你与我相隔 <strong class="distance-highlight">${distance}</strong> 公里。跨越山海与山川，文字总能触及彼此的心灵。`;
-    } else {
-      return `${locationText}纵使我们相距 <strong class="distance-highlight">${distance}</strong> 公里，但仰望的依然是同一片星空。`;
+      return `${locationText}我们身处同一座城市。相距仅 <strong class="distance-highlight">${distance}</strong> 公里，好巧，能在代码与文字中相遇。`
     }
+    if (distance < 600) {
+      return `${locationText}跨越了 <strong class="distance-highlight">${distance}</strong> 公里的风与云，很高兴你能停下脚步，与我同赏这片风景。`
+    }
+    if (distance < 2000) {
+      return `${locationText}你与我相隔 <strong class="distance-highlight">${distance}</strong> 公里。跨越山海与山川，文字总能触及彼此的心灵。`
+    }
+    return `${locationText}纵使我们相距 <strong class="distance-highlight">${distance}</strong> 公里，但仰望的依然是同一片星空。`
   }
 
-  /**
-   * 渲染距离卡片到侧边栏或指定容器
-   */
-  function renderDistanceWidget(distance, city) {
-    const asideContent = document.getElementById('aside-content');
-    if (!asideContent) return;
+  function escapeHtml (value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+  }
 
-    // 防止重复渲染
-    let widget = document.getElementById('card-user-distance');
+  function renderDistanceWidget (distance, city) {
+    const asideContent = document.getElementById('aside-content')
+    if (!asideContent) return
+
+    let widget = document.getElementById('card-user-distance')
     if (!widget) {
-      widget = document.createElement('div');
-      widget.id = 'card-user-distance';
-      widget.className = 'card-widget card-distance';
-      
-      // 插入到作者名片下方或最上方
-      const cardAuthor = asideContent.querySelector('.card-info');
+      widget = document.createElement('div')
+      widget.id = 'card-user-distance'
+      widget.className = 'card-widget card-distance'
+
+      const cardAuthor = asideContent.querySelector('.card-info')
       if (cardAuthor && cardAuthor.nextSibling) {
-        asideContent.insertBefore(widget, cardAuthor.nextSibling);
+        asideContent.insertBefore(widget, cardAuthor.nextSibling)
       } else {
-        asideContent.appendChild(widget);
+        asideContent.appendChild(widget)
       }
     }
 
-    const message = getLiteraryMessage(distance, city);
+    const safeCity = escapeHtml(city)
+    const message = getLiteraryMessage(distance, safeCity)
     widget.innerHTML = `
       <div class="item-headline">
         <i class="fas fa-compass fa-spin-hover"></i>
@@ -73,76 +76,95 @@
       <div class="distance-content">
         <p class="distance-text">${message}</p>
         <div class="distance-footer">
-          <span class="distance-tag"><i class="fas fa-paper-plane"></i> 维度同频中</span>
+          <span class="distance-tag"><i class="fas fa-paper-plane"></i> 基于 IP 粗略估算</span>
         </div>
       </div>
-    `;
+    `
   }
 
-  /**
-   * 获取访客 IP 与位置信息
-   */
-  function initUserDistance() {
-    // 检查缓存，避免频繁请求 API
-    const cachedData = localStorage.getItem('user_distance_cache');
-    if (cachedData) {
-      try {
-        const { distance, city, timestamp } = JSON.parse(cachedData);
-        // 缓存 24 小时
-        if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
-          renderDistanceWidget(distance, city);
-          return;
-        }
-      } catch (e) {}
+  function removeDistanceWidget () {
+    const widget = document.getElementById('card-user-distance')
+    if (widget) widget.remove()
+  }
+
+  function readCache () {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY)
+      if (!raw) return null
+      const data = JSON.parse(raw)
+      if (!data || typeof data.distance !== 'number') return null
+      if (Date.now() - data.timestamp > CACHE_TTL) return null
+      return data
+    } catch (e) {
+      return null
+    }
+  }
+
+  function writeCache (distance, city) {
+    try {
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({ distance, city, timestamp: Date.now() })
+      )
+    } catch (e) {}
+  }
+
+  function fetchWithTimeout (url, ms) {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
+    const timer = window.setTimeout(() => {
+      if (controller) controller.abort()
+    }, ms)
+
+    return fetch(url, controller ? { signal: controller.signal } : undefined)
+      .then(res => {
+        window.clearTimeout(timer)
+        if (!res.ok) throw new Error('bad status')
+        return res.json()
+      })
+      .catch(err => {
+        window.clearTimeout(timer)
+        throw err
+      })
+  }
+
+  function initUserDistance () {
+    if (window.matchMedia('(prefers-reduced-data: reduce)').matches) {
+      removeDistanceWidget()
+      return
     }
 
-    // 调用免费地理位置 API
-    fetch('https://ipapi.co/json/')
-      ? fetch('https://ipapi.co/json/')
-          .then((res) => res.json())
-          .then((data) => {
-            if (data && data.latitude && data.longitude) {
-              const distance = calculateDistance(
-                HOST_LAT,
-                HOST_LNG,
-                data.latitude,
-                data.longitude
-              );
-              const city = data.city || data.region || '';
-              
-              localStorage.setItem(
-                'user_distance_cache',
-                JSON.stringify({ distance, city, timestamp: Date.now() })
-              );
-              renderDistanceWidget(distance, city);
-            } else {
-              throw new Error('Invalid IP data');
-            }
-          })
-          .catch(() => {
-            // 备用兜底逻辑：尝试国内免费 IP API
-            fetch('https://api.vvhan.com/api/ipInfo')
-              .then((res) => res.json())
-              .then((data) => {
-                const city = (data.info && data.info.city) || '远方';
-                // 给出一个诗意的估计距离
-                const distance = 820; 
-                renderDistanceWidget(distance, city);
-              })
-              .catch(() => {
-                // 默认文艺提示
-                renderDistanceWidget(1200, '远方');
-              });
-          })
-      : renderDistanceWidget(1200, '远方');
+    const cached = readCache()
+    if (cached) {
+      renderDistanceWidget(cached.distance, cached.city || '')
+      return
+    }
+
+    fetchWithTimeout('https://ipapi.co/json/', 4000)
+      .then(data => {
+        if (!data || data.error || data.latitude == null || data.longitude == null) {
+          throw new Error('invalid geo')
+        }
+        const distance = calculateDistance(
+          HOST_LAT,
+          HOST_LNG,
+          Number(data.latitude),
+          Number(data.longitude)
+        )
+        const city = data.city || data.region || ''
+        writeCache(distance, city)
+        renderDistanceWidget(distance, city)
+      })
+      .catch(() => {
+        // Do not invent distances; hide the widget when geolocation fails.
+        removeDistanceWidget()
+      })
   }
 
-  // 初始化并在 PJAX 页面切换后重新执行
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initUserDistance);
+    document.addEventListener('DOMContentLoaded', initUserDistance)
   } else {
-    initUserDistance();
+    initUserDistance()
   }
 
-  document.addEventListener('pjax:complete', initUserDistance);
-})();
+  document.addEventListener('pjax:complete', initUserDistance)
+})()

@@ -14,11 +14,18 @@
     }
   }
 
+  const shouldLoadLive2D = () => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
+    if (window.matchMedia('(max-width: 768px)').matches) return false
+    if (navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType || ''))) {
+      return false
+    }
+    return true
+  }
+
   const start = () => {
-    if (window.__blogLive2DLoaded) return
+    if (window.__blogLive2DLoaded || !shouldLoadLive2D()) return
     window.__blogLive2DLoaded = true
-    const isCompact = window.innerWidth < 768
-    const isTiny = window.innerWidth < 480
 
     const script = document.createElement('script')
     const timer = window.setTimeout(() => {
@@ -29,7 +36,7 @@
     script.async = true
     script.onload = () => {
       window.clearTimeout(timer)
-      if (!window.L2Dwidget) return
+      if (!window.L2Dwidget || !shouldLoadLive2D()) return
       window.L2Dwidget.init({
         model: {
           jsonPath: 'https://cdn.jsdelivr.net/npm/live2d-widget-model-haruto@1.0.5/assets/haruto.model.json',
@@ -37,16 +44,16 @@
         },
         display: {
           position: 'right',
-          width: isTiny ? 86 : isCompact ? 112 : 150,
-          height: isTiny ? 172 : isCompact ? 224 : 300,
-          hOffset: isTiny ? 44 : isCompact ? 64 : 92,
+          width: 150,
+          height: 300,
+          hOffset: 92,
           vOffset: -24
         },
         mobile: {
-          show: true
+          show: false
         },
         react: {
-          opacityDefault: isCompact ? 0.72 : 0.82,
+          opacityDefault: 0.82,
           opacityOnHover: 1
         },
         dialog: {
@@ -60,5 +67,5 @@
     document.body.appendChild(script)
   }
 
-  onDomReady(() => window.setTimeout(start, 600))
+  onDomReady(() => window.setTimeout(start, 800))
 })()

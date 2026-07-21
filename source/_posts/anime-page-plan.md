@@ -7,8 +7,8 @@ categories:
 tags:
   - Anime
   - Notes
-cover: /img/post/Slime.jpg
-top_img: /img/post/Slime.jpg
+cover: /img/optimized/post-slime.webp
+top_img: /img/optimized/post-slime.webp
 description: 给番剧页设计一个轻量的记录方式，先从列表和观后感开始。
 ---
 

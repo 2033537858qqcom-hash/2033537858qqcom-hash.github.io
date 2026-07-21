@@ -3,17 +3,13 @@
   link_list:
     - name: Butterfly
       link: https://butterfly.js.org/
-      avatar: /img/avatar.jpg
+      avatar: https://butterfly.js.org/img/favicon.png
       descr: Hexo Butterfly 主题官方文档
     - name: Hexo
       link: https://hexo.io/
-      avatar: /img/avatar.jpg
+      avatar: https://hexo.io/favicon.ico
       descr: 快速、简洁且高效的博客框架
 
 - class_name: 朋友们
-  class_desc: 这里以后会放朋友们的博客
-  link_list:
-    - name: Your Friend
-      link: https://example.com/
-      avatar: /img/avatar.jpg
-      descr: 等待交换友链
+  class_desc: 互换友链后会展示在这里，欢迎在留言板申请
+  link_list: []

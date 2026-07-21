@@ -128,11 +128,19 @@
     positionMenu(event, currentMenu)
   }
 
+  const isDesktop = () => window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 769px)').matches
+
   const bindEvents = () => {
+    // Keep system context menu on touch / compact devices.
+    if (!isDesktop()) return
+
     document.addEventListener('contextmenu', showMenu)
     document.addEventListener('click', hideMenu)
     document.addEventListener('scroll', hideMenu, { passive: true })
-    window.addEventListener('resize', hideMenu)
+    window.addEventListener('resize', () => {
+      if (!isDesktop()) hideMenu()
+      else hideMenu()
+    })
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape') hideMenu()
     })

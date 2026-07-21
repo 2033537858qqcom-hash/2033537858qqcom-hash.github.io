@@ -16,7 +16,7 @@ const renderTags = items => {
 const renderAnimeCard = item => `
   <article class="anime-card">
     <div class="anime-card__cover">
-      <img src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}">
+      <img src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" width="480" height="640">
       <span class="anime-card__status">${escapeHtml(item.status)}</span>
     </div>
     <div class="anime-card__body">

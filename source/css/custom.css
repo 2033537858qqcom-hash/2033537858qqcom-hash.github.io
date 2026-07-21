@@ -1,9 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
-
+/* System font stack — no remote font request (faster in CN networks). */
 :root {
-  --lijiahao-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --lijiahao-code-font: 'Fira Code', 'JetBrains Mono', Consolas, Monaco, monospace;
-  --lijiahao-blue: #4d8edb;
+  --lijiahao-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --lijiahao-code-font: ui-monospace, 'Cascadia Code', 'SF Mono', 'JetBrains Mono', Consolas, Monaco, monospace;
   --lijiahao-blue: #4d8edb;
   --lijiahao-blue-soft: #dfeeff;
   --lijiahao-pink: #ee9ab9;

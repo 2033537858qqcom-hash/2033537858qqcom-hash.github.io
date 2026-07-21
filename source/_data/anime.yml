@@ -1,7 +1,7 @@
 - title: 夏日重现
   year: 2022
   status: 已加入
-  cover: /img/anime-covers/summer-time-rendering.png
+  cover: /img/optimized/anime-summer-time-rendering.webp
   rating: 9.3
   characters:
     - 网代慎平
@@ -17,7 +17,7 @@
 - title: ReLIFE
   year: 2016
   status: 已加入
-  cover: /img/anime-covers/relife.png
+  cover: /img/optimized/anime-relife.webp
   rating: 8.7
   characters:
     - 海崎新太
@@ -33,7 +33,7 @@
 - title: 电锯人
   year: 2022
   status: 已加入
-  cover: /img/anime-covers/chainsaw-man.png
+  cover: /img/optimized/anime-chainsaw-man.webp
   rating: 9.1
   characters:
     - 电次
@@ -51,7 +51,7 @@
 - title: 关于我转生成史莱姆这档事
   year: 2018
   status: 已加入
-  cover: /img/anime-covers/tensei-slime.jpg
+  cover: /img/optimized/anime-tensei-slime.webp
   rating: 8.8
   characters:
     - 利姆露

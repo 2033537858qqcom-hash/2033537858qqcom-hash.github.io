@@ -13,6 +13,9 @@
   }
 
   const shouldGuard = event => {
+    // PJAX already handles in-site navigation; avoid double transition overlays.
+    if (window.pjax || document.documentElement.classList.contains('pjax')) return false
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
     if (!isNormalLeftClick(event)) return false
 
     const link = event.target.closest && event.target.closest('a[href]')

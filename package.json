@@ -8,10 +8,17 @@
     "clean": "hexo clean",
     "deploy": "hexo deploy",
     "optimize:assets": "node tools/optimize-assets.mjs",
-    "server": "hexo server"
+    "server": "hexo server",
+    "new": "hexo new"
   },
   "hexo": {
     "version": "8.1.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "hexo-util",
+      "sharp"
+    ]
   },
   "dependencies": {
     "hexo": "^8.0.0",
@@ -28,8 +35,7 @@
     "hexo-renderer-pug": "^3.0.0",
     "hexo-renderer-stylus": "^3.0.1",
     "hexo-server": "^3.0.0",
-    "hexo-theme-butterfly": "^5.5.4",
-    "hexo-theme-landscape": "^1.0.0"
+    "hexo-theme-butterfly": "^5.5.4"
   },
   "devDependencies": {
     "puppeteer-core": "^24.43.1",

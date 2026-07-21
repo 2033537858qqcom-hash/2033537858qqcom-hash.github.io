@@ -9,8 +9,8 @@ tags:
   - Butterfly
   - GitHub Pages
   - Frontend
-cover: /img/post/cloud-banner.jpg
-top_img: /img/post/cloud-banner.jpg
+cover: /img/optimized/post-cloud-banner.webp
+top_img: /img/optimized/post-cloud-banner.webp
 description: 记录这个博客从 Hexo、Butterfly 到 GitHub Pages 自动部署过程中用到的技术、配置和设计思路。
 ---
 

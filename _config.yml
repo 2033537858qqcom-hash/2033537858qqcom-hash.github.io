@@ -106,6 +106,7 @@ preloader:
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
+## Production deploy uses GitHub Actions (.github/workflows/pages.yml)
 deploy:
   type: ''
 

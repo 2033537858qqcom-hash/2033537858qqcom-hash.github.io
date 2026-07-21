@@ -1,8 +1,18 @@
 import sharp from 'sharp'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, access } from 'node:fs/promises'
+import { constants } from 'node:fs'
 
 const outDir = 'source/img/optimized'
 await mkdir(outDir, { recursive: true })
+
+const exists = async path => {
+  try {
+    await access(path, constants.R_OK)
+    return true
+  } catch {
+    return false
+  }
+}
 
 const jobs = [
   {
@@ -46,13 +56,89 @@ const jobs = [
     output: `${outDir}/music-avatar.webp`,
     resize: { width: 420, height: 420, fit: 'cover' },
     webp: { quality: 76, effort: 6 }
+  },
+  // Anime covers
+  {
+    input: 'source/img/anime-covers/summer-time-rendering.png',
+    output: `${outDir}/anime-summer-time-rendering.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'source/img/anime-covers/relife.png',
+    output: `${outDir}/anime-relife.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'source/img/anime-covers/chainsaw-man.png',
+    output: `${outDir}/anime-chainsaw-man.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'source/img/anime-covers/tensei-slime.jpg',
+    output: `${outDir}/anime-tensei-slime.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  // Music covers
+  {
+    input: 'source/img/music-covers/yu-zhou-wu-xing-he.jpg',
+    output: `${outDir}/music-cover-yu-zhou-wu-xing-he.webp`,
+    resize: { width: 320, height: 320, fit: 'cover' },
+    webp: { quality: 74, effort: 6 }
+  },
+  {
+    input: 'source/img/music-covers/ying-huo-zhi-sen.jpg',
+    output: `${outDir}/music-cover-ying-huo-zhi-sen.webp`,
+    resize: { width: 320, height: 320, fit: 'cover' },
+    webp: { quality: 74, effort: 6 }
+  },
+  {
+    input: 'source/img/music-covers/shun-jian-de-yong-heng.jpg',
+    output: `${outDir}/music-cover-shun-jian-de-yong-heng.webp`,
+    resize: { width: 320, height: 320, fit: 'cover' },
+    webp: { quality: 74, effort: 6 }
+  },
+  // Post covers
+  {
+    input: 'source/img/post/rednote-1028qjh.jpg',
+    output: `${outDir}/post-rednote-1028qjh.webp`,
+    resize: { width: 1200, withoutEnlargement: true },
+    webp: { quality: 75, effort: 6 }
+  },
+  {
+    input: 'source/img/post/cloud-banner.jpg',
+    output: `${outDir}/post-cloud-banner.webp`,
+    resize: { width: 1200, withoutEnlargement: true },
+    webp: { quality: 75, effort: 6 }
+  },
+  {
+    input: 'source/img/post/Slime.jpg',
+    output: `${outDir}/post-slime.webp`,
+    resize: { width: 1200, withoutEnlargement: true },
+    webp: { quality: 75, effort: 6 }
   }
 ]
 
+let ok = 0
+let skipped = 0
+
 for (const job of jobs) {
+  if (!(await exists(job.input))) {
+    console.warn(`[skip] missing input: ${job.input}`)
+    skipped += 1
+    continue
+  }
+
   await sharp(job.input)
     .resize(job.resize)
     .webp(job.webp)
     .toFile(job.output)
-  console.log(`${job.output}`)
+
+  console.log(job.output)
+  ok += 1
 }
+
+console.log(`optimize-assets: ${ok} written, ${skipped} skipped`)

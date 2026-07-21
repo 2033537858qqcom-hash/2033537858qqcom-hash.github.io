@@ -58,7 +58,11 @@
   }
 
   const particleCount = theme => {
-    return Math.max(theme.min, Math.min(theme.max, Math.round(width * height * theme.density)))
+    const isCompact = width < 768
+    const density = isCompact ? theme.density * 0.45 : theme.density
+    const min = isCompact ? Math.max(18, Math.round(theme.min * 0.4)) : theme.min
+    const max = isCompact ? Math.max(36, Math.round(theme.max * 0.45)) : theme.max
+    return Math.max(min, Math.min(max, Math.round(width * height * density)))
   }
 
   const createParticle = theme => {
