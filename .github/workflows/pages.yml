@@ -48,12 +48,14 @@ jobs:
           grep -q 'wechat-contact.js' public/index.html
           grep -q 'cursor-enhance.js?v=1.5.7' public/index.html
           grep -q 'custom.css?v=1.5.7' public/index.html
-          # hidden 文不进首页主列表（侧栏也不应再挂出建站手�?slug�?          ! grep -q 'blog-setup-notes' public/index.html
+          # hidden posts must not appear on home / sidebar
+          ! grep -q 'blog-setup-notes' public/index.html
           ! grep -q 'butterfly-page-structure' public/index.html
-          grep -q '这里写些什�? public/index.html || grep -q 'what-i-write-here' public/index.html || grep -q '这里写些什�? public/2026/07/22/what-i-write-here/index.html
+          grep -q 'what-i-write-here' public/index.html || grep -q 'what-i-write-here' public/2026/07/22/what-i-write-here/index.html
           test -f public/moments/index.html
           test -f public/music/index.html
-          # RSS / 搜索不含 hidden �?          ! grep -q 'blog-setup-notes' public/atom.xml
+          # RSS / search should not list hidden posts
+          ! grep -q 'blog-setup-notes' public/atom.xml
           ! grep -q 'blog-setup-notes' public/search.xml
           test -f public/img/favicon.ico
 
