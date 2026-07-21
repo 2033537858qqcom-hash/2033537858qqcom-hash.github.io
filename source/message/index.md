@@ -1,9 +1,11 @@
 ---
 title: 留言板
 date: 2026-05-13 21:55:00
-top_img: false
+type: message
+comments: true
+top_img: /img/optimized/banner-day-bg.webp
 ---
 
-这里以后会接入评论系统，作为正式留言板。
+> 💬 欢迎留下你的足迹、想法、建议或是友链申请！
 
-在评论系统接入前，它先作为一个说明页保留。后续可以考虑 Waline、Twikoo 或 Artalk。
+无论是关于技术交流、博客体验意见，还是路过的随手打招呼，都欢迎在下方留言区交流。

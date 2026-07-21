@@ -11,6 +11,9 @@ importers:
       hexo:
         specifier: ^8.0.0
         version: 8.1.2(chokidar@3.6.0)
+      hexo-clean-css:
+        specifier: ^2.0.0
+        version: 2.0.0
       hexo-generator-archive:
         specifier: ^2.0.0
         version: 2.0.0
@@ -438,6 +441,10 @@ packages:
     peerDependencies:
       devtools-protocol: '*'
 
+  clean-css@5.3.3:
+    resolution: {integrity: sha512-D5J+kHaVb/wKSFcyyV75uCn8fiY4sV38XJoe4CUyGQ+mOU/fMVYUdH1hJC+CJQ5uY3EnW27SbJYS4X8BiLrAFg==}
+    engines: {node: '>= 10.0'}
+
   cliui@8.0.1:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
     engines: {node: '>=12'}
@@ -798,6 +805,10 @@ packages:
   hasown@2.0.3:
     resolution: {integrity: sha512-ej4AhfhfL2Q2zpMmLo7U1Uv9+PyhIZpgQLGT1F9miIGmiCJIoCgSmczFdrc97mWT4kVY72KA+WnnhJ5pghSvSg==}
     engines: {node: '>= 0.4'}
+
+  hexo-clean-css@2.0.0:
+    resolution: {integrity: sha512-hmRaZgPax4v1mOPoTVZng/AtQaLztKKgEv7qMRL/6bO/5TeOtuTAXWmil2pjcZayz5saXe5SgWE5M2WGS6WhoQ==}
+    engines: {node: '>= 10.18.1'}
 
   hexo-cli@4.3.2:
     resolution: {integrity: sha512-druJeBgLpG9ncDS5AhBHdAXk0G4CFj8Qes09pApyZ6bR+nJW1JYiDMuilhudaKDdq+1l49jWXVTidkcb7p0Jbw==}
@@ -1930,6 +1941,10 @@ snapshots:
       mitt: 3.0.1
       zod: 3.24.1
 
+  clean-css@5.3.3:
+    dependencies:
+      source-map: 0.6.1
+
   cliui@8.0.1:
     dependencies:
       string-width: 4.2.3
@@ -2295,6 +2310,11 @@ snapshots:
   hasown@2.0.3:
     dependencies:
       function-bind: 1.1.2
+
+  hexo-clean-css@2.0.0:
+    dependencies:
+      clean-css: 5.3.3
+      micromatch: 4.0.8
 
   hexo-cli@4.3.2:
     dependencies:
@@ -3071,8 +3091,7 @@ snapshots:
       ip-address: 10.2.0
       smart-buffer: 4.2.0
 
-  source-map@0.6.1:
-    optional: true
+  source-map@0.6.1: {}
 
   source-map@0.7.6: {}
 

@@ -1,4 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
+  --lijiahao-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --lijiahao-code-font: 'Fira Code', 'JetBrains Mono', Consolas, Monaco, monospace;
+  --lijiahao-blue: #4d8edb;
   --lijiahao-blue: #4d8edb;
   --lijiahao-blue-soft: #dfeeff;
   --lijiahao-pink: #ee9ab9;
@@ -984,3 +989,120 @@ blockquote {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ==========================================================================
+   Global Typography & Code Block Fonts
+   ========================================================================== */
+body, #body-wrap, .site-page, input, textarea {
+  font-family: var(--lijiahao-font-family);
+}
+
+code, pre, .highlight, figure.highlight, kbd {
+  font-family: var(--lijiahao-code-font) !important;
+}
+
+/* Custom Smooth Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--global-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--lijiahao-blue);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--lijiahao-pink);
+}
+
+/* ==========================================================================
+   Interactive Component Styles (About & Links Pages)
+   ========================================================================== */
+.skill-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.skill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--font-color);
+  box-shadow: 0 2px 8px var(--panel-shadow);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.skill-badge:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 6px 16px var(--panel-accent);
+  color: var(--lijiahao-blue);
+}
+
+.timeline-box {
+  border-left: 2px dashed var(--lijiahao-blue);
+  padding-left: 20px;
+  margin: 20px 0;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -27px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--lijiahao-blue);
+  border: 2px solid var(--card-bg);
+  box-shadow: 0 0 0 3px var(--lijiahao-blue-soft);
+}
+
+.timeline-item .date {
+  font-size: 0.85rem;
+  color: var(--lijiahao-muted);
+  font-weight: bold;
+}
+
+.timeline-item .title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 4px 0 6px;
+}
+
+.timeline-item .desc {
+  font-size: 0.92rem;
+  color: var(--font-color);
+  opacity: 0.9;
+}
+
+/* Friend Link Application Template Card */
+.friend-link-template {
+  background: var(--panel-bg);
+  border: 1px dashed var(--lijiahao-blue);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  margin-top: 20px;
+  font-family: var(--lijiahao-code-font);
+  font-size: 0.9rem;
+  position: relative;
+}
+
+.friend-link-template code {
+  color: var(--lijiahao-blue);
+}
+

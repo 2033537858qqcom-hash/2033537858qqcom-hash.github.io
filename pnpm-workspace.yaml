@@ -1,3 +1,6 @@
+allowBuilds:
+  hexo-util: set this to true or false
+  sharp: set this to true or false
 onlyBuiltDependencies:
   - hexo-util
   - sharp
