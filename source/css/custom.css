@@ -191,77 +191,99 @@ pre code {
   cursor: url('/img/cursor/pointer-dark.svg') 5 2, pointer !important;
 }
 
-/* 跟随光环（由 cursor-enhance.js 驱动） */
+/* 跟随光环（由 cursor-enhance.js 驱动）
+   不用 mix-blend-mode:difference，避免浅色背景上发黑/发脏 */
 .cursor-ring,
 .cursor-dot {
   position: fixed;
   top: 0;
   left: 0;
   z-index: 100020;
-  pointer-events: none;
+  pointer-events: none !important;
   opacity: 0;
   will-change: transform;
-  mix-blend-mode: difference;
+  box-sizing: border-box;
 }
 
 .cursor-ring {
-  width: 28px;
-  height: 28px;
-  margin: -14px 0 0 -14px;
-  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid rgba(77, 142, 219, 0.72);
   border-radius: 50%;
+  background: rgba(77, 142, 219, 0.08);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
   transition:
-    width 0.22s ease,
-    height 0.22s ease,
-    margin 0.22s ease,
-    opacity 0.2s ease,
-    border-color 0.2s ease,
-    background-color 0.2s ease;
+    width 0.2s ease,
+    height 0.2s ease,
+    opacity 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+[data-theme='dark'] .cursor-ring {
+  border-color: rgba(166, 188, 255, 0.8);
+  background: rgba(133, 135, 242, 0.12);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 
 .cursor-dot {
-  width: 4px;
-  height: 4px;
-  margin: -2px 0 0 -2px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  transition: transform 0.12s ease, opacity 0.2s ease, width 0.18s ease, height 0.18s ease, margin 0.18s ease;
+  background: var(--lijiahao-blue);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+  transition:
+    width 0.16s ease,
+    height 0.16s ease,
+    opacity 0.18s ease,
+    background-color 0.18s ease;
+}
+
+[data-theme='dark'] .cursor-dot {
+  background: #b8bcff;
+  box-shadow: 0 0 0 1px rgba(20, 24, 40, 0.55);
 }
 
 .cursor-ring.is-visible,
 .cursor-dot.is-visible {
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .cursor-ring.is-hover {
-  width: 40px;
-  height: 40px;
-  margin: -20px 0 0 -20px;
-  border-color: rgba(255, 210, 230, 0.95);
-  background: rgba(255, 255, 255, 0.06);
+  width: 42px;
+  height: 42px;
+  border-color: rgba(238, 154, 185, 0.9);
+  background: rgba(238, 154, 185, 0.12);
+}
+
+[data-theme='dark'] .cursor-ring.is-hover {
+  border-color: rgba(255, 215, 161, 0.85);
+  background: rgba(255, 215, 161, 0.1);
 }
 
 .cursor-dot.is-hover {
-  width: 6px;
-  height: 6px;
-  margin: -3px 0 0 -3px;
+  width: 7px;
+  height: 7px;
+  background: var(--lijiahao-pink);
+}
+
+[data-theme='dark'] .cursor-dot.is-hover {
+  background: #ffd7a1;
 }
 
 .cursor-ring.is-click {
-  width: 22px;
-  height: 22px;
-  margin: -11px 0 0 -11px;
-  background: rgba(255, 255, 255, 0.14);
+  width: 20px;
+  height: 20px;
+  background: rgba(77, 142, 219, 0.18);
 }
 
 .cursor-dot.is-click {
   width: 3px;
   height: 3px;
-  margin: -1.5px 0 0 -1.5px;
-  opacity: 1;
 }
 
-/* 非增强模式（移动端/关闭）保持系统手感 */
+/* 非增强模式（移动端/关闭）彻底隐藏 */
 html:not(.cursor-enhance) .cursor-ring,
 html:not(.cursor-enhance) .cursor-dot {
   display: none !important;
