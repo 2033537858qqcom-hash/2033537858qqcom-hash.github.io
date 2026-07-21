@@ -1,7 +1,7 @@
 ---
 title: 音乐
 date: 2026-05-13 23:35:00
-updated: 2026-07-22 12:00:00
+updated: 2026-07-22 12:30:00
 top_img: false
 ---
 
@@ -15,8 +15,9 @@ top_img: false
 - 萤火之森
 - 瞬间的永恒
 
-## 说明
+## 后续
 
-- 歌单配置在 `source/js/music-player.js`
-- 封面经 WebP 优化后放在 `source/img/optimized/`
-- 后续可扩展：写代码纯音乐、夜晚环境音、番剧 OST 等分组歌单
+- 写代码时听的纯音乐
+- 夜晚阅读用的环境音乐
+- 喜欢的番剧 OST
+- 长期循环的歌单

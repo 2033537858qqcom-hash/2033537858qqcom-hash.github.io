@@ -10,7 +10,7 @@ top_img: /img/optimized/banner-day-bg.webp
 
 无论是关于技术交流、博客体验意见，还是路过的随手打招呼，都欢迎在下方留言区交流。
 
-当前评论系统使用 **Utterances**（基于 GitHub Issues）。首次留言需要登录 GitHub，并确保仓库已安装 [Utterances App](https://github.com/apps/utterances)。
+评论需要登录 GitHub 账号后发表。
 
 ### 友链申请可按此格式
 
