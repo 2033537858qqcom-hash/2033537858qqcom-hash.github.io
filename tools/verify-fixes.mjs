@@ -9,11 +9,11 @@ const archive = fs.readFileSync('public/archives/index.html', 'utf8')
 const checks = []
 const ok = (name, pass, detail = '') => {
   checks.push({ name, pass: !!pass, detail })
-  console.log((pass ? 'OK  ' : 'FAIL') + ' ' + name + (detail ? ' â€” ' + detail : ''))
+  console.log((pass ? 'OK  ' : 'FAIL') + ' ' + name + (detail ? ' â€?' + detail : ''))
 }
 
-ok('asset css v1.5.4', index.includes('custom.css?v=1.5.4'))
-ok('asset cursor v1.5.4', index.includes('cursor-enhance.js?v=1.5.4'))
+ok('asset css v1.5.5', index.includes('custom.css?v=1.5.5'))
+ok('asset cursor v1.5.5', index.includes('cursor-enhance.js?v=1.5.5'))
 ok('click-values injected', index.includes('click-values.js'))
 ok('no hidden on home', !index.includes('blog-setup-notes') && !index.includes('butterfly-page-structure'))
 ok('no hidden in atom', !atom.includes('blog-setup-notes'))
