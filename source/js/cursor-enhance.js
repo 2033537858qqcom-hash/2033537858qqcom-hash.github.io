@@ -1,8 +1,8 @@
 /**
- * 桌面端光标增强：惯性光环 + 悬停/点击反馈
- * - 仅在桌面精细指针下启用
- * - 首次 mousemove 后再显示，避免左上角残影
- * - PJAX 后自动重建节点
+ * 桌面端「仅光圈」光标：
+ * - 隐藏系统箭头，只显示跟随细环 + 中心点
+ * - 悬停可点放大，点击轻缩
+ * - 移动端 / 触控 / 减少动效自动关闭
  * - Alt+C 开关（localStorage: blog-cursor-ring）
  */
 (function () {
@@ -71,14 +71,17 @@
       return
     }
 
-    pos.x += (mouse.x - pos.x) * 0.2
-    pos.y += (mouse.y - pos.y) * 0.2
+    // 环稍有惯性，点几乎贴合指针
+    pos.x += (mouse.x - pos.x) * 0.18
+    pos.y += (mouse.y - pos.y) * 0.18
 
-    ring.style.transform = 'translate3d(' + pos.x + 'px,' + pos.y + 'px,0) translate(-50%,-50%)'
-    // 点更贴合真实指针
-    const dx = mouse.x * 0.65 + pos.x * 0.35
-    const dy = mouse.y * 0.65 + pos.y * 0.35
-    dot.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0) translate(-50%,-50%)'
+    ring.style.transform =
+      'translate3d(' + pos.x + 'px,' + pos.y + 'px,0) translate(-50%,-50%)'
+
+    const dx = mouse.x * 0.72 + pos.x * 0.28
+    const dy = mouse.y * 0.72 + pos.y * 0.28
+    dot.style.transform =
+      'translate3d(' + dx + 'px,' + dy + 'px,0) translate(-50%,-50%)'
 
     raf = requestAnimationFrame(tick)
   }
@@ -96,7 +99,6 @@
     }
 
     ensureNodes()
-    // 等鼠标真正移动后再显示，避免左上角闪一下
     if (hasMoved) {
       ring.classList.add('is-visible')
       dot.classList.add('is-visible')
@@ -126,7 +128,6 @@
   const onOver = e => {
     if (!enabled) return
     const el = e.target && e.target.closest && e.target.closest(INTERACTIVE)
-    // 正文链接仍算可点，但纯文本区域不算
     const next = Boolean(el)
     if (next === hovering) return
     hovering = next
@@ -159,8 +160,7 @@
   const onKey = e => {
     if (!(e.altKey && (e.key === 'c' || e.key === 'C'))) return
     e.preventDefault()
-    const cur = localStorage.getItem(STORAGE_KEY)
-    const next = cur === 'off' ? 'on' : 'off'
+    const next = localStorage.getItem(STORAGE_KEY) === 'off' ? 'on' : 'off'
     localStorage.setItem(STORAGE_KEY, next)
     hasMoved = false
     setEnabled(next !== 'off' && canEnhance())
@@ -181,7 +181,6 @@
   }
 
   document.addEventListener('pjax:complete', () => {
-    // PJAX 可能卸掉 body 子节点，强制重建
     ring = null
     dot = null
     stopLoop()

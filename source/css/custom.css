@@ -93,18 +93,18 @@ button,
   }
 }
 
-/* 桌面端：更小的品牌光标；阅读区用系统光标，避免呆板抢戏 */
+/* 桌面端：系统光标 + 唯美跟随光圈（不再叠自定义箭头） */
 body {
   max-width: 100%;
   overflow-x: hidden;
   background: #f5f8fc;
-  cursor: url('/img/cursor/default-light.svg') 2 2, auto;
+  cursor: auto;
   transition: background-color 0.75s ease, color 0.75s ease;
 }
 
 [data-theme='dark'] body {
   background: #101522;
-  cursor: url('/img/cursor/default-dark.svg') 2 2, auto;
+  cursor: auto;
 }
 
 a,
@@ -119,54 +119,16 @@ label,
 #card-info-btn,
 .blog-music-launcher,
 .aplayer,
-.aplayer * {
-  cursor: url('/img/cursor/pointer-light.svg') 5 2, pointer;
+.aplayer *,
+#article-container a,
+#post #article-container a,
+.shuoshuo-content a {
+  cursor: pointer;
 }
 
-[data-theme='dark'] a,
-[data-theme='dark'] button,
-[data-theme='dark'] summary,
-[data-theme='dark'] label,
-[data-theme='dark'] .site-page,
-[data-theme='dark'] .social-icon,
-[data-theme='dark'] #rightside button,
-[data-theme='dark'] #toggle-menu,
-[data-theme='dark'] #search-button,
-[data-theme='dark'] #card-info-btn,
-[data-theme='dark'] .blog-music-launcher,
-[data-theme='dark'] .aplayer,
-[data-theme='dark'] .aplayer * {
-  cursor: url('/img/cursor/pointer-dark.svg') 5 2, pointer;
-}
-
-/* 悬停可点：更亮的 pointer 变体 */
-html.cursor-hover-interactive a,
-html.cursor-hover-interactive button,
-html.cursor-hover-interactive summary,
-html.cursor-hover-interactive label,
-html.cursor-hover-interactive .site-page,
-html.cursor-hover-interactive .social-icon,
-html.cursor-hover-interactive #rightside button,
-html.cursor-hover-interactive .blog-music-launcher {
-  cursor: url('/img/cursor/pointer-hover-light.svg') 5 2, pointer;
-}
-
-html.cursor-hover-interactive[data-theme='dark'] a,
-html.cursor-hover-interactive[data-theme='dark'] button,
-html.cursor-hover-interactive[data-theme='dark'] summary,
-html.cursor-hover-interactive[data-theme='dark'] label,
-html.cursor-hover-interactive[data-theme='dark'] .site-page,
-html.cursor-hover-interactive[data-theme='dark'] .social-icon,
-html.cursor-hover-interactive[data-theme='dark'] #rightside button,
-html.cursor-hover-interactive[data-theme='dark'] .blog-music-launcher {
-  cursor: url('/img/cursor/pointer-hover-dark.svg') 5 2, pointer;
-}
-
-/* 正文 / 代码：系统文本光标，阅读更自然 */
 #article-container,
 #article-container p,
 #article-container li,
-#article-container span,
 #post #article-container,
 .shuoshuo-content,
 .shuoshuo-content p,
@@ -176,23 +138,10 @@ textarea,
 code,
 pre,
 pre code {
-  cursor: text !important;
+  cursor: text;
 }
 
-#article-container a,
-#post #article-container a,
-.shuoshuo-content a {
-  cursor: url('/img/cursor/pointer-light.svg') 5 2, pointer !important;
-}
-
-[data-theme='dark'] #article-container a,
-[data-theme='dark'] #post #article-container a,
-[data-theme='dark'] .shuoshuo-content a {
-  cursor: url('/img/cursor/pointer-dark.svg') 5 2, pointer !important;
-}
-
-/* 跟随光环（由 cursor-enhance.js 驱动）
-   不用 mix-blend-mode:difference，避免浅色背景上发黑/发脏 */
+/* 仅光圈：细环 + 中心小点，偏高级、不抢内容 */
 .cursor-ring,
 .cursor-dot {
   position: fixed;
@@ -206,43 +155,47 @@ pre code {
 }
 
 .cursor-ring {
-  width: 30px;
-  height: 30px;
-  border: 1.5px solid rgba(77, 142, 219, 0.72);
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(77, 142, 219, 0.55);
   border-radius: 50%;
-  background: rgba(77, 142, 219, 0.08);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.25),
+    0 4px 14px rgba(77, 142, 219, 0.12);
   transition:
-    width 0.2s ease,
-    height 0.2s ease,
-    opacity 0.18s ease,
-    border-color 0.18s ease,
-    background-color 0.18s ease,
-    box-shadow 0.18s ease;
+    width 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 [data-theme='dark'] .cursor-ring {
-  border-color: rgba(166, 188, 255, 0.8);
-  background: rgba(133, 135, 242, 0.12);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+  border-color: rgba(190, 206, 255, 0.55);
+  background: rgba(133, 135, 242, 0.08);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.22);
 }
 
 .cursor-dot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  background: var(--lijiahao-blue);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+  background: rgba(77, 142, 219, 0.9);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
   transition:
-    width 0.16s ease,
-    height 0.16s ease,
-    opacity 0.18s ease,
-    background-color 0.18s ease;
+    width 0.18s ease,
+    height 0.18s ease,
+    opacity 0.2s ease,
+    background-color 0.2s ease;
 }
 
 [data-theme='dark'] .cursor-dot {
-  background: #b8bcff;
-  box-shadow: 0 0 0 1px rgba(20, 24, 40, 0.55);
+  background: rgba(200, 210, 255, 0.95);
+  box-shadow: 0 0 0 1px rgba(16, 20, 36, 0.5);
 }
 
 .cursor-ring.is-visible,
@@ -251,20 +204,23 @@ pre code {
 }
 
 .cursor-ring.is-hover {
-  width: 42px;
-  height: 42px;
-  border-color: rgba(238, 154, 185, 0.9);
-  background: rgba(238, 154, 185, 0.12);
+  width: 48px;
+  height: 48px;
+  border-color: rgba(238, 154, 185, 0.75);
+  background: rgba(238, 154, 185, 0.1);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 6px 18px rgba(238, 154, 185, 0.16);
 }
 
 [data-theme='dark'] .cursor-ring.is-hover {
-  border-color: rgba(255, 215, 161, 0.85);
-  background: rgba(255, 215, 161, 0.1);
+  border-color: rgba(255, 215, 161, 0.7);
+  background: rgba(255, 215, 161, 0.08);
 }
 
 .cursor-dot.is-hover {
-  width: 7px;
-  height: 7px;
+  width: 5px;
+  height: 5px;
   background: var(--lijiahao-pink);
 }
 
@@ -273,9 +229,9 @@ pre code {
 }
 
 .cursor-ring.is-click {
-  width: 20px;
-  height: 20px;
-  background: rgba(77, 142, 219, 0.18);
+  width: 22px;
+  height: 22px;
+  background: rgba(77, 142, 219, 0.14);
 }
 
 .cursor-dot.is-click {
@@ -283,10 +239,25 @@ pre code {
   height: 3px;
 }
 
-/* 非增强模式（移动端/关闭）彻底隐藏 */
 html:not(.cursor-enhance) .cursor-ring,
 html:not(.cursor-enhance) .cursor-dot {
   display: none !important;
+}
+
+/* 开启光圈时隐藏系统箭头，只保留圈（更干净、更高级） */
+html.cursor-enhance,
+html.cursor-enhance * {
+  cursor: none !important;
+}
+
+/* 文本编辑仍显示 I 型，避免打字困难 */
+html.cursor-enhance input,
+html.cursor-enhance textarea,
+html.cursor-enhance [contenteditable='true'],
+html.cursor-enhance code,
+html.cursor-enhance pre,
+html.cursor-enhance pre * {
+  cursor: text !important;
 }
 
 html {
