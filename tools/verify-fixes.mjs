@@ -12,8 +12,8 @@ const ok = (name, pass, detail = '') => {
   console.log((pass ? 'OK  ' : 'FAIL') + ' ' + name + (detail ? ' â€?' + detail : ''))
 }
 
-ok('asset css v1.5.6', index.includes('custom.css?v=1.5.6'))
-ok('asset cursor v1.5.6', index.includes('cursor-enhance.js?v=1.5.6'))
+ok('asset css v1.5.7', index.includes('custom.css?v=1.5.7'))
+ok('asset cursor v1.5.7', index.includes('cursor-enhance.js?v=1.5.7'))
 ok('click-values injected', index.includes('click-values.js'))
 ok('no hidden on home', !index.includes('blog-setup-notes') && !index.includes('butterfly-page-structure'))
 ok('no hidden in atom', !atom.includes('blog-setup-notes'))

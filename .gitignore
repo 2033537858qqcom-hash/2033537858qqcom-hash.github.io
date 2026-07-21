@@ -15,3 +15,6 @@ tools/netease-events-raw.json
 tools/netease-events.json
 tools/netease-migrate-report.json
 
+
+tools/verify-output/
+
