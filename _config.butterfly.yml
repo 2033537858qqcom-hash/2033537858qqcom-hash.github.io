@@ -63,6 +63,7 @@ social:
 # Image Settings
 # --------------------------------------
 
+# 站点图标：向日葵戴墨镜（见 assets/raw/site-icon-source.jpg）
 favicon: /img/favicon.ico
 
 avatar:
@@ -1043,9 +1044,9 @@ lazyload:
 pwa:
   enable: false
   manifest:
-  apple_touch_icon:
-  favicon_32_32:
-  favicon_16_16:
+  apple_touch_icon: /img/apple-touch-icon.png
+  favicon_32_32: /img/favicon-32x32.png
+  favicon_16_16: /img/favicon-16x16.png
   mask_icon:
 
 # Open graph meta tags
