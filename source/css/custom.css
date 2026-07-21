@@ -141,9 +141,8 @@ pre code {
   cursor: text;
 }
 
-/* 仅光圈：细环 + 中心小点，偏高级、不抢内容 */
-.cursor-ring,
-.cursor-dot {
+/* 仅光圈：单节点细环，中心点用 ::after，避免环/点分离成「双光标」 */
+.cursor-ring {
   position: fixed;
   top: 0;
   left: 0;
@@ -152,9 +151,6 @@ pre code {
   opacity: 0;
   will-change: transform;
   box-sizing: border-box;
-}
-
-.cursor-ring {
   width: 34px;
   height: 34px;
   border: 1px solid rgba(77, 142, 219, 0.55);
@@ -172,6 +168,25 @@ pre code {
     box-shadow 0.2s ease;
 }
 
+/* 中心点与环同节点，永远居中 */
+.cursor-ring::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: rgba(77, 142, 219, 0.9);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
+  transition:
+    width 0.18s ease,
+    height 0.18s ease,
+    margin 0.18s ease,
+    background-color 0.2s ease;
+}
+
 [data-theme='dark'] .cursor-ring {
   border-color: rgba(190, 206, 255, 0.55);
   background: rgba(133, 135, 242, 0.08);
@@ -180,26 +195,12 @@ pre code {
     0 4px 16px rgba(0, 0, 0, 0.22);
 }
 
-.cursor-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: rgba(77, 142, 219, 0.9);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
-  transition:
-    width 0.18s ease,
-    height 0.18s ease,
-    opacity 0.2s ease,
-    background-color 0.2s ease;
-}
-
-[data-theme='dark'] .cursor-dot {
+[data-theme='dark'] .cursor-ring::after {
   background: rgba(200, 210, 255, 0.95);
   box-shadow: 0 0 0 1px rgba(16, 20, 36, 0.5);
 }
 
-.cursor-ring.is-visible,
-.cursor-dot.is-visible {
+.cursor-ring.is-visible {
   opacity: 1;
 }
 
@@ -213,18 +214,19 @@ pre code {
     0 6px 18px rgba(238, 154, 185, 0.16);
 }
 
+.cursor-ring.is-hover::after {
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  background: var(--lijiahao-pink, #ee9ab9);
+}
+
 [data-theme='dark'] .cursor-ring.is-hover {
   border-color: rgba(255, 215, 161, 0.7);
   background: rgba(255, 215, 161, 0.08);
 }
 
-.cursor-dot.is-hover {
-  width: 5px;
-  height: 5px;
-  background: var(--lijiahao-pink);
-}
-
-[data-theme='dark'] .cursor-dot.is-hover {
+[data-theme='dark'] .cursor-ring.is-hover::after {
   background: #ffd7a1;
 }
 
@@ -234,9 +236,15 @@ pre code {
   background: rgba(77, 142, 219, 0.14);
 }
 
-.cursor-dot.is-click {
+.cursor-ring.is-click::after {
   width: 3px;
   height: 3px;
+  margin: -1.5px 0 0 -1.5px;
+}
+
+/* 兼容旧版残留的 .cursor-dot 节点，直接隐藏并清理 */
+.cursor-dot {
+  display: none !important;
 }
 
 html:not(.cursor-enhance) .cursor-ring,

@@ -1,9 +1,10 @@
 /**
  * 桌面端「仅光圈」光标：
- * - 隐藏系统箭头，只显示跟随细环 + 中心点
+ * - 隐藏系统箭头，只显示一个跟随细环（中心点用 ::after，避免双元素漂移）
  * - 悬停可点放大，点击轻缩
  * - 移动端 / 触控 / 减少动效自动关闭
  * - Alt+C 开关（localStorage: blog-cursor-ring）
+ * - Pjax 导航时清理残留节点，避免叠出多个光圈
  */
 (function () {
   const STORAGE_KEY = 'blog-cursor-ring'
@@ -23,7 +24,6 @@
   }
 
   let ring = null
-  let dot = null
   let raf = 0
   let enabled = false
   let hovering = false
@@ -31,26 +31,35 @@
   const mouse = { x: 0, y: 0 }
   const pos = { x: 0, y: 0 }
 
+  const removeEl = el => {
+    if (el && el.parentNode) el.parentNode.removeChild(el)
+  }
+
+  /** 清掉 body 上所有历史光标节点（含 Pjax 残留） */
+  const purgeOrphans = () => {
+    try {
+      document.querySelectorAll('#cursor-ring, #cursor-dot, .cursor-ring, .cursor-dot').forEach(el => {
+        removeEl(el)
+      })
+    } catch (e) {
+      /* ignore */
+    }
+    ring = null
+  }
+
   const inDom = el => el && document.body && document.body.contains(el)
 
   const ensureNodes = () => {
-    if (inDom(ring) && inDom(dot)) return
+    if (inDom(ring)) return
 
-    if (ring && ring.parentNode) ring.parentNode.removeChild(ring)
-    if (dot && dot.parentNode) dot.parentNode.removeChild(dot)
+    // 引用丢失或节点被 Pjax 换掉时，先清孤儿再重建
+    purgeOrphans()
 
     ring = document.createElement('div')
     ring.id = 'cursor-ring'
     ring.className = 'cursor-ring'
     ring.setAttribute('aria-hidden', 'true')
-
-    dot = document.createElement('div')
-    dot.id = 'cursor-dot'
-    dot.className = 'cursor-dot'
-    dot.setAttribute('aria-hidden', 'true')
-
     document.body.appendChild(ring)
-    document.body.appendChild(dot)
   }
 
   const stopLoop = () => {
@@ -62,26 +71,20 @@
 
   const hideVisual = () => {
     if (ring) ring.classList.remove('is-visible', 'is-hover', 'is-click')
-    if (dot) dot.classList.remove('is-visible', 'is-hover', 'is-click')
   }
 
   const tick = () => {
-    if (!enabled || !ring || !dot) {
+    if (!enabled || !ring) {
       raf = 0
       return
     }
 
-    // 环稍有惯性，点几乎贴合指针
-    pos.x += (mouse.x - pos.x) * 0.18
-    pos.y += (mouse.y - pos.y) * 0.18
+    // 轻微惯性，单节点跟随，不会出现双圈
+    pos.x += (mouse.x - pos.x) * 0.32
+    pos.y += (mouse.y - pos.y) * 0.32
 
     ring.style.transform =
       'translate3d(' + pos.x + 'px,' + pos.y + 'px,0) translate(-50%,-50%)'
-
-    const dx = mouse.x * 0.72 + pos.x * 0.28
-    const dy = mouse.y * 0.72 + pos.y * 0.28
-    dot.style.transform =
-      'translate3d(' + dx + 'px,' + dy + 'px,0) translate(-50%,-50%)'
 
     raf = requestAnimationFrame(tick)
   }
@@ -95,13 +98,13 @@
     if (!enabled) {
       hideVisual()
       stopLoop()
+      purgeOrphans()
       return
     }
 
     ensureNodes()
     if (hasMoved) {
       ring.classList.add('is-visible')
-      dot.classList.add('is-visible')
     } else {
       hideVisual()
     }
@@ -121,7 +124,6 @@
     if (enabled) {
       ensureNodes()
       ring.classList.add('is-visible')
-      dot.classList.add('is-visible')
     }
   }
 
@@ -133,18 +135,15 @@
     hovering = next
     document.documentElement.classList.toggle('cursor-hover-interactive', next)
     if (ring) ring.classList.toggle('is-hover', next)
-    if (dot) dot.classList.toggle('is-hover', next)
   }
 
   const onDown = () => {
     if (!enabled || !ring) return
     ring.classList.add('is-click')
-    if (dot) dot.classList.add('is-click')
   }
 
   const onUp = () => {
     if (ring) ring.classList.remove('is-click')
-    if (dot) dot.classList.remove('is-click')
   }
 
   const onLeave = () => {
@@ -166,6 +165,15 @@
     setEnabled(next !== 'off' && canEnhance())
   }
 
+  const onPjax = () => {
+    stopLoop()
+    purgeOrphans()
+    hovering = false
+    document.documentElement.classList.remove('cursor-hover-interactive')
+    // 保留 hasMoved / mouse，导航后立刻能显示
+    boot()
+  }
+
   document.addEventListener('mousemove', onMove, { passive: true })
   document.addEventListener('mouseover', onOver, { passive: true })
   document.addEventListener('mousedown', onDown, { passive: true })
@@ -180,10 +188,9 @@
     boot()
   }
 
-  document.addEventListener('pjax:complete', () => {
-    ring = null
-    dot = null
-    stopLoop()
-    boot()
+  document.addEventListener('pjax:complete', onPjax)
+  document.addEventListener('pjax:send', () => {
+    // 切页瞬间先藏起，避免旧环留在原地
+    hideVisual()
   })
 })()
