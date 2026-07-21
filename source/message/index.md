@@ -13,8 +13,8 @@ top_img: /img/optimized/banner-day-bg.webp
 
 ## 怎么留言
 
-- **本页下方评论**：使用 GitHub 账号登录（Utterances）。需仓库已安装 [Utterances](https://github.com/apps/utterances) 并开启 Issues。
-- **微信**：微信号 `ljh18736134699`，也可点击全站绿色微信图标一键复制。
+- **本页下方评论**：使用 GitHub 账号登录（[Utterances](https://github.com/apps/utterances)）。若评论框空白，请站长按 [启用说明](https://github.com/2033537858qqcom-hash/2033537858qqcom-hash.github.io/blob/main/docs/UTTERANCES.md) 安装 App 并开启 Issues。
+- **微信**：`ljh18736134699`（也可点全站绿色微信图标一键复制）
 - **GitHub**：[2033537858qqcom-hash](https://github.com/2033537858qqcom-hash)
 
 ### 友链申请格式

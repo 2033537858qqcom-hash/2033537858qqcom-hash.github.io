@@ -2,8 +2,8 @@
 
 /**
  * 构建前站点抛光：
- * - 用 package.json version 统一资源 ?v=
- * - 保证 inject 列表里版本一致
+ * - 用 package.json version 统一资源 ?v=（改前端务必 bump version）
+ * - 保证 inject 列表里版本一致，避免手写 1.5.x 与真实构建脱节
  */
 const fs = require('fs')
 const path = require('path')

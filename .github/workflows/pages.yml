@@ -46,9 +46,18 @@ jobs:
           test -f public/index.html
           grep -q 'fab fa-weixin' public/index.html
           grep -q 'wechat-contact.js' public/index.html
+          grep -q 'cursor-enhance.js?v=1.5.3' public/index.html
+          grep -q 'custom.css?v=1.5.3' public/index.html
+          # hidden 文不进首页主列表（侧栏也不应再挂出建站手记 slug）
+          ! grep -q 'blog-setup-notes' public/index.html
+          ! grep -q 'butterfly-page-structure' public/index.html
           grep -q '这里写些什么' public/index.html || grep -q 'what-i-write-here' public/index.html || grep -q '这里写些什么' public/2026/07/22/what-i-write-here/index.html
           test -f public/moments/index.html
           test -f public/music/index.html
+          # RSS / 搜索不含 hidden 文
+          ! grep -q 'blog-setup-notes' public/atom.xml
+          ! grep -q 'blog-setup-notes' public/search.xml
+          test -f public/img/favicon.ico
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

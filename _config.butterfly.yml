@@ -452,7 +452,7 @@ wordcount:
   # Display the total word count of the website in aside's webinfo
   total_wordcount: true
 
-# Busuanzi count for PV / UV in site
+# Busuanzi count for PV / UV in site（脚本强制 https，见 CDN.option.busuanzi）
 busuanzi:
   site_uv: true
   site_pv: true
@@ -1083,16 +1083,17 @@ inject:
     - <link rel="stylesheet" href="/css/custom.css?v=1.5.3">
   bottom:
     - <script>!function(){var e=document.documentElement,t=function(){e.classList.add("site-loaded")};"complete"===document.readyState?setTimeout(t,280):window.addEventListener("load",function(){setTimeout(t,280)},{once:true});setTimeout(t,2500)}();</script>
-    - <script src="/js/theme-transition.js?v=1.5.2" defer></script>
-    - <script src="/js/hero-subtitle.js?v=1.5.2" defer></script>
-    - <script src="/js/hero-latest.js?v=1.5.2" defer></script>
-    - <script src="/js/theme-particles.js?v=1.5.2" defer></script>
-    - <script src="/js/context-menu.js?v=1.5.2" defer></script>
-    - <script src="/js/music-player.js?v=1.5.2" defer></script>
-    - <script src="/js/live2d-widget-init.js?v=1.5.2" defer></script>
-    - <script src="/js/user-distance.js?v=1.5.2" defer></script>
-    - <script src="/js/wechat-contact.js?v=1.5.2" defer></script>
+    - <script src="/js/theme-transition.js?v=1.5.3" defer></script>
+    - <script src="/js/hero-subtitle.js?v=1.5.3" defer></script>
+    - <script src="/js/hero-latest.js?v=1.5.3" defer></script>
+    - <script src="/js/theme-particles.js?v=1.5.3" defer></script>
+    - <script src="/js/context-menu.js?v=1.5.3" defer></script>
+    - <script src="/js/music-player.js?v=1.5.3" defer></script>
+    - <script src="/js/live2d-widget-init.js?v=1.5.3" defer></script>
+    - <script src="/js/user-distance.js?v=1.5.3" defer></script>
+    - <script src="/js/wechat-contact.js?v=1.5.3" defer></script>
     - <script src="/js/cursor-enhance.js?v=1.5.3" defer></script>
+    - <script src="/js/click-values.js?v=1.5.3" defer></script>
 
 # CDN Settings
 # Don't modify the following settings unless you know how they work
@@ -1113,6 +1114,8 @@ CDN:
   custom_format:
 
   option:
+    # 协议相对 // 在部分环境下不稳定，统一 https
+    busuanzi: https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js
     # abcjs_basic_js:
     # activate_power_mode:
     # algolia_js:

@@ -85,7 +85,13 @@
       button.type = 'button'
       button.dataset.action = item.key
       button.setAttribute('role', 'menuitem')
-      button.innerHTML = `<i class="${item.icon}" aria-hidden="true"></i><span>${item.label}</span>`
+      const icon = document.createElement('i')
+      icon.className = item.icon
+      icon.setAttribute('aria-hidden', 'true')
+      const span = document.createElement('span')
+      span.textContent = item.label
+      button.appendChild(icon)
+      button.appendChild(span)
       button.addEventListener('click', () => runAction(item.key))
       menu.appendChild(button)
     })

@@ -5,14 +5,16 @@
  * - 侧栏完整卡片 + 首页英雄区一行诗意提示（更易看见）
  */
 (function () {
+  // 站长锚点：杭州（与随笔/实习叙事一致）
   const HOST = {
-    lat: 31.2304,
-    lng: 121.4737,
-    city: '上海',
-    label: '一座靠海的城'
+    lat: 30.2741,
+    lng: 120.1551,
+    city: '杭州',
+    label: '一座临水的城'
   }
 
-  const CACHE_KEY = 'user_distance_cache_v4'
+  // v5：锚点改为杭州，旧缓存距离失效
+  const CACHE_KEY = 'user_distance_cache_v5'
   const CACHE_TTL = 24 * 60 * 60 * 1000
   const ASIDE_ID = 'card-user-distance'
   const HERO_ID = 'hero-user-distance'
@@ -128,7 +130,12 @@
     }
   }
 
-  /** 并行请求多个源，谁先成功用谁；总时限约 5s */
+  /**
+   * 仅用 2 个定位源，减少 IP 外传面：
+   * - geojs（轻量、无需 key）
+   * - ipwho.is（失败回退）
+   * 串行：第一个成功即停，不并行打满第三方
+   */
   function resolveVisitorGeo () {
     var tasks = [
       function () {
@@ -141,25 +148,9 @@
           if (data && data.success === false) throw new Error('ipwho fail')
           return normalizeGeo(data.latitude, data.longitude, data.city, data.region, data.country || data.country_code)
         })
-      },
-      function () {
-        return fetchJson('https://api.ip.sb/geoip', 4000).then(function (data) {
-          return normalizeGeo(data.latitude, data.longitude, data.city, data.region || data.region_code, data.country || data.country_code)
-        })
-      },
-      function () {
-        return fetchJson('https://ipapi.co/json/', 4000).then(function (data) {
-          if (data && data.error) throw new Error('ipapi fail')
-          return normalizeGeo(data.latitude, data.longitude, data.city, data.region, data.country_name || data.country)
-        })
       }
     ]
 
-    if (typeof Promise.any === 'function') {
-      return Promise.any(tasks.map(function (run) { return run() })).catch(function () { return null })
-    }
-
-    // 旧环境回退：串行
     var chain = Promise.reject(new Error('start'))
     tasks.forEach(function (run) {
       chain = chain.catch(function () { return run() })
@@ -276,7 +267,7 @@
           '<p class="distance-place">' + placeLine + '</p>' +
           '<p class="distance-text">' + poem + '</p>' +
           '<div class="distance-footer">' +
-            '<span class="distance-tag">网络位置估算 · 非 GPS · 诗意点缀</span>' +
+            '<span class="distance-tag">IP 粗定位 · 非 GPS · 仅作诗意点缀</span>' +
           '</div>' +
         '</div>'
     }

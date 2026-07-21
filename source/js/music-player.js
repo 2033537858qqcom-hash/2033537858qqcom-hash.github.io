@@ -9,11 +9,11 @@
   const NETEASE_PLAYLIST_URL =
     'https://music.163.com/playlist?id=' + NETEASE_PLAYLIST_ID
 
-  // bootcdn 国内更稳；失败时 loadScript 会 catch 并回退本地曲目逻辑
+  // 一律 https；bootcdn 国内较稳，失败则回退本地曲目
   const APLAYER_CSS = 'https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.css'
   const APLAYER_JS = 'https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js'
   const METING_JS = 'https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js'
-  // 国内较常用的 Meting 代理之一
+  // 第三方歌单代理（仅点击播放器后请求；失败 6s 回退本地）
   const METING_API =
     'https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r'
 
@@ -71,7 +71,10 @@
     btn.className = 'blog-music-launcher'
     btn.setAttribute('aria-label', '打开音乐播放器')
     btn.title = '音乐'
-    btn.innerHTML = '<i class="fas fa-music" aria-hidden="true"></i>'
+    const icon = document.createElement('i')
+    icon.className = 'fas fa-music'
+    icon.setAttribute('aria-hidden', 'true')
+    btn.appendChild(icon)
     document.body.appendChild(btn)
     return btn
   }

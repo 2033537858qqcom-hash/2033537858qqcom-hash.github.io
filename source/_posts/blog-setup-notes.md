@@ -9,7 +9,7 @@ tags:
   - Butterfly
   - Blog
 series: 建站手记
-# 不进首页列表，降低建站元内容权重；系列与归档仍可访问
+# 不进首页/侧栏/RSS/搜索/sitemap；归档与直链仍可访问
 hidden: true
 cover: /img/optimized/post-rednote-1028qjh.webp
 top_img: /img/optimized/post-rednote-1028qjh.webp

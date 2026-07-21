@@ -11,7 +11,7 @@
 |------|------|------|
 | 随笔（高频） | `source/_data/shuoshuo.yml` | 短句即可；可从网易云公开动态迁移（见下） |
 | 文章 | `source/_posts/*.md` | 写好 `description`；`pnpm exec hexo new post "标题"` |
-| 建站手记 | 同 posts + `series: 建站手记` | 可用 `hidden: true` 不进首页 |
+| 建站手记 | 同 posts + `series: 建站手记` | `hidden: true`：不进首页/侧栏/RSS/搜索/sitemap；归档与直链仍可访问 |
 | 番剧 | `source/_data/anime.yml` | 一条作品一段短评 |
 | 音乐 | 网易云歌单 + `source/js/music-player.js` | 页面嵌入 + 迷你播放器 |
 | 友链 | `source/_data/link.yml` | 留言板收集申请 |
@@ -51,11 +51,23 @@ pnpm run server
 ## 社交
 
 - GitHub：配置在 `_config.butterfly.yml` → `social`
-- 微信：图标点击复制，号码在 `source/js/wechat-contact.js` 与关于页
+- 微信：图标点击复制，号码仅在 `source/js/wechat-contact.js` 与留言板（关于页不重复明文）
 
-## 评论
+## 评论（Utterances）
 
-Utterances：安装 [App](https://github.com/apps/utterances) 并开启 Issues。
+必须完成，否则文章页评论区为空：
+
+1. 打开 [Utterances App](https://github.com/apps/utterances)，安装到仓库 `2033537858qqcom-hash/2033537858qqcom-hash.github.io`
+2. 仓库 **Settings → General → Features** 开启 **Issues**
+3. 主题配置见 `_config.butterfly.yml` → `utterances`（`issue_term: pathname`）
+4. 用 GitHub 账号打开任意文章页底部，应出现评论框
+
+细节见 [docs/UTTERANCES.md](docs/UTTERANCES.md)。
+
+## 缓存与版本
+
+自定义 CSS/JS 的 `?v=` 由 `scripts/site-polish.js` 统一写成 **`package.json` 的 `version`**。  
+改前端后请同步 bump 版本号（当前 `1.5.3`），否则用户可能一直用旧脚本。
 
 ## 部署
 
