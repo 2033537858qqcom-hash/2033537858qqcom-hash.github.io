@@ -206,14 +206,25 @@
     return widget
   }
 
+  function ensureHeroBottomStack (header) {
+    var stack = document.getElementById('hero-bottom-stack')
+    if (stack) return stack
+    stack = document.createElement('div')
+    stack.id = 'hero-bottom-stack'
+    stack.className = 'hero-bottom-stack'
+    header.appendChild(stack)
+    return stack
+  }
+
   function ensureHeroWidget () {
-    // 仅首页全屏头图：贴在头图最底部居中（滚动箭头上方）
+    // 仅首页全屏头图：与「最新」共用底部堆叠，避免移动端与标题重叠
     var header = document.getElementById('page-header')
     if (!header || !header.classList.contains('full_page')) return null
 
+    var stack = ensureHeroBottomStack(header)
     var widget = document.getElementById(HERO_ID)
     if (widget) {
-      if (widget.parentElement !== header) header.appendChild(widget)
+      if (widget.parentElement !== stack) stack.appendChild(widget)
       return widget
     }
 
@@ -221,7 +232,7 @@
     widget.id = HERO_ID
     widget.className = 'hero-distance'
     widget.setAttribute('aria-live', 'polite')
-    header.appendChild(widget)
+    stack.appendChild(widget)
     return widget
   }
 
@@ -272,15 +283,21 @@
 
     var hero = ensureHeroWidget()
     if (hero) {
+      var isMobile = window.matchMedia('(max-width: 768px)').matches
       var heroMain
       if (hasDistance) {
-        heroMain = '约 <strong>' + distance + '</strong> 公里' +
-          (city ? ' · ' + escapeHtml(city) : '') +
-          ' · 网络估算'
+        if (isMobile) {
+          heroMain = '约 <strong>' + distance + '</strong> km' +
+            (city ? ' · ' + escapeHtml(city) : '')
+        } else {
+          heroMain = '约 <strong>' + distance + '</strong> 公里' +
+            (city ? ' · ' + escapeHtml(city) : '') +
+            ' · 网络估算'
+        }
       } else if (loading) {
-        heroMain = '正在测量与你的山海距离…'
+        heroMain = isMobile ? '正在测距…' : '正在测量与你的山海距离…'
       } else {
-        heroMain = '风从远方来，欢迎来到这里'
+        heroMain = isMobile ? '风从远方来' : '风从远方来，欢迎来到这里'
       }
       hero.innerHTML =
         '<div class="hero-distance__inner">' +

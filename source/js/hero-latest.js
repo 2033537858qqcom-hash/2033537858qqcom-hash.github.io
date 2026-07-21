@@ -1,7 +1,17 @@
 /**
- * 首页全屏头图：展示最新随笔/文章入口（数据来自页面已有 DOM，无额外请求）
+ * 首页全屏头图底部：最新文章入口（与距离胶囊共用底部堆叠容器）
  */
 (function () {
+  const ensureBottomStack = header => {
+    let stack = document.getElementById('hero-bottom-stack')
+    if (stack) return stack
+    stack = document.createElement('div')
+    stack.id = 'hero-bottom-stack'
+    stack.className = 'hero-bottom-stack'
+    header.appendChild(stack)
+    return stack
+  }
+
   const render = () => {
     const header = document.getElementById('page-header')
     if (!header || !header.classList.contains('full_page')) {
@@ -10,7 +20,6 @@
       return
     }
 
-    // 优先最新文章卡片
     const post = document.querySelector('#recent-posts .recent-post-item .article-title')
     let href = ''
     let title = ''
@@ -18,22 +27,25 @@
       href = post.getAttribute('href') || ''
       title = (post.textContent || '').trim()
     }
-
-    // 若无文章，给随笔入口
     if (!href) {
       href = '/moments/'
       title = '随笔'
     }
 
+    const stack = ensureBottomStack(header)
     let box = document.getElementById('hero-latest-link')
     if (!box) {
       box = document.createElement('div')
       box.id = 'hero-latest-link'
       box.className = 'hero-latest-link'
-      header.appendChild(box)
+      // 最新放在距离上方
+      stack.insertBefore(box, stack.firstChild)
+    } else if (box.parentElement !== stack) {
+      stack.insertBefore(box, stack.firstChild)
     }
 
-    const label = title.length > 18 ? title.slice(0, 18) + '…' : title
+    const maxLen = window.matchMedia('(max-width: 768px)').matches ? 12 : 18
+    const label = title.length > maxLen ? title.slice(0, maxLen) + '…' : title
     box.innerHTML = '<a href="' + href + '">最新 · ' + label + '</a>'
   }
 
@@ -43,4 +55,8 @@
     render()
   }
   document.addEventListener('pjax:complete', render)
+  window.addEventListener('resize', () => {
+    window.clearTimeout(window.__heroLatestResizeTimer)
+    window.__heroLatestResizeTimer = window.setTimeout(render, 150)
+  })
 })()
