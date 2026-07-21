@@ -295,9 +295,9 @@
 
   function applyGeo (geo) {
     if (!geo) {
-      var fallback = { distance: null, city: '', country: '', unknown: true }
-      writeCache(fallback)
-      renderState(fallback)
+      var fallback = { distance: null, city: '', country: '', loading: false }
+      writeCache({ distance: null, city: '', country: '', unknown: true })
+      paint(fallback)
       return
     }
 
@@ -306,10 +306,15 @@
       distance: distance,
       city: geo.city || geo.region || '',
       country: geo.country || '',
-      unknown: false
+      loading: false
     }
-    writeCache(payload)
-    renderState(payload)
+    writeCache({
+      distance: payload.distance,
+      city: payload.city,
+      country: payload.country,
+      unknown: false
+    })
+    paint(payload)
   }
 
   var lastState = null
