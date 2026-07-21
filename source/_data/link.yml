@@ -1,6 +1,14 @@
 - class_name: 推荐站点
-  class_desc: 常看的主题文档和工具站
+  class_desc: 常逛的灵感与社区站点
   link_list:
+    - name: Pinterest
+      link: https://www.pinterest.com/
+      avatar: /img/links/pinterest.png
+      descr: 灵感图库 · 视觉收集与创意参考
+    - name: Linux.do
+      link: https://linux.do/
+      avatar: /img/links/linux-do.png
+      descr: 新的理想型社区 · 真实、有用、有爱
     - name: Butterfly
       link: https://butterfly.js.org/
       avatar: https://butterfly.js.org/img/favicon.png
