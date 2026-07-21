@@ -9,7 +9,7 @@
 
 | 类型 | 路径 | 建议 |
 |------|------|------|
-| 随笔（高频） | `source/_data/shuoshuo.yml` | 短句即可，首页头图可链到最新文章 |
+| 随笔（高频） | `source/_data/shuoshuo.yml` | 短句即可；可从网易云公开动态迁移（见下） |
 | 文章 | `source/_posts/*.md` | 写好 `description`；`pnpm exec hexo new post "标题"` |
 | 建站手记 | 同 posts + `series: 建站手记` | 可用 `hidden: true` 不进首页 |
 | 番剧 | `source/_data/anime.yml` | 一条作品一段短评 |
@@ -17,6 +17,15 @@
 | 友链 | `source/_data/link.yml` | 留言板收集申请 |
 
 阅读路径引导见文章《这里写些什么》。
+
+### 网易云随笔迁移
+
+公开动态可批量写入随笔页（会排除对他人攻击、活动模板与过短噪声）：
+
+```bash
+node tools/fetch-netease-events.mjs   # 默认 uid=3988339491
+node tools/migrate-netease-shuoshuo.mjs
+```
 
 ## 本地开发
 

@@ -9,3 +9,9 @@ _multiconfig.yml
 .idea/
 package-lock.json
 yarn.lock
+
+# NetEase migration dumps (regenerate via tools/fetch-netease-events.mjs)
+tools/netease-events-raw.json
+tools/netease-events.json
+tools/netease-migrate-report.json
+
