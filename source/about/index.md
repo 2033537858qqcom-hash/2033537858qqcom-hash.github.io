@@ -53,4 +53,8 @@ top_img: /img/optimized/banner-day-bg.webp
 
 ---
 
-> **联系与交流**：可以通过 [GitHub](https://github.com/2033537858qqcom-hash) 关注动态，或在 [留言板](/message/) 留言交流。
+> **联系与交流**
+>
+> - **GitHub**：[2033537858qqcom-hash](https://github.com/2033537858qqcom-hash)
+> - **微信**：`ljh18736134699`（点击侧栏/首页的微信图标也可复制）
+> - **留言板**：[在这里留言](/message/)
