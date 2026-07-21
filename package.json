@@ -38,7 +38,7 @@
     "hexo-theme-butterfly": "^5.5.4"
   },
   "devDependencies": {
-    "puppeteer-core": "^24.43.1",
+    "puppeteer-core": "^25.3.0",
     "sharp": "^0.34.5"
   }
 }
