@@ -381,6 +381,17 @@ body::after {
     transform 0.2s ease;
 }
 
+/* 主栏白底高度跟随内容，避免被侧栏撑出大片空白 */
+.layout > #page,
+.layout > #post,
+.layout > #archive,
+.layout > div:first-child:not(.recent-posts):not(#aside-content) {
+  align-self: flex-start;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
 .card-widget::before,
 #recent-posts > .recent-post-item::before,
 .layout > div:first-child:not(.recent-posts)::before,
@@ -1334,14 +1345,34 @@ code, pre, .highlight, figure.highlight, kbd {
    Shuoshuo / Moments Page Redesign (随笔 / 动态视觉重构)
    ========================================================================== */
 
-/* 随笔页面整体外层大卡片内边距调整 */
+/* 随笔 / 普通页面：白底只包到最后一块内容，不再被侧栏拉高 */
 #page {
-  padding: 40px 45px 50px 45px !important;
+  padding: 28px 36px 28px 36px !important;
+  height: fit-content !important;
+  min-height: unset !important;
+  margin-bottom: 24px !important;
+}
+
+/* 随笔页：分页后留一点呼吸，不再额外撑高 */
+#page.type-shuoshuo,
+.page.type-shuoshuo,
+#page:has(.shuoshuo-item) {
+  padding-bottom: 24px !important;
+}
+
+#page .shuoshuo-navigation {
+  margin-bottom: 0 !important;
+}
+
+/* 评论区若尚未加载，避免占一大块空白 */
+#page #post-comment:empty,
+#page .comment-wrap:empty {
+  display: none;
 }
 
 @media screen and (max-width: 768px) {
   #page {
-    padding: 24px 18px 30px 18px !important;
+    padding: 20px 16px 20px 16px !important;
   }
 }
 
