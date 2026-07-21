@@ -93,17 +93,18 @@ button,
   }
 }
 
+/* 桌面端：更小的品牌光标；阅读区用系统光标，避免呆板抢戏 */
 body {
   max-width: 100%;
   overflow-x: hidden;
   background: #f5f8fc;
-  cursor: url('/img/cursor/default-light.svg') 4 4, auto;
+  cursor: url('/img/cursor/default-light.svg') 2 2, auto;
   transition: background-color 0.75s ease, color 0.75s ease;
 }
 
 [data-theme='dark'] body {
   background: #101522;
-  cursor: url('/img/cursor/default-dark.svg') 4 4, auto;
+  cursor: url('/img/cursor/default-dark.svg') 2 2, auto;
 }
 
 a,
@@ -116,8 +117,10 @@ label,
 #toggle-menu,
 #search-button,
 #card-info-btn,
+.blog-music-launcher,
+.aplayer,
 .aplayer * {
-  cursor: url('/img/cursor/pointer-light.svg') 7 3, pointer;
+  cursor: url('/img/cursor/pointer-light.svg') 5 2, pointer;
 }
 
 [data-theme='dark'] a,
@@ -130,16 +133,135 @@ label,
 [data-theme='dark'] #toggle-menu,
 [data-theme='dark'] #search-button,
 [data-theme='dark'] #card-info-btn,
+[data-theme='dark'] .blog-music-launcher,
+[data-theme='dark'] .aplayer,
 [data-theme='dark'] .aplayer * {
-  cursor: url('/img/cursor/pointer-dark.svg') 7 3, pointer;
+  cursor: url('/img/cursor/pointer-dark.svg') 5 2, pointer;
 }
 
+/* 悬停可点：更亮的 pointer 变体 */
+html.cursor-hover-interactive a,
+html.cursor-hover-interactive button,
+html.cursor-hover-interactive summary,
+html.cursor-hover-interactive label,
+html.cursor-hover-interactive .site-page,
+html.cursor-hover-interactive .social-icon,
+html.cursor-hover-interactive #rightside button,
+html.cursor-hover-interactive .blog-music-launcher {
+  cursor: url('/img/cursor/pointer-hover-light.svg') 5 2, pointer;
+}
+
+html.cursor-hover-interactive[data-theme='dark'] a,
+html.cursor-hover-interactive[data-theme='dark'] button,
+html.cursor-hover-interactive[data-theme='dark'] summary,
+html.cursor-hover-interactive[data-theme='dark'] label,
+html.cursor-hover-interactive[data-theme='dark'] .site-page,
+html.cursor-hover-interactive[data-theme='dark'] .social-icon,
+html.cursor-hover-interactive[data-theme='dark'] #rightside button,
+html.cursor-hover-interactive[data-theme='dark'] .blog-music-launcher {
+  cursor: url('/img/cursor/pointer-hover-dark.svg') 5 2, pointer;
+}
+
+/* 正文 / 代码：系统文本光标，阅读更自然 */
+#article-container,
+#article-container p,
+#article-container li,
+#article-container span,
+#post #article-container,
+.shuoshuo-content,
+.shuoshuo-content p,
 input,
 textarea,
 [contenteditable='true'],
 code,
-pre {
-  cursor: text;
+pre,
+pre code {
+  cursor: text !important;
+}
+
+#article-container a,
+#post #article-container a,
+.shuoshuo-content a {
+  cursor: url('/img/cursor/pointer-light.svg') 5 2, pointer !important;
+}
+
+[data-theme='dark'] #article-container a,
+[data-theme='dark'] #post #article-container a,
+[data-theme='dark'] .shuoshuo-content a {
+  cursor: url('/img/cursor/pointer-dark.svg') 5 2, pointer !important;
+}
+
+/* 跟随光环（由 cursor-enhance.js 驱动） */
+.cursor-ring,
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100020;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+  mix-blend-mode: difference;
+}
+
+.cursor-ring {
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  transition:
+    width 0.22s ease,
+    height 0.22s ease,
+    margin 0.22s ease,
+    opacity 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.cursor-dot {
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  transition: transform 0.12s ease, opacity 0.2s ease, width 0.18s ease, height 0.18s ease, margin 0.18s ease;
+}
+
+.cursor-ring.is-visible,
+.cursor-dot.is-visible {
+  opacity: 0.9;
+}
+
+.cursor-ring.is-hover {
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-color: rgba(255, 210, 230, 0.95);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.cursor-dot.is-hover {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+}
+
+.cursor-ring.is-click {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.cursor-dot.is-click {
+  transform: scale(0.6);
+}
+
+/* 非增强模式（移动端/关闭）保持系统手感 */
+html:not(.cursor-enhance) .cursor-ring,
+html:not(.cursor-enhance) .cursor-dot {
+  display: none !important;
 }
 
 html {
