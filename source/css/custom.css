@@ -1110,60 +1110,164 @@ code, pre, .highlight, figure.highlight, kbd {
 .card-distance {
   position: relative;
   overflow: hidden;
-  background: var(--panel-bg);
+  background:
+    linear-gradient(145deg, rgba(77, 142, 219, 0.08), rgba(238, 154, 185, 0.1)),
+    var(--panel-bg);
   border: 1px solid var(--panel-border);
-  border-radius: var(--border-radius);
-  padding: 18px 20px;
+  border-radius: 14px;
+  padding: 18px 18px 16px;
   box-shadow: 0 4px 16px var(--panel-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.card-distance::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(238, 154, 185, 0.22), transparent 70%);
+  pointer-events: none;
+}
+
+[data-theme='dark'] .card-distance {
+  background:
+    linear-gradient(145deg, rgba(133, 135, 242, 0.12), rgba(77, 142, 219, 0.08)),
+    var(--panel-bg);
+}
+
+[data-theme='dark'] .card-distance::before {
+  background: radial-gradient(circle, rgba(133, 135, 242, 0.2), transparent 70%);
+}
+
 .card-distance:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow: 0 8px 24px var(--panel-accent);
 }
 
 .card-distance .item-headline {
+  position: relative;
+  z-index: 1;
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--font-color);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .card-distance .item-headline i {
+  color: var(--lijiahao-pink);
+  font-size: 1rem;
+}
+
+.card-distance .distance-content {
+  position: relative;
+  z-index: 1;
+}
+
+.card-distance .distance-content--loading .distance-text {
+  color: var(--lijiahao-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.card-distance .distance-metric {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.card-distance .distance-metric__value {
+  font-size: 1.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
   color: var(--lijiahao-blue);
-  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-distance .distance-metric__value--text {
+  font-size: 1.45rem;
+  letter-spacing: 0.12em;
+}
+
+[data-theme='dark'] .card-distance .distance-metric__value {
+  color: #9aa0ff;
+}
+
+.card-distance .distance-metric__unit {
+  font-size: 0.85rem;
+  color: var(--lijiahao-muted);
+  font-weight: 600;
+}
+
+.card-distance .distance-metric__caption {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  color: var(--lijiahao-muted);
+}
+
+.card-distance .distance-place {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  color: var(--lijiahao-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-distance .distance-place i {
+  color: var(--lijiahao-pink);
+  font-size: 0.75rem;
 }
 
 .card-distance .distance-text {
-  font-size: 0.92rem;
-  line-height: 1.65;
+  font-size: 0.9rem;
+  line-height: 1.7;
   color: var(--font-color);
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-left: 3px solid rgba(238, 154, 185, 0.65);
+  background: rgba(255, 255, 255, 0.28);
+  border-radius: 0 10px 10px 0;
+}
+
+[data-theme='dark'] .card-distance .distance-text {
+  background: rgba(255, 255, 255, 0.04);
+  border-left-color: rgba(133, 135, 242, 0.7);
 }
 
 .card-distance .distance-highlight {
   color: var(--lijiahao-blue);
   font-weight: 700;
-  padding: 0 3px;
+  padding: 0 2px;
   border-bottom: 1px dashed var(--lijiahao-pink);
+}
+
+[data-theme='dark'] .card-distance .distance-highlight {
+  color: #b8bcff;
 }
 
 .card-distance .distance-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .card-distance .distance-tag {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   padding: 3px 10px;
-  border-radius: 12px;
+  border-radius: 999px;
   background: var(--text-bg-hover);
   color: var(--lijiahao-muted);
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 /* ==========================================================================
