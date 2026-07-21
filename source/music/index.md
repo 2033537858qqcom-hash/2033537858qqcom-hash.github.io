@@ -1,7 +1,7 @@
 ---
 title: 音乐
 date: 2026-05-13 23:35:00
-updated: 2026-07-22 20:00:00
+updated: 2026-07-22 21:30:00
 top_img: false
 ---
 
@@ -9,15 +9,16 @@ top_img: false
   <header class="music-page__header">
     <p class="music-page__eyebrow">Playlist</p>
     <h2>网易云歌单</h2>
-    <p>这里放我常听的歌。左下角音符可打开全站迷你播放器（不会自动播放）；下面是同一份歌单的完整展示。</p>
+    <p>常听的歌放在这里。左下角音符可打开全站迷你播放器（不自动播放）；下面是同一份歌单的完整展示。</p>
     <p class="music-page__actions">
-      <a class="music-page__link" href="https://music.163.com/playlist?id=5355255169" target="_blank" rel="noopener noreferrer">在网易云打开</a>
+      <a class="music-page__link" href="https://music.163.com/playlist?id=5355255169" target="_blank" rel="noopener noreferrer">在网易云打开歌单</a>
     </p>
   </header>
 
-  <div class="music-page__player">
+  <div class="music-page__player" id="netease-embed-wrap">
     <iframe
       class="music-page__iframe"
+      id="netease-embed"
       title="网易云音乐歌单"
       frameborder="no"
       border="0"
@@ -32,5 +33,31 @@ top_img: false
     </iframe>
   </div>
 
-  <p class="music-page__tip">若内嵌播放器加载较慢，可直接点击上方链接在网易云中收听。</p>
+  <div class="music-page__fallback" id="netease-fallback" hidden>
+    <p>内嵌播放器暂时无法加载（网络或地区限制）。</p>
+    <p>
+      <a class="music-page__link" href="https://music.163.com/playlist?id=5355255169" target="_blank" rel="noopener noreferrer">前往网易云收听</a>
+    </p>
+    <p class="music-page__tip">也可点击左下角音符，使用站内迷你播放器（优先歌单，失败则回退本地曲目）。</p>
+  </div>
+
+  <p class="music-page__tip">若长时间白屏，请用上方按钮打开网易云。</p>
 </div>
+
+<script>
+(function () {
+  var iframe = document.getElementById('netease-embed')
+  var fallback = document.getElementById('netease-fallback')
+  if (!iframe || !fallback) return
+  var done = false
+  var showFallback = function () {
+    if (done) return
+    done = true
+    fallback.hidden = false
+  }
+  window.setTimeout(function () {
+    // 无法可靠检测 iframe 跨域失败，超时仍显示备用入口
+    fallback.hidden = false
+  }, 8000)
+})()
+</script>

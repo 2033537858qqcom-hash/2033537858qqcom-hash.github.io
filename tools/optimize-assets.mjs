@@ -18,26 +18,26 @@ const jobs = [
   {
     input: 'assets/raw/白天.png',
     output: `${outDir}/banner-day-bg.webp`,
-    resize: { width: 1600, withoutEnlargement: true },
-    webp: { quality: 72, effort: 6 }
+    resize: { width: 1400, withoutEnlargement: true },
+    webp: { quality: 62, effort: 6 }
   },
   {
     input: 'assets/raw/夜晚.png',
     output: `${outDir}/banner-night-bg.webp`,
-    resize: { width: 1600, withoutEnlargement: true },
-    webp: { quality: 72, effort: 6 }
+    resize: { width: 1400, withoutEnlargement: true },
+    webp: { quality: 62, effort: 6 }
   },
   {
     input: 'assets/raw/白天.png',
     output: `${outDir}/cover-day.webp`,
     resize: { width: 900, withoutEnlargement: true },
-    webp: { quality: 70, effort: 6 }
+    webp: { quality: 64, effort: 6 }
   },
   {
     input: 'assets/raw/夜晚.png',
     output: `${outDir}/cover-night.webp`,
     resize: { width: 900, withoutEnlargement: true },
-    webp: { quality: 70, effort: 6 }
+    webp: { quality: 64, effort: 6 }
   },
   {
     input: 'assets/raw/白天.png',

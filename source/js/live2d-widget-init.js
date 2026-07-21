@@ -1,8 +1,9 @@
 /**
- * Live2D：仅桌面宽屏、非省电、非弱网、非首页以外可延后加载。
+ * Live2D：仅「关于」页 + 桌面宽屏 + 非省电网络，进一步减轻全站负担。
  */
 (function () {
   const shouldLoadLive2D = () => {
+    if (!/\/about\/?$/.test(location.pathname)) return false
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
     if (window.matchMedia('(max-width: 900px)').matches) return false
     if (navigator.connection) {
@@ -18,7 +19,6 @@
 
     const script = document.createElement('script')
     const timer = window.setTimeout(() => script.remove(), 8000)
-
     script.src = 'https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js'
     script.async = true
     script.onload = () => {
@@ -37,10 +37,7 @@
           vOffset: -20
         },
         mobile: { show: false },
-        react: {
-          opacityDefault: 0.78,
-          opacityOnHover: 1
-        },
+        react: { opacityDefault: 0.78, opacityOnHover: 1 },
         dialog: { enable: false }
       })
     }
@@ -50,17 +47,17 @@
 
   const schedule = () => {
     if (!shouldLoadLive2D()) return
-    const run = () => window.setTimeout(start, 1800)
-    if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(run, { timeout: 4000 })
-    } else {
-      run()
-    }
+    const run = () => window.setTimeout(start, 1200)
+    if ('requestIdleCallback' in window) window.requestIdleCallback(run, { timeout: 3500 })
+    else run()
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', schedule, { once: true })
-  } else {
+  } else schedule()
+
+  document.addEventListener('pjax:complete', () => {
+    window.__blogLive2DLoaded = false
     schedule()
-  }
+  })
 })()

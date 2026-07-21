@@ -9,8 +9,9 @@
   const NETEASE_PLAYLIST_URL =
     'https://music.163.com/playlist?id=' + NETEASE_PLAYLIST_ID
 
-  const APLAYER_CSS = 'https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.css'
-  const APLAYER_JS = 'https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js'
+  // bootcdn 国内更稳；失败时 loadScript 会 catch 并回退本地曲目逻辑
+  const APLAYER_CSS = 'https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.css'
+  const APLAYER_JS = 'https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js'
   const METING_JS = 'https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js'
   // 国内较常用的 Meting 代理之一
   const METING_API =

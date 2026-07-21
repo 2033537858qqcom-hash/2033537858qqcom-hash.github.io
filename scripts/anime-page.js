@@ -48,7 +48,7 @@ const renderAnimePage = animeList => `
   <header class="anime-page__header">
     <p class="anime-page__eyebrow">Anime Log</p>
     <h2>番剧记录</h2>
-    <p>这里记录看过、想看和反复想起的番剧。列表会随更新而变化；若暂时较少，也是正常的——慢慢补。</p>
+    <p>看过、想看、反复想起的番。不必按顺序——对上名字点进去读两句短评就好。条目少也正常，慢慢补。</p>
   </header>
 
   <div class="anime-grid">

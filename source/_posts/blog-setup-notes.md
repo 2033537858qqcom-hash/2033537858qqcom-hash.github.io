@@ -9,6 +9,8 @@ tags:
   - Butterfly
   - Blog
 series: 建站手记
+# 不进首页列表，降低建站元内容权重；系列与归档仍可访问
+hidden: true
 cover: /img/optimized/post-rednote-1028qjh.webp
 top_img: /img/optimized/post-rednote-1028qjh.webp
 description: 从 Hexo 和 Butterfly 开始，搭建一个清透动漫风的个人博客。

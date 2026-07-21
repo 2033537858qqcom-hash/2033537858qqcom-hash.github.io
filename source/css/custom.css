@@ -147,6 +147,109 @@ html {
   overflow-x: hidden;
 }
 
+/* ==========================================================================
+   内容呈现：阅读节奏、导语、正文
+   ========================================================================== */
+.content-lead {
+  margin: 0 0 28px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: linear-gradient(135deg, rgba(77, 142, 219, 0.1), rgba(238, 154, 185, 0.08));
+}
+
+.content-lead__eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lijiahao-muted);
+}
+
+.content-lead p {
+  margin: 0 0 8px;
+  line-height: 1.75;
+  color: var(--font-color);
+}
+
+.content-lead p:last-child {
+  margin-bottom: 0;
+}
+
+.content-lead__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.content-lead__links a {
+  color: var(--lijiahao-blue);
+  font-weight: 600;
+}
+
+#article-container,
+#post #article-container {
+  font-size: 1.02rem;
+  line-height: 1.9;
+  letter-spacing: 0.01em;
+}
+
+#article-container h2,
+#post #article-container h2 {
+  margin-top: 1.8em;
+  margin-bottom: 0.7em;
+  padding-bottom: 0.35em;
+  border-bottom: 1px dashed rgba(77, 142, 219, 0.28);
+  font-size: 1.35rem;
+  line-height: 1.4;
+}
+
+#article-container h3,
+#post #article-container h3 {
+  margin-top: 1.4em;
+  font-size: 1.15rem;
+}
+
+#article-container p,
+#post #article-container p {
+  margin: 0 0 1em;
+}
+
+#article-container li,
+#post #article-container li {
+  margin: 0.25em 0;
+  line-height: 1.8;
+}
+
+#article-container img,
+#post #article-container img {
+  border-radius: 10px;
+}
+
+/* 首页列表：系列角标弱化建站文的「配置说明书」感 */
+#recent-posts .article-meta__categories[href*='%E5%BB%BA%E7%AB%99'] {
+  opacity: 0.85;
+}
+
+@media (max-width: 768px) {
+  * {
+    cursor: auto !important;
+  }
+
+  .content-lead {
+    padding: 14px;
+    margin-bottom: 20px;
+  }
+
+  #article-container,
+  #post #article-container {
+    font-size: 0.98rem;
+    line-height: 1.85;
+  }
+}
+
 body::before,
 body::after {
   position: fixed;

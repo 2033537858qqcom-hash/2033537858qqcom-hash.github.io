@@ -9,9 +9,10 @@ tags:
   - Design
   - Dark Mode
 series: 建站手记
+# 设计向，保留在首页，但系列归入建站手记
 cover: /img/optimized/cover-night.webp
 top_img: false
-description: 记录博客昼夜主题、固定背景和轮播文案的设计思路。
+description: 记录博客昼夜主题、固定背景和轮播文案的设计思路——写给在意氛围的读者，而不只是配置说明。
 ---
 
 昼夜主题不应该只是把颜色从白变黑。

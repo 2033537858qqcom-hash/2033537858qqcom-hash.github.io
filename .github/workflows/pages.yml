@@ -23,7 +23,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # version 从 package.json 的 packageManager 读取，避免与 action 里 version 冲突
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
@@ -38,10 +37,18 @@ jobs:
 
       - name: Optimize image assets
         run: pnpm run optimize:assets
-        # 音频体积较大时在本地执行 pnpm run optimize:audio 后提交即可
 
       - name: Build site
         run: pnpm run build
+
+      - name: Smoke checks
+        run: |
+          test -f public/index.html
+          grep -q 'fab fa-weixin' public/index.html
+          grep -q 'wechat-contact.js' public/index.html
+          grep -q '这里写些什么' public/index.html || grep -q 'what-i-write-here' public/index.html || grep -q '这里写些什么' public/2026/07/22/what-i-write-here/index.html
+          test -f public/moments/index.html
+          test -f public/music/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

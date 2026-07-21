@@ -10,6 +10,7 @@ tags:
   - GitHub Pages
   - Frontend
 series: 建站手记
+hidden: true
 cover: /img/optimized/post-cloud-banner.webp
 top_img: /img/optimized/post-cloud-banner.webp
 description: 记录这个博客从 Hexo、Butterfly 到 GitHub Pages 自动部署过程中用到的技术、配置和设计思路。

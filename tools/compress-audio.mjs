@@ -7,8 +7,8 @@ import { join } from 'node:path'
 import ffmpegPath from 'ffmpeg-static'
 
 const dir = 'source/music-files'
-const bitrate = '96k'
-const minBytes = 1.2 * 1024 * 1024
+const bitrate = '64k'
+const minBytes = 0.8 * 1024 * 1024
 
 if (!ffmpegPath) {
   console.error('ffmpeg-static binary not found')
