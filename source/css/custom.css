@@ -1270,13 +1270,23 @@ code, pre, .highlight, figure.highlight, kbd {
   gap: 5px;
 }
 
-/* 首页英雄区一行距离提示（首屏可见） */
-.hero-distance {
+/* 首页全屏头图：距离提示固定在底部居中（滚动箭头上方） */
+#page-header.full_page {
   position: relative;
-  z-index: 2;
-  margin: 14px auto 0;
-  max-width: min(92vw, 520px);
+}
+
+.hero-distance {
+  position: absolute;
+  left: 50%;
+  bottom: 52px;
+  z-index: 6;
+  transform: translateX(-50%);
+  margin: 0;
   padding: 0 12px;
+  width: max-content;
+  max-width: min(92vw, 560px);
+  text-align: center;
+  pointer-events: none;
 }
 
 .hero-distance__inner {
@@ -1284,7 +1294,7 @@ code, pre, .highlight, figure.highlight, kbd {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 8px 18px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.28);
@@ -1295,16 +1305,12 @@ code, pre, .highlight, figure.highlight, kbd {
   font-size: 0.92rem;
   line-height: 1.4;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+  pointer-events: auto;
 }
 
 [data-theme='dark'] .hero-distance__inner {
   background: rgba(16, 22, 40, 0.42);
   border-color: rgba(190, 206, 255, 0.22);
-}
-
-.hero-distance__inner i {
-  color: #ffd0e0;
-  font-size: 0.9rem;
 }
 
 .hero-distance__text strong {
@@ -1313,27 +1319,14 @@ code, pre, .highlight, figure.highlight, kbd {
   padding: 0 2px;
 }
 
-/* 非首页（无大头图）时站点信息区可能是深色字，做兼容 */
-#page-header:not(.full_page) .hero-distance__inner {
-  background: rgba(77, 142, 219, 0.12);
-  border-color: rgba(77, 142, 219, 0.22);
-  color: var(--font-color);
-  text-shadow: none;
-  box-shadow: 0 4px 14px var(--panel-shadow);
-}
-
-#page-header:not(.full_page) .hero-distance__inner i {
-  color: var(--lijiahao-pink);
-}
-
-#page-header:not(.full_page) .hero-distance__text strong {
-  color: var(--lijiahao-blue);
-}
-
 @media (max-width: 768px) {
+  .hero-distance {
+    bottom: 44px;
+  }
+
   .hero-distance__inner {
     font-size: 0.84rem;
-    padding: 7px 12px;
+    padding: 7px 14px;
   }
 }
 
@@ -1352,7 +1345,7 @@ code, pre, .highlight, figure.highlight, kbd {
   }
 }
 
-/* 随笔页面标题 Header 缩进与样式调整 */
+/* 随笔 / 页面标题：纯文字，避免伪元素图标因字体未命中显示成 ☒ */
 #page .page-title,
 #page > h1.page-title {
   font-size: 1.5rem !important;
@@ -1365,19 +1358,14 @@ code, pre, .highlight, figure.highlight, kbd {
   background: rgba(77, 142, 219, 0.12) !important;
   border-left: 4px solid var(--lijiahao-blue) !important;
   border-radius: 8px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 10px !important;
+  display: inline-block !important;
   box-sizing: border-box !important;
 }
 
 #page .page-title::before,
 #page > h1.page-title::before {
-  content: '\f6d3'; /* FontAwesome feather icon */
-  font-family: 'Font Awesome 6 Free';
-  font-weight: 900;
-  color: var(--lijiahao-blue);
-  font-size: 1.3rem;
+  content: none !important;
+  display: none !important;
 }
 
 /* 随笔卡片容器整体 */

@@ -207,24 +207,21 @@
   }
 
   function ensureHeroWidget () {
-    // 首页全屏头图里的站点信息，首屏就能看见
-    var siteInfo = document.getElementById('site-info')
-    if (!siteInfo) return null
+    // 仅首页全屏头图：贴在头图最底部居中（滚动箭头上方）
+    var header = document.getElementById('page-header')
+    if (!header || !header.classList.contains('full_page')) return null
 
     var widget = document.getElementById(HERO_ID)
-    if (widget) return widget
+    if (widget) {
+      if (widget.parentElement !== header) header.appendChild(widget)
+      return widget
+    }
 
     widget = document.createElement('div')
     widget.id = HERO_ID
     widget.className = 'hero-distance'
     widget.setAttribute('aria-live', 'polite')
-
-    var social = siteInfo.querySelector('#site_social_icons')
-    if (social) {
-      social.insertAdjacentElement('afterend', widget)
-    } else {
-      siteInfo.appendChild(widget)
-    }
+    header.appendChild(widget)
     return widget
   }
 
@@ -261,15 +258,14 @@
     if (aside) {
       aside.innerHTML =
         '<div class="item-headline">' +
-          '<i class="fas fa-feather-alt" aria-hidden="true"></i>' +
           '<span>山海距离</span>' +
         '</div>' +
         '<div class="distance-content' + (loading ? ' distance-content--loading' : '') + '">' +
           metricHtml +
-          '<p class="distance-place"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> ' + placeLine + '</p>' +
+          '<p class="distance-place">' + placeLine + '</p>' +
           '<p class="distance-text">' + poem + '</p>' +
           '<div class="distance-footer">' +
-            '<span class="distance-tag"><i class="fas fa-paper-plane" aria-hidden="true"></i> IP 粗略估算 · 仅作诗意点缀</span>' +
+            '<span class="distance-tag">IP 粗略估算 · 仅作诗意点缀</span>' +
           '</div>' +
         '</div>'
     }
@@ -287,7 +283,6 @@
       }
       hero.innerHTML =
         '<div class="hero-distance__inner">' +
-          '<i class="fas fa-feather-alt" aria-hidden="true"></i>' +
           '<span class="hero-distance__text">' + heroMain + '</span>' +
         '</div>'
     }
@@ -362,7 +357,7 @@
     var tries = 0
     var timer = window.setInterval(function () {
       tries += 1
-      if (document.getElementById('aside-content') || document.getElementById('site-info')) {
+      if (document.getElementById('aside-content') || document.getElementById('page-header')) {
         if (lastState) renderState(lastState)
         else mountAndLoad()
       }
