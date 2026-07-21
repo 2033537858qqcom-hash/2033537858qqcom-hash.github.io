@@ -926,13 +926,14 @@ blockquote {
   z-index: 100001;
 }
 
+/* 看板娘：桌面右下，低于右键/光圈，高于正文；可轻微交互 */
 #live2d-widget {
-  z-index: 90 !important;
-  pointer-events: none;
+  z-index: 99 !important;
+  pointer-events: auto !important;
 }
 
 #live2dcanvas {
-  pointer-events: none;
+  pointer-events: auto !important;
   filter: drop-shadow(0 16px 30px rgba(18, 28, 48, 0.18));
   transition: opacity 0.4s ease, filter 0.4s ease;
 }
