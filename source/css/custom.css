@@ -1172,41 +1172,75 @@ code, pre, .highlight, figure.highlight, kbd {
    Shuoshuo / Moments Page Redesign (随笔 / 动态视觉重构)
    ========================================================================== */
 
-/* 随笔页面标题 Header 美化 */
-#page .page-title {
-  font-size: 1.65rem !important;
-  font-weight: 700 !important;
-  color: var(--font-color) !important;
-  margin-bottom: 24px !important;
-  padding-bottom: 12px !important;
-  border-bottom: 2px dashed var(--lijiahao-blue-soft) !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
+/* 随笔页面整体外层大卡片内边距调整 */
+#page {
+  padding: 40px 45px 50px 45px !important;
 }
 
-#page .page-title::before {
+@media screen and (max-width: 768px) {
+  #page {
+    padding: 24px 18px 30px 18px !important;
+  }
+}
+
+/* 随笔页面标题 Header 缩进与样式调整 */
+#page .page-title,
+#page > h1.page-title {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: var(--font-color) !important;
+  margin-top: 4px !important;
+  margin-bottom: 28px !important;
+  margin-left: 0 !important;
+  padding: 8px 18px !important;
+  background: rgba(77, 142, 219, 0.12) !important;
+  border-left: 4px solid var(--lijiahao-blue) !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  box-sizing: border-box !important;
+}
+
+#page .page-title::before,
+#page > h1.page-title::before {
   content: '\f6d3'; /* FontAwesome feather icon */
   font-family: 'Font Awesome 6 Free';
   font-weight: 900;
   color: var(--lijiahao-blue);
-  font-size: 1.4rem;
+  font-size: 1.3rem;
 }
 
 /* 随笔卡片容器整体 */
 .shuoshuo-item {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-bottom: 22px !important;
+}
+
+/* 彻底解决内层 .container 纯白背景问题 */
+.shuoshuo-item .container,
+.shuoshuo-item > .container {
   background: var(--card-bg) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
   border: 1px solid var(--panel-border) !important;
   border-radius: 16px !important;
-  padding: 22px 24px !important;
-  margin-bottom: 22px !important;
+  padding: 24px 28px !important;
   box-shadow: 0 4px 18px var(--panel-shadow) !important;
   transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
 
-.shuoshuo-item:hover {
+[data-theme='dark'] .shuoshuo-item .container,
+[data-theme='dark'] .shuoshuo-item > .container {
+  background: rgba(17, 24, 43, 0.65) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.shuoshuo-item:hover .container,
+.shuoshuo-item > .container:hover {
   transform: translateY(-4px) !important;
   box-shadow: 0 10px 30px var(--panel-accent) !important;
 }
@@ -1309,7 +1343,7 @@ code, pre, .highlight, figure.highlight, kbd {
   align-items: center !important;
   justify-content: center !important;
   gap: 12px !important;
-  margin-top: 24px !important;
+  margin-top: 28px !important;
 }
 
 .shuoshuo-navigation button {
@@ -1326,6 +1360,7 @@ code, pre, .highlight, figure.highlight, kbd {
   color: #fff !important;
   transform: translateY(-2px) !important;
 }
+
 
 
 
