@@ -2,6 +2,9 @@
 :root {
   --lijiahao-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --lijiahao-code-font: ui-monospace, 'Cascadia Code', 'SF Mono', 'JetBrains Mono', Consolas, Monaco, monospace;
+  /* 随笔正文：本地宋/楷衬线栈，不拉 CDN 字体 */
+  --lijiahao-essay-font: 'Songti SC', 'STSong', 'SimSun', 'Noto Serif CJK SC', 'Source Han Serif SC', 'Georgia', 'Times New Roman', serif;
+  --lijiahao-essay-accent: 'Kaiti SC', 'STKaiti', KaiTi, '楷体', 'Songti SC', serif;
   --lijiahao-blue: #4d8edb;
   --lijiahao-blue-soft: #dfeeff;
   --lijiahao-pink: #ee9ab9;
@@ -1498,6 +1501,178 @@ body, #body-wrap, .site-page, input, textarea {
 
 code, pre, .highlight, figure.highlight, kbd {
   font-family: var(--lijiahao-code-font) !important;
+}
+
+/* ==========================================================================
+   随笔页（shuoshuo /moments）：文艺宋体阅读感
+   - 正文衬线 + 略松行距；元信息仍用无衬线，层次清晰
+   ========================================================================== */
+#page[class*='shuoshuo'] .page-title,
+body[data-type='shuoshuo'] #page .page-title,
+.layout #page .page-title:has(+ .shuoshuo-item),
+#article-container .shuoshuo-item {
+  /* title fallback when :has unsupported — styled below */
+}
+
+/* 随笔卡片整体 */
+#article-container .shuoshuo-item {
+  letter-spacing: 0.02em;
+}
+
+#article-container .shuoshuo-item .container,
+#article-container .shuoshuo-item > .container {
+  padding: 28px 28px 24px;
+  border-radius: 14px;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 252, 250, 0.92) 0%,
+    rgba(248, 251, 255, 0.78) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 10px 28px rgba(37, 54, 83, 0.06);
+}
+
+[data-theme='dark'] #article-container .shuoshuo-item .container,
+[data-theme='dark'] #article-container .shuoshuo-item > .container {
+  background: linear-gradient(
+    165deg,
+    rgba(28, 32, 52, 0.88) 0%,
+    rgba(17, 24, 43, 0.72) 100%
+  );
+  border-color: rgba(190, 206, 255, 0.1);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+}
+
+/* 头像旁：日期 / 昵称保持现代无衬线 */
+#article-container .shuoshuo-info,
+#article-container .shuoshuo-date,
+#article-container .shuoshuo-footer,
+#article-container .shuoshuo-tag {
+  font-family: var(--lijiahao-font-family);
+  letter-spacing: 0.01em;
+}
+
+#article-container .shuoshuo-date {
+  font-size: 0.78rem;
+  opacity: 0.78;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 正文：宋体为主，行距与段距偏「随笔」 */
+#article-container .shuoshuo-content {
+  font-family: var(--lijiahao-essay-font);
+  font-size: 1.08rem;
+  line-height: 1.95;
+  letter-spacing: 0.06em;
+  color: var(--font-color);
+  font-weight: 400;
+  text-align: justify;
+  text-justify: inter-ideograph;
+  -webkit-font-smoothing: antialiased;
+  padding: 18px 2px 12px;
+}
+
+[data-theme='dark'] #article-container .shuoshuo-content {
+  color: rgba(230, 236, 255, 0.92);
+  /* 深色下宋体略细，略提字重观感靠颜色 */
+  text-shadow: 0 0 0.3px rgba(255, 255, 255, 0.12);
+}
+
+#article-container .shuoshuo-content p {
+  font-family: inherit;
+  margin: 0 0 0.95em;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
+#article-container .shuoshuo-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* 加粗小标题（如 **所感所想**）用楷体点题 */
+#article-container .shuoshuo-content strong,
+#article-container .shuoshuo-content b {
+  font-family: var(--lijiahao-essay-accent);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--lijiahao-ink);
+}
+
+[data-theme='dark'] #article-container .shuoshuo-content strong,
+[data-theme='dark'] #article-container .shuoshuo-content b {
+  color: #f0e6d8;
+}
+
+/* 引用感：长破折、配乐行 */
+#article-container .shuoshuo-content em,
+#article-container .shuoshuo-content i {
+  font-family: var(--lijiahao-essay-accent);
+  font-style: normal;
+  opacity: 0.92;
+}
+
+#article-container .shuoshuo-content a {
+  font-family: inherit;
+  border-bottom: 1px dashed rgba(77, 142, 219, 0.45);
+  text-underline-offset: 0.2em;
+}
+
+/* 配乐行等偏短注记：略小、楷体 */
+#article-container .shuoshuo-content p:last-child:has(+ *),
+#article-container .shuoshuo-content {
+  /* no-op for browsers without complex :has chains */
+}
+
+/* 图片在随笔中略圆角、不抢字 */
+#article-container .shuoshuo-content img {
+  display: block;
+  max-width: min(100%, 420px);
+  margin: 1.1em auto;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(37, 54, 83, 0.1);
+}
+
+/* 页面标题「随笔」本身也可略文艺 */
+#page .page-title {
+  letter-spacing: 0.18em;
+}
+
+/* 仅当页面含随笔列表时，标题用衬线 */
+body #page:has(.shuoshuo-item) > .page-title,
+body #page:has(.shuoshuo-item) h1.page-title {
+  font-family: var(--lijiahao-essay-accent);
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  font-size: 1.45rem;
+}
+
+/* 标签胶囊保持无衬线、略精致 */
+#article-container .shuoshuo-tag {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+@media (max-width: 768px) {
+  #article-container .shuoshuo-content {
+    font-size: 1.02rem;
+    line-height: 1.88;
+    letter-spacing: 0.045em;
+    text-align: left; /* 小屏两端对齐易出现字距怪 */
+    padding: 14px 0 8px;
+  }
+
+  #article-container .shuoshuo-item .container,
+  #article-container .shuoshuo-item > .container {
+    padding: 18px 16px 16px !important;
+  }
+
+  body #page:has(.shuoshuo-item) > .page-title,
+  body #page:has(.shuoshuo-item) h1.page-title {
+    letter-spacing: 0.2em;
+    font-size: 1.25rem !important;
+  }
 }
 
 /* Custom Smooth Scrollbar */
