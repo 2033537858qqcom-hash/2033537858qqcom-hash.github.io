@@ -1168,4 +1168,164 @@ code, pre, .highlight, figure.highlight, kbd {
   font-weight: 500;
 }
 
+/* ==========================================================================
+   Shuoshuo / Moments Page Redesign (随笔 / 动态视觉重构)
+   ========================================================================== */
+
+/* 随笔页面标题 Header 美化 */
+#page .page-title {
+  font-size: 1.65rem !important;
+  font-weight: 700 !important;
+  color: var(--font-color) !important;
+  margin-bottom: 24px !important;
+  padding-bottom: 12px !important;
+  border-bottom: 2px dashed var(--lijiahao-blue-soft) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+#page .page-title::before {
+  content: '\f6d3'; /* FontAwesome feather icon */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  color: var(--lijiahao-blue);
+  font-size: 1.4rem;
+}
+
+/* 随笔卡片容器整体 */
+.shuoshuo-item {
+  background: var(--card-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--panel-border) !important;
+  border-radius: 16px !important;
+  padding: 22px 24px !important;
+  margin-bottom: 22px !important;
+  box-shadow: 0 4px 18px var(--panel-shadow) !important;
+  transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.shuoshuo-item:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 10px 30px var(--panel-accent) !important;
+}
+
+/* 卡片内部 Header 样式 */
+.shuoshuo-item-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  margin-bottom: 14px !important;
+}
+
+.shuoshuo-avatar img {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  border: 2px solid var(--lijiahao-blue) !important;
+  box-shadow: 0 3px 10px rgba(77, 142, 219, 0.25) !important;
+  object-fit: cover !important;
+  transition: transform 0.3s ease !important;
+}
+
+.shuoshuo-item:hover .shuoshuo-avatar img {
+  transform: rotate(360deg) scale(1.05) !important;
+}
+
+.shuoshuo-info {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.shuoshuo-author {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: var(--lijiahao-blue) !important;
+  letter-spacing: 0.3px !important;
+}
+
+.shuoshuo-date {
+  font-size: 0.82rem !important;
+  color: var(--lijiahao-muted) !important;
+  opacity: 0.85 !important;
+}
+
+/* 随笔正文内容 */
+.shuoshuo-content {
+  font-size: 0.98rem !important;
+  line-height: 1.75 !important;
+  color: var(--font-color) !important;
+  padding: 6px 0 12px 0 !important;
+  word-break: break-word !important;
+}
+
+.shuoshuo-content p {
+  margin: 0 0 8px 0 !important;
+}
+
+/* 随笔底部标签与评论图标 */
+.shuoshuo-footer {
+  display: flex !important;
+  align-items: center !important;
+  padding-top: 10px !important;
+  border-top: 1px dashed rgba(255, 255, 255, 0.15) !important;
+}
+
+.shuoshuo-tag {
+  background: var(--text-bg-hover) !important;
+  color: var(--lijiahao-blue) !important;
+  border-radius: 12px !important;
+  padding: 3px 12px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  margin-right: 8px !important;
+  transition: background 0.25s ease !important;
+}
+
+.shuoshuo-tag:hover {
+  background: var(--lijiahao-blue) !important;
+  color: #fff !important;
+}
+
+.shuoshuo-comment-btn {
+  color: var(--lijiahao-muted) !important;
+  font-size: 1.1rem !important;
+  padding: 4px 8px !important;
+  border-radius: 8px !important;
+  transition: all 0.25s ease !important;
+}
+
+.shuoshuo-comment-btn:hover {
+  color: var(--lijiahao-blue) !important;
+  background: var(--text-bg-hover) !important;
+  transform: scale(1.1) !important;
+}
+
+/* 随笔分页控件美化 */
+.shuoshuo-navigation {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  margin-top: 24px !important;
+}
+
+.shuoshuo-navigation button {
+  background: var(--panel-bg) !important;
+  border: 1px solid var(--panel-border) !important;
+  color: var(--font-color) !important;
+  border-radius: 8px !important;
+  padding: 6px 14px !important;
+  transition: all 0.3s ease !important;
+}
+
+.shuoshuo-navigation button:hover:not(:disabled) {
+  background: var(--lijiahao-blue) !important;
+  color: #fff !important;
+  transform: translateY(-2px) !important;
+}
+
+
 
