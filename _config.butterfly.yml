@@ -39,9 +39,9 @@ menu:
 code_blocks:
   # Code block theme: darker / pale night / light / ocean / false
   theme: light
-  macStyle: false
+  macStyle: true
   # Code block height limit (unit: px)
-  height_limit: false
+  height_limit: 400
   word_wrap: false
 
   # Toolbar
@@ -255,15 +255,15 @@ post_pagination: 1
 
 # Displays outdated notice for a post
 noticeOutdate:
-  enable: false
+  enable: true
   # Style: simple / flat
   style: flat
   # When will it be shown
   limit_day: 365
   # Position: top / bottom
   position: top
-  message_prev: It has been
-  message_next: days since the last update, the content of the article may be outdated.
+  message_prev: 本文最后更新于 
+  message_next: 天前，其中的某些技术 API 或信息可能已发生变更，请注意甄别。
 
 # --------------------------------------
 # Footer Settings
