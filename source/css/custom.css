@@ -1341,6 +1341,103 @@ code, pre, .highlight, figure.highlight, kbd {
   }
 }
 
+/* 音乐：按需加载前的悬浮入口 */
+.blog-music-launcher {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 90;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--panel-border);
+  border-radius: 50%;
+  background: var(--panel-bg);
+  color: var(--lijiahao-blue);
+  box-shadow: 0 8px 22px var(--panel-shadow);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.blog-music-launcher:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 12px 28px var(--panel-accent);
+}
+
+.blog-music-launcher.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.85);
+}
+
+.blog-music-launcher.is-loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.blog-music-launcher i {
+  font-size: 1rem;
+}
+
+/* 首页头图底部：最新入口 */
+.hero-latest-link {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  z-index: 6;
+  transform: translateX(-50%);
+  max-width: min(92vw, 520px);
+  text-align: center;
+}
+
+.hero-latest-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #fff !important;
+  font-size: 0.86rem;
+  text-decoration: none !important;
+  backdrop-filter: blur(8px);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
+}
+
+.hero-latest-link a:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 768px) {
+  .hero-latest-link {
+    bottom: 86px;
+  }
+
+  .blog-music-launcher {
+    left: 12px;
+    bottom: 12px;
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #theme-particles,
+  .blog-music-launcher,
+  .hero-distance,
+  .card-distance {
+    transition: none !important;
+  }
+
+  #theme-particles {
+    display: none !important;
+  }
+}
+
 /* ==========================================================================
    Shuoshuo / Moments Page Redesign (随笔 / 动态视觉重构)
    ========================================================================== */

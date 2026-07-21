@@ -1,13 +1,14 @@
 ---
 title: 博客搭建想法
 date: 2026-05-13 21:55:00
-updated: 2026-05-13 21:55:00
+updated: 2026-07-22 18:00:00
 categories:
-  - 项目记录
+  - 建站手记
 tags:
   - Hexo
   - Butterfly
   - Blog
+series: 建站手记
 cover: /img/optimized/post-rednote-1028qjh.webp
 top_img: /img/optimized/post-rednote-1028qjh.webp
 description: 从 Hexo 和 Butterfly 开始，搭建一个清透动漫风的个人博客。

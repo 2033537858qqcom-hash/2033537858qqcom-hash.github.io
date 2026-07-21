@@ -1,6 +1,6 @@
 {
   "name": "hexo-site",
-  "version": "0.0.0",
+  "version": "1.1.0",
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "scripts": {
@@ -8,6 +8,8 @@
     "clean": "hexo clean",
     "deploy": "hexo deploy",
     "optimize:assets": "node tools/optimize-assets.mjs",
+    "optimize:audio": "node tools/compress-audio.mjs",
+    "optimize": "pnpm run optimize:assets && pnpm run optimize:audio",
     "server": "hexo server",
     "new": "hexo new"
   },
@@ -17,7 +19,8 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "hexo-util",
-      "sharp"
+      "sharp",
+      "ffmpeg-static"
     ]
   },
   "dependencies": {
@@ -38,7 +41,7 @@
     "hexo-theme-butterfly": "^5.5.4"
   },
   "devDependencies": {
-    "puppeteer-core": "^24.43.1",
+    "ffmpeg-static": "^5.3.0",
     "sharp": "^0.34.5"
   }
 }

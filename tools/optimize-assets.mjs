@@ -57,46 +57,46 @@ const jobs = [
     resize: { width: 420, height: 420, fit: 'cover' },
     webp: { quality: 76, effort: 6 }
   },
-  // Anime covers
+  // Anime covers（原图在 assets/raw，线上只保留 optimized webp）
   {
-    input: 'source/img/anime-covers/summer-time-rendering.png',
+    input: 'assets/raw/anime-covers/summer-time-rendering.png',
     output: `${outDir}/anime-summer-time-rendering.webp`,
     resize: { width: 480, withoutEnlargement: true },
     webp: { quality: 72, effort: 6 }
   },
   {
-    input: 'source/img/anime-covers/relife.png',
+    input: 'assets/raw/anime-covers/relife.png',
     output: `${outDir}/anime-relife.webp`,
     resize: { width: 480, withoutEnlargement: true },
     webp: { quality: 72, effort: 6 }
   },
   {
-    input: 'source/img/anime-covers/chainsaw-man.png',
+    input: 'assets/raw/anime-covers/chainsaw-man.png',
     output: `${outDir}/anime-chainsaw-man.webp`,
     resize: { width: 480, withoutEnlargement: true },
     webp: { quality: 72, effort: 6 }
   },
   {
-    input: 'source/img/anime-covers/tensei-slime.jpg',
+    input: 'assets/raw/anime-covers/tensei-slime.jpg',
     output: `${outDir}/anime-tensei-slime.webp`,
     resize: { width: 480, withoutEnlargement: true },
     webp: { quality: 72, effort: 6 }
   },
   // Music covers
   {
-    input: 'source/img/music-covers/yu-zhou-wu-xing-he.jpg',
+    input: 'assets/raw/music-covers/yu-zhou-wu-xing-he.jpg',
     output: `${outDir}/music-cover-yu-zhou-wu-xing-he.webp`,
     resize: { width: 320, height: 320, fit: 'cover' },
     webp: { quality: 74, effort: 6 }
   },
   {
-    input: 'source/img/music-covers/ying-huo-zhi-sen.jpg',
+    input: 'assets/raw/music-covers/ying-huo-zhi-sen.jpg',
     output: `${outDir}/music-cover-ying-huo-zhi-sen.webp`,
     resize: { width: 320, height: 320, fit: 'cover' },
     webp: { quality: 74, effort: 6 }
   },
   {
-    input: 'source/img/music-covers/shun-jian-de-yong-heng.jpg',
+    input: 'assets/raw/music-covers/shun-jian-de-yong-heng.jpg',
     output: `${outDir}/music-cover-shun-jian-de-yong-heng.webp`,
     resize: { width: 320, height: 320, fit: 'cover' },
     webp: { quality: 74, effort: 6 }

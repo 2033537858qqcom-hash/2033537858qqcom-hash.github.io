@@ -1,24 +1,13 @@
+/**
+ * Live2D：仅桌面宽屏、非省电、非弱网、非首页以外可延后加载。
+ */
 (function () {
-  const onDomReady = callback => {
-    let called = false
-    const run = () => {
-      if (called) return
-      called = true
-      callback()
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', run, { once: true })
-    } else {
-      run()
-    }
-  }
-
   const shouldLoadLive2D = () => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
-    if (window.matchMedia('(max-width: 768px)').matches) return false
-    if (navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType || ''))) {
-      return false
+    if (window.matchMedia('(max-width: 900px)').matches) return false
+    if (navigator.connection) {
+      const c = navigator.connection
+      if (c.saveData || /2g|slow-2g/.test(c.effectiveType || '')) return false
     }
     return true
   }
@@ -28,9 +17,7 @@
     window.__blogLive2DLoaded = true
 
     const script = document.createElement('script')
-    const timer = window.setTimeout(() => {
-      script.remove()
-    }, 8000)
+    const timer = window.setTimeout(() => script.remove(), 8000)
 
     script.src = 'https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js'
     script.async = true
@@ -44,28 +31,36 @@
         },
         display: {
           position: 'right',
-          width: 150,
-          height: 300,
-          hOffset: 92,
-          vOffset: -24
+          width: 140,
+          height: 280,
+          hOffset: 88,
+          vOffset: -20
         },
-        mobile: {
-          show: false
-        },
+        mobile: { show: false },
         react: {
-          opacityDefault: 0.82,
+          opacityDefault: 0.78,
           opacityOnHover: 1
         },
-        dialog: {
-          enable: false
-        }
+        dialog: { enable: false }
       })
     }
-    script.onerror = () => {
-      window.clearTimeout(timer)
-    }
+    script.onerror = () => window.clearTimeout(timer)
     document.body.appendChild(script)
   }
 
-  onDomReady(() => window.setTimeout(start, 800))
+  const schedule = () => {
+    if (!shouldLoadLive2D()) return
+    const run = () => window.setTimeout(start, 1800)
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(run, { timeout: 4000 })
+    } else {
+      run()
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', schedule, { once: true })
+  } else {
+    schedule()
+  }
 })()

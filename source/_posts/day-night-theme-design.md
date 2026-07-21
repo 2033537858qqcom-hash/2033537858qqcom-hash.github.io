@@ -1,13 +1,14 @@
 ---
 title: 昼夜主题设计笔记
 date: 2026-05-13 23:00:00
-updated: 2026-05-13 23:00:00
+updated: 2026-07-22 18:00:00
 categories:
-  - 设计记录
+  - 建站手记
 tags:
   - CSS
   - Design
   - Dark Mode
+series: 建站手记
 cover: /img/optimized/cover-night.webp
 top_img: false
 description: 记录博客昼夜主题、固定背景和轮播文案的设计思路。

@@ -265,7 +265,7 @@
           '<p class="distance-place">' + placeLine + '</p>' +
           '<p class="distance-text">' + poem + '</p>' +
           '<div class="distance-footer">' +
-            '<span class="distance-tag">IP 粗略估算 · 仅作诗意点缀</span>' +
+            '<span class="distance-tag">网络位置估算 · 非 GPS · 诗意点缀</span>' +
           '</div>' +
         '</div>'
     }
@@ -274,8 +274,9 @@
     if (hero) {
       var heroMain
       if (hasDistance) {
-        heroMain = '与你相距 <strong>' + distance + '</strong> 公里' +
-          (city ? ' · 来自 ' + escapeHtml(city) : '')
+        heroMain = '约 <strong>' + distance + '</strong> 公里' +
+          (city ? ' · ' + escapeHtml(city) : '') +
+          ' · 网络估算'
       } else if (loading) {
         heroMain = '正在测量与你的山海距离…'
       } else {

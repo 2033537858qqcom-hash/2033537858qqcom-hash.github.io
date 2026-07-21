@@ -38,6 +38,7 @@ jobs:
 
       - name: Optimize image assets
         run: pnpm run optimize:assets
+        # 音频体积较大时在本地执行 pnpm run optimize:audio 后提交即可
 
       - name: Build site
         run: pnpm run build

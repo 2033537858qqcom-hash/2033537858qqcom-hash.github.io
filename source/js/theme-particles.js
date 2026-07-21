@@ -241,9 +241,29 @@
     }
   }).observe(root, { attributes: true })
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start, { once: true })
-  } else {
+  const canRunParticles = () => {
+    if (reduceMotion.matches) return false
+    if (navigator.connection && (navigator.connection.saveData || /2g|slow-2g/.test(navigator.connection.effectiveType || ''))) {
+      return false
+    }
+    // 仅首页全屏头图启用粒子，内页不再烧性能
+    const header = document.getElementById('page-header')
+    return Boolean(header && header.classList.contains('full_page'))
+  }
+
+  const boot = () => {
+    if (!canRunParticles()) {
+      stop()
+      return
+    }
     start()
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true })
+  } else {
+    boot()
+  }
+
+  document.addEventListener('pjax:complete', boot)
 })()

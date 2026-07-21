@@ -811,7 +811,7 @@ preloader:
   # source
   # 1. fullpage-loading
   # 2. pace (progress bar)
-  source: 1
+  source: 2
   # pace theme (see https://codebyzach.github.io/pace/)
   pace_css_url:
 
@@ -931,9 +931,9 @@ lightbox: fancybox
 
 # Series
 series:
-  enable: false
+  enable: true
   # Order by title or date
-  orderBy: 'title'
+  orderBy: 'date'
   # Sort of order. 1, asc for ascending; -1, desc for descending
   order: 1
   number: true
@@ -1004,8 +1004,9 @@ pjax:
     # - /xxxxxx/
 
 # Inject the css and script (aplayer/meting)
+# 关闭全局注入：由 music-player.js 按需加载，减轻首屏
 aplayerInject:
-  enable: true
+  enable: false
   per_page: false
 
 # Snackbar - Toast Notification
@@ -1049,8 +1050,8 @@ pwa:
 Open_Graph_meta:
   enable: true
   option:
-    # twitter_card:
-    # twitter_image:
+    twitter_card: summary_large_image
+    twitter_image: /img/optimized/banner-day-bg.webp
     # twitter_id:
     # twitter_site:
     # google_plus:
@@ -1076,18 +1077,18 @@ inject:
   head:
     - '<style id="butterfly-preloader-critical">html:not(.site-loaded) body>:not(#loading-box),html.page-leaving body>:not(#loading-box){visibility:hidden!important}#loading-box,#loading-box *{visibility:visible!important}#loading-box .loading-left-bg,#loading-box .loading-right-bg{position:fixed;top:0;z-index:100000;width:50%;height:100%;background:var(--preloader-bg,#37474f)}#loading-box .loading-right-bg{right:0}#loading-box .spinner-box{position:fixed;z-index:100001;display:flex;align-items:center;justify-content:center;width:100%;height:100vh;color:var(--preloader-color,#fff)}html:not(.site-loaded) #loading-box.loaded .loading-left-bg,html:not(.site-loaded) #loading-box.loaded .loading-right-bg,html.page-leaving #loading-box.loaded .loading-left-bg,html.page-leaving #loading-box.loaded .loading-right-bg{transform:none!important}html:not(.site-loaded) #loading-box.loaded .spinner-box,html.page-leaving #loading-box.loaded .spinner-box{display:flex!important}html.site-loaded:not(.page-leaving) #loading-box.loaded .loading-left-bg{transform:translate(-100%,0)}html.site-loaded:not(.page-leaving) #loading-box.loaded .loading-right-bg{transform:translate(100%,0)}html.site-loaded:not(.page-leaving) #loading-box.loaded .spinner-box{display:none}</style>'
     - '<style id="butterfly-layout-critical">html,body{width:100%;max-width:100%;overflow-x:hidden}img{max-width:100%;height:auto}.avatar-img{overflow:hidden;margin:0 auto;width:110px;height:110px;border-radius:70px}.avatar-img img{display:block;width:100%;height:100%;object-fit:cover}#sidebar{position:fixed;inset:0;z-index:100002;visibility:hidden;pointer-events:none}#sidebar:has(#sidebar-menus.open){visibility:visible;pointer-events:auto}#sidebar #menu-mask{position:fixed;z-index:100002;display:none;inset:0;background:rgba(0,0,0,.45)}#sidebar #sidebar-menus{position:fixed;top:0;right:-330px;z-index:100003;box-sizing:border-box;width:300px;max-width:82vw;height:100%;overflow-y:auto;background:var(--sidebar-bg,#f6f8fa);visibility:hidden;transition:transform .3s ease,visibility 0s linear .3s;transform:translateZ(0)}#sidebar #sidebar-menus.open{visibility:visible;transition:transform .3s ease;transform:translate3d(-100%,0,0)}#nav #toggle-menu{display:none}#nav.hide-menu .menus_items{display:none}#nav.hide-menu #toggle-menu{display:inline-block!important}.layout{box-sizing:border-box;width:100%;max-width:1180px;margin-right:auto;margin-left:auto}#aside-content,.recent-posts,#recent-posts{box-sizing:border-box;max-width:100%}@media (max-width:768px){.layout{padding-right:14px;padding-left:14px}#aside-content{width:100%}.aplayer.aplayer-fixed{max-width:calc(100vw - 20px)}}#live2d-widget,#live2dcanvas{max-width:45vw;pointer-events:none}</style>'
-    - <link rel="stylesheet" href="/css/custom.css?v=20260722-shuoshuo-rain1">
+    - <link rel="stylesheet" href="/css/custom.css?v=1.1.0">
   bottom:
-    - <script>!function(){var e=document.documentElement,t=function(){requestAnimationFrame(function(){requestAnimationFrame(function(){e.classList.add("site-loaded")})})};"complete"===document.readyState?setTimeout(t,900):window.addEventListener("load",function(){setTimeout(t,900)},{once:true});setTimeout(t,7000)}();</script>
-    - <script src="/js/page-leave-guard.js?v=20260722-polish1"></script>
-    - <script src="/js/theme-transition.js?v=20260722-polish1"></script>
-    - <script src="/js/hero-subtitle.js?v=20260722-polish1"></script>
-    - <script src="/js/theme-particles.js?v=20260722-polish1"></script>
-    - <script src="/js/context-menu.js?v=20260722-polish1"></script>
-    - <script src="/js/click-values.js?v=20260722-polish1"></script>
-    - <script src="/js/music-player.js?v=20260722-polish1"></script>
-    - <script src="/js/live2d-widget-init.js?v=20260722-polish1"></script>
-    - <script src="/js/user-distance.js?v=20260722-distance4"></script>
+    - <script>!function(){var e=document.documentElement,t=function(){e.classList.add("site-loaded")};"complete"===document.readyState?setTimeout(t,280):window.addEventListener("load",function(){setTimeout(t,280)},{once:true});setTimeout(t,2500)}();</script>
+    - <script src="/js/theme-transition.js?v=1.1.0" defer></script>
+    - <script src="/js/hero-subtitle.js?v=1.1.0" defer></script>
+    - <script src="/js/hero-latest.js?v=1.1.0" defer></script>
+    - <script src="/js/theme-particles.js?v=1.1.0" defer></script>
+    - <script src="/js/context-menu.js?v=1.1.0" defer></script>
+    - <script src="/js/click-values.js?v=1.1.0" defer></script>
+    - <script src="/js/music-player.js?v=1.1.0" defer></script>
+    - <script src="/js/live2d-widget-init.js?v=1.1.0" defer></script>
+    - <script src="/js/user-distance.js?v=1.1.0" defer></script>
 
 # CDN Settings
 # Don't modify the following settings unless you know how they work
