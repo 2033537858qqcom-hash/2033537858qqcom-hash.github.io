@@ -25,6 +25,8 @@
 ```bash
 node tools/fetch-netease-events.mjs   # 默认 uid=3988339491
 node tools/migrate-netease-shuoshuo.mjs
+# 配图会下载到 source/img/moments/netease/*.webp 并写入随笔 Markdown
+# 可选：--no-images  仅文字；--force-images  强制重下
 ```
 
 ## 本地开发
