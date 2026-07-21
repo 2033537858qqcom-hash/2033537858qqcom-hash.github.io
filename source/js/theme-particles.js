@@ -21,49 +21,45 @@
   const themes = {
     light: {
       kind: 'petal',
-      density: 0.000028,
-      min: 18,
-      max: 42,
-      // 花瓣尺寸（半长轴）
-      size: [5, 12],
-      // 下落与横向摇摆
-      fall: [0.35, 0.85],
-      sway: [0.25, 0.7],
-      spin: [0.008, 0.028],
+      // 数量约提到原先克制版的 1.8–2 倍，保证扫一眼能感到「有动静」
+      density: 0.000055,
+      min: 36,
+      max: 78,
+      size: [7, 16],
+      fall: [0.4, 1.05],
+      sway: [0.35, 0.95],
+      spin: [0.01, 0.035],
       colors: [
-        [255, 236, 242],
-        [255, 214, 228],
-        [255, 246, 248],
-        [255, 228, 210]
+        [255, 228, 236],
+        [255, 198, 218],
+        [255, 240, 244],
+        [255, 210, 200],
+        [255, 184, 204]
       ],
-      alpha: [0.22, 0.48],
-      // 尘光占比
-      dustRatio: 0.22,
-      dustSize: [0.8, 1.8],
-      dustAlpha: [0.12, 0.28],
-      // 偏好上半天空带
-      skyBias: 0.62
+      alpha: [0.42, 0.78],
+      dustRatio: 0.28,
+      dustSize: [1.2, 2.6],
+      dustAlpha: [0.28, 0.55],
+      skyBias: 0.45
     },
     dark: {
       kind: 'star',
-      density: 0.000032,
-      min: 22,
-      max: 48,
-      size: [0.7, 2.1],
-      // 几乎不动
-      drift: [0.02, 0.08],
-      twinkle: [0.008, 0.02],
+      density: 0.00006,
+      min: 40,
+      max: 88,
+      size: [1.1, 2.8],
+      drift: [0.03, 0.12],
+      twinkle: [0.012, 0.028],
       colors: [
-        [220, 232, 255],
-        [180, 205, 255],
-        [255, 248, 230],
-        [200, 190, 255]
+        [235, 242, 255],
+        [190, 215, 255],
+        [255, 245, 220],
+        [210, 200, 255]
       ],
-      alpha: [0.25, 0.7],
-      // 金色萤火极少
-      fireflyChance: 0.12,
-      fireflyColor: [255, 220, 150],
-      skyBias: 0.55
+      alpha: [0.45, 0.92],
+      fireflyChance: 0.22,
+      fireflyColor: [255, 226, 160],
+      skyBias: 0.5
     }
   }
 
@@ -73,9 +69,10 @@
 
   const particleCount = theme => {
     const isCompact = width < 768
-    const density = isCompact ? theme.density * 0.4 : theme.density
-    const min = isCompact ? Math.max(10, Math.round(theme.min * 0.45)) : theme.min
-    const max = isCompact ? Math.max(20, Math.round(theme.max * 0.5)) : theme.max
+    // 移动端仍减半，但比上一版更可见
+    const density = isCompact ? theme.density * 0.55 : theme.density
+    const min = isCompact ? Math.max(18, Math.round(theme.min * 0.55)) : theme.min
+    const max = isCompact ? Math.max(34, Math.round(theme.max * 0.6)) : theme.max
     return Math.max(min, Math.min(max, Math.round(width * height * density)))
   }
 
@@ -200,9 +197,9 @@
   }
 
   const drawPetal = p => {
-    p.phase += 0.016
+    p.phase += 0.018
     p.rotation += p.spin
-    p.x += p.vx + Math.sin(p.phase) * p.swayAmp * 0.35
+    p.x += p.vx + Math.sin(p.phase) * p.swayAmp * 0.42
     p.y += p.vy
     recyclePetal(p)
 
@@ -212,25 +209,30 @@
     ctx.rotate(p.rotation)
     ctx.globalAlpha = p.alpha * layerAlpha
 
-    // 花瓣：扁椭圆 + 轻微渐变
     const rx = p.size
     const ry = p.size * p.aspect
-    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, rx)
-    grad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',0.95)')
-    grad.addColorStop(0.65, 'rgba(' + r + ',' + g + ',' + b + ',0.55)')
-    grad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)')
-    ctx.fillStyle = grad
+
+    // 实体花瓣（更易看见）+ 外缘柔光
     ctx.beginPath()
     ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2)
+    ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',0.92)'
     ctx.fill()
 
-    // 中缝一点高光，更像花瓣
-    ctx.globalAlpha = p.alpha * 0.35 * layerAlpha
-    ctx.strokeStyle = 'rgba(255,255,255,0.55)'
-    ctx.lineWidth = 0.6
+    ctx.globalAlpha = p.alpha * 0.55 * layerAlpha
+    const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, rx * 1.35)
+    glow.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',0.5)')
+    glow.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)')
+    ctx.fillStyle = glow
     ctx.beginPath()
-    ctx.moveTo(0, -ry * 0.7)
-    ctx.quadraticCurveTo(rx * 0.15, 0, 0, ry * 0.7)
+    ctx.ellipse(0, 0, rx * 1.35, ry * 1.35, 0, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.globalAlpha = p.alpha * 0.45 * layerAlpha
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'
+    ctx.lineWidth = 0.7
+    ctx.beginPath()
+    ctx.moveTo(0, -ry * 0.75)
+    ctx.quadraticCurveTo(rx * 0.18, 0, 0, ry * 0.75)
     ctx.stroke()
 
     ctx.restore()
@@ -267,22 +269,21 @@
     const pulse = 1 - p.twinkleDepth + Math.sin(p.phase) * p.twinkleDepth
     const [r, g, b] = p.color
     const a = p.alpha * pulse * layerAlpha
-    const glow = p.type === 'firefly' ? p.size * 5.5 : p.size * 4
+    const glow = p.type === 'firefly' ? p.size * 7.5 : p.size * 5.5
 
     const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow)
-    grad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')')
-    grad.addColorStop(0.35, 'rgba(' + r + ',' + g + ',' + b + ',' + a * 0.35 + ')')
+    grad.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ',' + Math.min(1, a * 1.15) + ')')
+    grad.addColorStop(0.3, 'rgba(' + r + ',' + g + ',' + b + ',' + a * 0.45 + ')')
     grad.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ',0)')
     ctx.fillStyle = grad
     ctx.beginPath()
     ctx.arc(p.x, p.y, glow, 0, Math.PI * 2)
     ctx.fill()
 
-    // 星核
-    ctx.globalAlpha = Math.min(1, a * 1.2)
-    ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',1)'
+    ctx.globalAlpha = Math.min(1, a * 1.35)
+    ctx.fillStyle = 'rgba(255,255,255,' + (p.type === 'firefly' ? 0.95 : 0.9) + ')'
     ctx.beginPath()
-    ctx.arc(p.x, p.y, p.size * 0.55, 0, Math.PI * 2)
+    ctx.arc(p.x, p.y, Math.max(0.9, p.size * 0.7), 0, Math.PI * 2)
     ctx.fill()
     ctx.globalAlpha = 1
   }
