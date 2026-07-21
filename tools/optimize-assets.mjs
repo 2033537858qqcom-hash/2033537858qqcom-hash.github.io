@@ -82,6 +82,60 @@ const jobs = [
     resize: { width: 480, withoutEnlargement: true },
     webp: { quality: 72, effort: 6 }
   },
+  {
+    input: 'assets/raw/anime-covers/mushoku-s1.jpg',
+    output: `${outDir}/anime-mushoku-s1.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'assets/raw/anime-covers/mushoku-s2.png',
+    output: `${outDir}/anime-mushoku-s2.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'assets/raw/anime-covers/mushoku-s3.jpg',
+    output: `${outDir}/anime-mushoku-s3.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'assets/raw/anime-covers/your-name.png',
+    output: `${outDir}/anime-your-name.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'assets/raw/anime-covers/toki-wo-kakeru.png',
+    output: `${outDir}/anime-toki-wo-kakeru.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'assets/raw/anime-covers/hello-world.jpg',
+    output: `${outDir}/anime-hello-world.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'assets/raw/anime-covers/pancreas.jpg',
+    output: `${outDir}/anime-pancreas.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'assets/raw/anime-covers/tunnel-summer.jpg',
+    output: `${outDir}/anime-tunnel-summer.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
+    input: 'assets/raw/anime-covers/summer-ghost.jpg',
+    output: `${outDir}/anime-summer-ghost.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
   // Music covers
   {
     input: 'assets/raw/music-covers/yu-zhou-wu-xing-he.jpg',
