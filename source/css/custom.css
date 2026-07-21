@@ -1507,13 +1507,6 @@ code, pre, .highlight, figure.highlight, kbd {
    随笔页（shuoshuo /moments）：文艺宋体阅读感
    - 正文衬线 + 略松行距；元信息仍用无衬线，层次清晰
    ========================================================================== */
-#page[class*='shuoshuo'] .page-title,
-body[data-type='shuoshuo'] #page .page-title,
-.layout #page .page-title:has(+ .shuoshuo-item),
-#article-container .shuoshuo-item {
-  /* title fallback when :has unsupported — styled below */
-}
-
 /* 随笔卡片整体 */
 #article-container .shuoshuo-item {
   letter-spacing: 0.02em;
@@ -1615,12 +1608,6 @@ body[data-type='shuoshuo'] #page .page-title,
   font-family: inherit;
   border-bottom: 1px dashed rgba(77, 142, 219, 0.45);
   text-underline-offset: 0.2em;
-}
-
-/* 配乐行等偏短注记：略小、楷体 */
-#article-container .shuoshuo-content p:last-child:has(+ *),
-#article-container .shuoshuo-content {
-  /* no-op for browsers without complex :has chains */
 }
 
 /* 图片在随笔中略圆角、不抢字 */
