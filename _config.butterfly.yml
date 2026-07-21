@@ -57,7 +57,7 @@ code_blocks:
 social:
   fab fa-github: https://github.com/2033537858qqcom-hash || Github || '#24292e'
   # 微信无公开主页：点击图标会复制微信号（见 wechat-contact.js）
-  fab fa-weixin: '#wechat' || 微信 || '#07c160'
+  fab fa-weixin: "#wechat || 微信 || #07c160"
 
 # --------------------------------------
 # Image Settings
