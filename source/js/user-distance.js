@@ -1,9 +1,10 @@
 /**
- * 访客与站长的山海距离（IP 粗定位，不申请浏览器 GPS）
- * 侧边栏文艺卡片：城市 + 公里 + 随机诗意文案
+ * 访客与站长的山海距离
+ * - 不申请浏览器 GPS，仅用 IP 粗定位
+ * - 立刻渲染卡片（不依赖接口），定位成功后再更新数字
+ * - 侧栏完整卡片 + 首页英雄区一行诗意提示（更易看见）
  */
 (function () {
-  // —— 站长坐标（默认上海；若你在其他城市请改这里）——
   const HOST = {
     lat: 31.2304,
     lng: 121.4737,
@@ -11,10 +12,11 @@
     label: '一座靠海的城'
   }
 
-  const CACHE_KEY = 'user_distance_cache_v3'
+  const CACHE_KEY = 'user_distance_cache_v4'
   const CACHE_TTL = 24 * 60 * 60 * 1000
+  const ASIDE_ID = 'card-user-distance'
+  const HERO_ID = 'hero-user-distance'
 
-  /** 按距离分段的诗意文案池（会随机抽一条） */
   const POEMS = {
     near: [
       '同城的风也吹过你的窗台。相距仅 {d} 公里，像街角偶遇的一场晴。',
@@ -50,12 +52,13 @@
 
   function haversineKm (lat1, lon1, lat2, lon2) {
     const R = 6371
-    const toRad = deg => (deg * Math.PI) / 180
+    const toRad = function (deg) { return (deg * Math.PI) / 180 }
     const dLat = toRad(lat2 - lat1)
     const dLon = toRad(lon2 - lon1)
     const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2)
     return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))
   }
 
@@ -72,7 +75,7 @@
   }
 
   function bandOf (distance) {
-    if (distance == null || Number.isNaN(distance)) return 'unknown'
+    if (distance == null || isNaN(distance)) return 'unknown'
     if (distance < 50) return 'near'
     if (distance < 600) return 'mid'
     if (distance < 2000) return 'far'
@@ -81,111 +84,94 @@
 
   function buildPoem (distance, city) {
     const band = bandOf(distance)
-    let line = pick(POEMS[band])
-    if (distance != null && !Number.isNaN(distance)) {
+    var line = pick(POEMS[band])
+    if (distance != null && !isNaN(distance)) {
       line = line.replace(/\{d\}/g, String(distance))
     }
     if (city && band !== 'unknown') {
-      const openers = [
-        `来自 <strong class="distance-highlight">${escapeHtml(city)}</strong> 的朋友，`,
-        `你好，<strong class="distance-highlight">${escapeHtml(city)}</strong> 的旅人。`,
-        `远道而来的 <strong class="distance-highlight">${escapeHtml(city)}</strong>，`
-      ]
-      return pick(openers) + line
+      return '来自 <strong class="distance-highlight">' + escapeHtml(city) + '</strong> 的朋友，' + line
     }
     return line
   }
 
   function fetchJson (url, ms) {
-    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
-    const timer = window.setTimeout(() => {
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null
+    var timer = window.setTimeout(function () {
       if (controller) controller.abort()
     }, ms)
 
     return fetch(url, {
       signal: controller ? controller.signal : undefined,
       credentials: 'omit',
-      cache: 'no-store'
+      cache: 'no-store',
+      mode: 'cors'
+    }).then(function (res) {
+      window.clearTimeout(timer)
+      if (!res.ok) throw new Error('status ' + res.status)
+      return res.json()
+    }).catch(function (err) {
+      window.clearTimeout(timer)
+      throw err
     })
-      .then(res => {
-        window.clearTimeout(timer)
-        if (!res.ok) throw new Error('status ' + res.status)
-        return res.json()
-      })
-      .catch(err => {
-        window.clearTimeout(timer)
-        throw err
-      })
   }
 
-  /**
-   * 多源定位：优先可跨域、较稳定的接口，失败则换下一个
-   * 返回 { lat, lng, city, region, country } 或 null
-   */
+  function normalizeGeo (lat, lng, city, region, country) {
+    lat = Number(lat)
+    lng = Number(lng)
+    if (isNaN(lat) || isNaN(lng)) throw new Error('bad coords')
+    return {
+      lat: lat,
+      lng: lng,
+      city: city || region || '',
+      region: region || '',
+      country: country || ''
+    }
+  }
+
+  /** 并行请求多个源，谁先成功用谁；总时限约 5s */
   function resolveVisitorGeo () {
-    const parsers = [
-      // GeoJS — 对浏览器 CORS 友好
-      () =>
-        fetchJson('https://get.geojs.io/v1/ip/geo.json', 4500).then(data => {
-          if (!data || data.latitude == null || data.longitude == null) throw new Error('geojs')
-          return {
-            lat: Number(data.latitude),
-            lng: Number(data.longitude),
-            city: data.city || data.region || '',
-            region: data.region || '',
-            country: data.country || data.country_code || ''
-          }
-        }),
-      // ipwho.is
-      () =>
-        fetchJson('https://ipwho.is/', 4500).then(data => {
-          if (!data || data.success === false || data.latitude == null) throw new Error('ipwho')
-          return {
-            lat: Number(data.latitude),
-            lng: Number(data.longitude),
-            city: data.city || data.region || '',
-            region: data.region || '',
-            country: data.country || data.country_code || ''
-          }
-        }),
-      // ipapi.co
-      () =>
-        fetchJson('https://ipapi.co/json/', 4500).then(data => {
-          if (!data || data.error || data.latitude == null) throw new Error('ipapi')
-          return {
-            lat: Number(data.latitude),
-            lng: Number(data.longitude),
-            city: data.city || data.region || '',
-            region: data.region || '',
-            country: data.country_name || data.country || ''
-          }
-        }),
-      // ip.sb
-      () =>
-        fetchJson('https://api.ip.sb/geoip', 4500).then(data => {
-          if (!data || data.latitude == null || data.longitude == null) throw new Error('ipsb')
-          return {
-            lat: Number(data.latitude),
-            lng: Number(data.longitude),
-            city: data.city || data.region || data.region_code || '',
-            region: data.region || '',
-            country: data.country || data.country_code || ''
-          }
+    var tasks = [
+      function () {
+        return fetchJson('https://get.geojs.io/v1/ip/geo.json', 4000).then(function (data) {
+          return normalizeGeo(data.latitude, data.longitude, data.city, data.region, data.country || data.country_code)
         })
+      },
+      function () {
+        return fetchJson('https://ipwho.is/', 4000).then(function (data) {
+          if (data && data.success === false) throw new Error('ipwho fail')
+          return normalizeGeo(data.latitude, data.longitude, data.city, data.region, data.country || data.country_code)
+        })
+      },
+      function () {
+        return fetchJson('https://api.ip.sb/geoip', 4000).then(function (data) {
+          return normalizeGeo(data.latitude, data.longitude, data.city, data.region || data.region_code, data.country || data.country_code)
+        })
+      },
+      function () {
+        return fetchJson('https://ipapi.co/json/', 4000).then(function (data) {
+          if (data && data.error) throw new Error('ipapi fail')
+          return normalizeGeo(data.latitude, data.longitude, data.city, data.region, data.country_name || data.country)
+        })
+      }
     ]
 
-    let chain = Promise.reject(new Error('start'))
-    parsers.forEach(run => {
-      chain = chain.catch(() => run())
+    if (typeof Promise.any === 'function') {
+      return Promise.any(tasks.map(function (run) { return run() })).catch(function () { return null })
+    }
+
+    // 旧环境回退：串行
+    var chain = Promise.reject(new Error('start'))
+    tasks.forEach(function (run) {
+      chain = chain.catch(function () { return run() })
     })
-    return chain.catch(() => null)
+    return chain.catch(function () { return null })
   }
 
   function readCache () {
     try {
-      const raw = localStorage.getItem(CACHE_KEY)
+      var raw = localStorage.getItem(CACHE_KEY)
       if (!raw) return null
-      const data = JSON.parse(raw)
+      var data = JSON.parse(raw)
       if (!data || Date.now() - data.timestamp > CACHE_TTL) return null
       return data
     } catch (e) {
@@ -195,29 +181,24 @@
 
   function writeCache (payload) {
     try {
-      localStorage.setItem(
-        CACHE_KEY,
-        JSON.stringify(Object.assign({ timestamp: Date.now() }, payload))
-      )
+      localStorage.setItem(CACHE_KEY, JSON.stringify(Object.assign({ timestamp: Date.now() }, payload)))
     } catch (e) {}
   }
 
-  function ensureWidget () {
-    const asideContent = document.getElementById('aside-content')
+  function ensureAsideWidget () {
+    var asideContent = document.getElementById('aside-content')
     if (!asideContent) return null
 
-    let widget = document.getElementById('card-user-distance')
+    var widget = document.getElementById(ASIDE_ID)
     if (widget) return widget
 
     widget = document.createElement('div')
-    widget.id = 'card-user-distance'
+    widget.id = ASIDE_ID
     widget.className = 'card-widget card-distance'
     widget.setAttribute('aria-live', 'polite')
 
-    const cardAuthor = asideContent.querySelector('.card-info')
-    if (cardAuthor && cardAuthor.nextSibling) {
-      asideContent.insertBefore(widget, cardAuthor.nextSibling)
-    } else if (cardAuthor) {
+    var cardAuthor = asideContent.querySelector('.card-info')
+    if (cardAuthor) {
       cardAuthor.insertAdjacentElement('afterend', widget)
     } else {
       asideContent.insertBefore(widget, asideContent.firstChild)
@@ -225,92 +206,163 @@
     return widget
   }
 
-  function renderLoading () {
-    const widget = ensureWidget()
-    if (!widget) return
-    widget.innerHTML = `
-      <div class="item-headline">
-        <i class="fas fa-feather-alt" aria-hidden="true"></i>
-        <span>山海距离</span>
-      </div>
-      <div class="distance-content distance-content--loading">
-        <p class="distance-text">正在测量风与云的距离…</p>
-      </div>
-    `
+  function ensureHeroWidget () {
+    // 首页全屏头图里的站点信息，首屏就能看见
+    var siteInfo = document.getElementById('site-info')
+    if (!siteInfo) return null
+
+    var widget = document.getElementById(HERO_ID)
+    if (widget) return widget
+
+    widget = document.createElement('div')
+    widget.id = HERO_ID
+    widget.className = 'hero-distance'
+    widget.setAttribute('aria-live', 'polite')
+
+    var social = siteInfo.querySelector('#site_social_icons')
+    if (social) {
+      social.insertAdjacentElement('afterend', widget)
+    } else {
+      siteInfo.appendChild(widget)
+    }
+    return widget
   }
 
-  function renderDistanceWidget ({ distance, city, country }) {
-    const widget = ensureWidget()
-    if (!widget) return
+  function renderState (state) {
+    var distance = state.distance
+    var city = state.city || ''
+    var country = state.country || ''
+    var loading = !!state.loading
 
-    const hasDistance = typeof distance === 'number' && !Number.isNaN(distance)
-    const poem = buildPoem(hasDistance ? distance : null, city)
-    const placeBits = [city, country].filter(Boolean)
-    const placeLine = placeBits.length
-      ? placeBits.map(escapeHtml).join(' · ')
-      : '远方'
+    var hasDistance = typeof distance === 'number' && !isNaN(distance)
+    var poem = loading
+      ? '正在测量风与云的距离…'
+      : buildPoem(hasDistance ? distance : null, city)
 
-    const metricHtml = hasDistance
-      ? `
-        <div class="distance-metric">
-          <span class="distance-metric__value">${distance}</span>
-          <span class="distance-metric__unit">公里</span>
-        </div>
-        <p class="distance-metric__caption">距 ${escapeHtml(HOST.city)}（${escapeHtml(HOST.label)}）</p>
-      `
-      : `
-        <div class="distance-metric distance-metric--soft">
-          <span class="distance-metric__value distance-metric__value--text">远方</span>
-        </div>
-        <p class="distance-metric__caption">坐标未明，心意可感</p>
-      `
+    var placeBits = [city, country].filter(Boolean)
+    var placeLine = placeBits.length ? placeBits.map(escapeHtml).join(' · ') : (loading ? '定位中' : '远方')
 
-    widget.innerHTML = `
-      <div class="item-headline">
-        <i class="fas fa-feather-alt" aria-hidden="true"></i>
-        <span>山海距离</span>
-      </div>
-      <div class="distance-content">
-        ${metricHtml}
-        <p class="distance-place"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> ${placeLine}</p>
-        <p class="distance-text">${poem}</p>
-        <div class="distance-footer">
-          <span class="distance-tag"><i class="fas fa-paper-plane" aria-hidden="true"></i> IP 粗略估算 · 仅作诗意点缀</span>
-        </div>
-      </div>
-    `
+    var metricHtml = hasDistance
+      ? (
+        '<div class="distance-metric">' +
+          '<span class="distance-metric__value">' + distance + '</span>' +
+          '<span class="distance-metric__unit">公里</span>' +
+        '</div>' +
+        '<p class="distance-metric__caption">距 ' + escapeHtml(HOST.city) + '（' + escapeHtml(HOST.label) + '）</p>'
+      )
+      : (
+        '<div class="distance-metric distance-metric--soft">' +
+          '<span class="distance-metric__value distance-metric__value--text">' + (loading ? '…' : '远方') + '</span>' +
+        '</div>' +
+        '<p class="distance-metric__caption">' + (loading ? '正在估算与你的距离' : '坐标未明，心意可感') + '</p>'
+      )
+
+    var aside = ensureAsideWidget()
+    if (aside) {
+      aside.innerHTML =
+        '<div class="item-headline">' +
+          '<i class="fas fa-feather-alt" aria-hidden="true"></i>' +
+          '<span>山海距离</span>' +
+        '</div>' +
+        '<div class="distance-content' + (loading ? ' distance-content--loading' : '') + '">' +
+          metricHtml +
+          '<p class="distance-place"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> ' + placeLine + '</p>' +
+          '<p class="distance-text">' + poem + '</p>' +
+          '<div class="distance-footer">' +
+            '<span class="distance-tag"><i class="fas fa-paper-plane" aria-hidden="true"></i> IP 粗略估算 · 仅作诗意点缀</span>' +
+          '</div>' +
+        '</div>'
+    }
+
+    var hero = ensureHeroWidget()
+    if (hero) {
+      var heroMain
+      if (hasDistance) {
+        heroMain = '与你相距 <strong>' + distance + '</strong> 公里' +
+          (city ? ' · 来自 ' + escapeHtml(city) : '')
+      } else if (loading) {
+        heroMain = '正在测量与你的山海距离…'
+      } else {
+        heroMain = '风从远方来，欢迎来到这里'
+      }
+      hero.innerHTML =
+        '<div class="hero-distance__inner">' +
+          '<i class="fas fa-feather-alt" aria-hidden="true"></i>' +
+          '<span class="hero-distance__text">' + heroMain + '</span>' +
+        '</div>'
+    }
   }
 
-  function applyResult (geo) {
-    if (!geo || geo.lat == null || geo.lng == null) {
-      renderDistanceWidget({ distance: null, city: '', country: '' })
-      writeCache({ distance: null, city: '', country: '', unknown: true })
+  function applyGeo (geo) {
+    if (!geo) {
+      var fallback = { distance: null, city: '', country: '', unknown: true }
+      writeCache(fallback)
+      renderState(fallback)
       return
     }
 
-    const distance = haversineKm(HOST.lat, HOST.lng, geo.lat, geo.lng)
-    const city = geo.city || geo.region || ''
-    const country = geo.country || ''
-    writeCache({ distance, city, country, unknown: false })
-    renderDistanceWidget({ distance, city, country })
+    var distance = haversineKm(HOST.lat, HOST.lng, geo.lat, geo.lng)
+    var payload = {
+      distance: distance,
+      city: geo.city || geo.region || '',
+      country: geo.country || '',
+      unknown: false
+    }
+    writeCache(payload)
+    renderState(payload)
   }
 
-  function initUserDistance () {
-    // 无侧栏页面直接跳过
-    if (!document.getElementById('aside-content')) return
+  var lastState = null
+  var geoStarted = false
 
-    const cached = readCache()
+  function paint (state) {
+    lastState = state
+    renderState(state)
+  }
+
+  function startGeoOnce () {
+    if (geoStarted) return
+    geoStarted = true
+    resolveVisitorGeo().then(function (geo) {
+      applyGeo(geo)
+    })
+  }
+
+  function mountAndLoad () {
+    var cached = readCache()
     if (cached) {
-      renderDistanceWidget({
+      paint({
         distance: cached.unknown ? null : cached.distance,
         city: cached.city || '',
-        country: cached.country || ''
+        country: cached.country || '',
+        loading: false
       })
       return
     }
 
-    renderLoading()
-    resolveVisitorGeo().then(applyResult)
+    if (lastState) {
+      paint(lastState)
+    } else {
+      paint({ distance: null, city: '', country: '', loading: true })
+    }
+    startGeoOnce()
+  }
+
+  function initUserDistance () {
+    // PJAX 换页后 DOM 重建，允许重新挂载；定位结果仍用缓存
+    geoStarted = false
+    lastState = null
+    mountAndLoad()
+
+    var tries = 0
+    var timer = window.setInterval(function () {
+      tries += 1
+      if (document.getElementById('aside-content') || document.getElementById('site-info')) {
+        if (lastState) renderState(lastState)
+        else mountAndLoad()
+      }
+      if (tries >= 8) window.clearInterval(timer)
+    }, 400)
   }
 
   if (document.readyState === 'loading') {
@@ -320,4 +372,11 @@
   }
 
   document.addEventListener('pjax:complete', initUserDistance)
+
+  window.addEventListener('load', function () {
+    window.setTimeout(function () {
+      if (lastState) renderState(lastState)
+      else mountAndLoad()
+    }, 200)
+  })
 })()

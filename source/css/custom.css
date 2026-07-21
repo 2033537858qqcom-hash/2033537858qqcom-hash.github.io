@@ -1270,6 +1270,73 @@ code, pre, .highlight, figure.highlight, kbd {
   gap: 5px;
 }
 
+/* 首页英雄区一行距离提示（首屏可见） */
+.hero-distance {
+  position: relative;
+  z-index: 2;
+  margin: 14px auto 0;
+  max-width: min(92vw, 520px);
+  padding: 0 12px;
+}
+
+.hero-distance__inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 20px rgba(20, 30, 50, 0.12);
+  color: #fff;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme='dark'] .hero-distance__inner {
+  background: rgba(16, 22, 40, 0.42);
+  border-color: rgba(190, 206, 255, 0.22);
+}
+
+.hero-distance__inner i {
+  color: #ffd0e0;
+  font-size: 0.9rem;
+}
+
+.hero-distance__text strong {
+  color: #fff6c8;
+  font-weight: 700;
+  padding: 0 2px;
+}
+
+/* 非首页（无大头图）时站点信息区可能是深色字，做兼容 */
+#page-header:not(.full_page) .hero-distance__inner {
+  background: rgba(77, 142, 219, 0.12);
+  border-color: rgba(77, 142, 219, 0.22);
+  color: var(--font-color);
+  text-shadow: none;
+  box-shadow: 0 4px 14px var(--panel-shadow);
+}
+
+#page-header:not(.full_page) .hero-distance__inner i {
+  color: var(--lijiahao-pink);
+}
+
+#page-header:not(.full_page) .hero-distance__text strong {
+  color: var(--lijiahao-blue);
+}
+
+@media (max-width: 768px) {
+  .hero-distance__inner {
+    font-size: 0.84rem;
+    padding: 7px 12px;
+  }
+}
+
 /* ==========================================================================
    Shuoshuo / Moments Page Redesign (随笔 / 动态视觉重构)
    ========================================================================== */
