@@ -1477,14 +1477,46 @@ code, pre, .highlight, figure.highlight, kbd {
 /* 随笔正文内容 */
 .shuoshuo-content {
   font-size: 0.98rem !important;
-  line-height: 1.75 !important;
+  line-height: 1.85 !important;
   color: var(--font-color) !important;
   padding: 6px 0 12px 0 !important;
   word-break: break-word !important;
+  white-space: normal !important;
 }
 
 .shuoshuo-content p {
-  margin: 0 0 8px 0 !important;
+  margin: 0 0 0.55em 0 !important;
+}
+
+.shuoshuo-content p:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* 长随笔：保留诗行节奏感 */
+.shuoshuo-content br {
+  display: block;
+  content: '';
+  margin-top: 0.15em;
+}
+
+.shuoshuo-content img {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 14px 0 16px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 22px rgba(36, 50, 74, 0.12) !important;
+  object-fit: cover !important;
+}
+
+.shuoshuo-content strong {
+  font-weight: 700 !important;
+  color: var(--lijiahao-ink) !important;
+}
+
+[data-theme='dark'] .shuoshuo-content strong {
+  color: #e8eeff !important;
 }
 
 /* 随笔底部标签与评论图标 */
