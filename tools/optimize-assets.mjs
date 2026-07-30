@@ -1,6 +1,7 @@
 import sharp from 'sharp'
-import { mkdir, access } from 'node:fs/promises'
+import { mkdir, access, readdir } from 'node:fs/promises'
 import { constants } from 'node:fs'
+import path from 'path'
 
 const outDir = 'source/img/optimized'
 await mkdir(outDir, { recursive: true })
@@ -196,3 +197,19 @@ for (const job of jobs) {
 }
 
 console.log(`optimize-assets: ${ok} written, ${skipped} skipped`)
+
+// Photography images - convert all JPG to webp in same directory
+const photoDir = 'source/img/photography';
+if (await exists(photoDir)) {
+  const files = await readdir(photoDir);
+  for (const f of files) {
+    if (f.toLowerCase().endsWith('.jpg')) {
+      const inputPath = path.join(photoDir, f);
+      const outputPath = path.join(photoDir, f.replace(/\.jpg$/, '.webp'));
+      await sharp(inputPath)
+        .webp({ quality: 80, effort: 6 })
+        .toFile(outputPath);
+      console.log('Optimized photography:', outputPath);
+    }
+  }
+}
