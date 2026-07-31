@@ -22,6 +22,7 @@ permalink: /photography/
       <option value="2026-04">2026 年 4 月</option>
       <option value="2026-03">2026 年 3 月</option>
     </select>
+    <input type="text" id="search-input" placeholder="搜索照片..." style="margin-left: 15px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px;">
   </div>
 
   <div class="photo-grid" id="photo-grid">
@@ -93,38 +94,39 @@ permalink: /photography/
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  gap: 24px;
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  counter-reset: photo-count;
 }
 
 .photo-card {
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  background: #f8f9fa;
-  margin-bottom: 12px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  background: #fff;
+  margin-bottom: 24px;
+  counter-increment: photo-count;
 }
 
 .photo-card:hover {
-  transform: translateY(-8px) scale(1.03);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
-  z-index: 10;
+  transform: translateY(-12px) rotate(0.5deg);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.22);
+  z-index: 20;
+  filter: brightness(1.02);
 }
 
 .photo-card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,0.25));
+  inset: 0;
+  background: linear-gradient(145deg, transparent, rgba(255,255,255,0.4), transparent);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
 }
 
 .photo-card:hover::before {
@@ -135,32 +137,33 @@ permalink: /photography/
   width: 100%;
   height: auto;
   display: block;
-  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .photo-card:hover img {
-  transform: scale(1.12);
+  transform: scale(1.18) rotate(0.8deg);
 }
 
 .photo-card::after {
   content: attr(data-date);
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
   padding: 12px 16px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
   color: white;
-  font-size: 14px;
+  font-size: 15px;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: all 0.4s ease;
   text-align: center;
   font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .photo-card:hover::after {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(-4px);
 }
 
 .lightbox {
@@ -170,18 +173,18 @@ permalink: /photography/
 </style>
 
 <script>
-// 摄影过滤器 + 增强效果
+// 高级摄影页：月份筛选 + 搜索 + 精美 hover
 document.addEventListener('DOMContentLoaded', () => {
   const filterSelect = document.getElementById('month-filter');
+  const searchInput = document.getElementById('search-input');
   const cards = document.querySelectorAll('.photo-card');
 
-  // 从文件名解析日期 (如 IMG_20260731_..._2026-07-31_...)
   function getCardDate(filename) {
     const match = filename.match(/IMG_\d+_\d+_\d+_(20\d{2}-\d{2}-\d{2})_\d+/);
     return match ? match[1] : '未知';
   }
 
-  // 初始化卡片日期属性
+  // 初始化日期属性
   cards.forEach(card => {
     const img = card.querySelector('img');
     if (img) {
@@ -191,26 +194,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 过滤器功能
-  filterSelect.addEventListener('change', (e) => {
-    const selected = e.target.value;
-    cards.forEach(card => {
-      if (selected === 'all' || card.dataset.month === selected) {
-        card.style.display = 'block';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  });
+  // 高级过滤器
+  function filterCards() {
+    const selectedMonth = filterSelect.value;
+    const searchTerm = searchInput.value.toLowerCase().trim();
 
-  // 轻箱点击支持
+    cards.forEach(card => {
+      let show = true;
+
+      // 月份筛选
+      if (selectedMonth !== 'all' && card.dataset.month !== selectedMonth) {
+        show = false;
+      }
+
+      // 搜索
+      if (searchTerm) {
+        const img = card.querySelector('img');
+        if (img && !img.alt.toLowerCase().includes(searchTerm)) {
+          show = false;
+        }
+      }
+
+      card.style.display = show ? 'block' : 'none';
+    });
+  }
+
+  filterSelect.addEventListener('change', filterCards);
+  searchInput.addEventListener('input', filterCards);
+
+  // 初始显示所有
+  filterCards();
+
+  // 轻箱点击
   const images = document.querySelectorAll('.photo-card img');
   images.forEach(img => {
     img.addEventListener('click', () => {
       console.log('点击查看大图:', img.src);
     });
   });
-
-  console.log('摄影页已加载，共', cards.length, '张照片，可用月份筛选');
 });
 </script>
