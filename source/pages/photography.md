@@ -14,42 +14,7 @@ permalink: /photography/
   </header>
 
   <div class="photo-grid" id="photo-grid">
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230907_155029_104_2026-07-31_02-39-13_281.webp" alt="2023年9月7日 某处风景" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230907_155421_105_2026-07-31_02-39-13_299.webp" alt="2023年9月7日 夜景" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230913_065409_91_2026-07-31_02-39-12_949.webp" alt="2023年9月13日 清晨" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230913_143241_111_2026-07-31_02-39-13_437.webp" alt="2023年9月13日 黄昏" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230914_195057_87_2026-07-31_02-39-12_856.webp" alt="2023年9月14日 城市夜景" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230915_065224_90_2026-07-31_02-39-12_924.webp" alt="2023年9月15日 清晨" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230915_154300_106_2026-07-31_02-39-13_318.webp" alt="2023年9月15日 街头" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230916_145758_89_2026-07-31_02-39-12_905.webp" alt="2023年9月16日 自然风光" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230918_062613_86_2026-07-31_02-39-12_841.webp" alt="2023年9月18日 清晨" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230927_173736_97_2026-07-31_02-39-13_125.webp" alt="2023年9月27日 黄昏" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20230929_202352_98_2026-07-31_02-39-13_148.webp" alt="2023年9月29日 夜景" loading="lazy">
-    </div>
-    <div class="photo-card">
-      <img src="/img/photography/IMG_20231106_155059_71_2026-07-31_02-39-12_420.webp" alt="2023年11月6日 城市" loading="lazy">
-    </div>
+    <!-- photo-list -->
     <!-- 更多照片可以在这里继续添加 -->
   </div>
 </section>
