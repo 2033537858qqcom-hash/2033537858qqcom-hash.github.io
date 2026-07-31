@@ -13,6 +13,17 @@ permalink: /photography/
     <p>记录生活中的光影瞬间。希望能带给你一些治愈和灵感。</p>
   </header>
 
+  <div class="photography-filters">
+    <select id="month-filter">
+      <option value="all">全部月份</option>
+      <option value="2026-07">2026 年 7 月</option>
+      <option value="2026-06">2026 年 6 月</option>
+      <option value="2026-05">2026 年 5 月</option>
+      <option value="2026-04">2026 年 4 月</option>
+      <option value="2026-03">2026 年 3 月</option>
+    </select>
+  </div>
+
   <div class="photo-grid" id="photo-grid">
     <div class="photo-card">
       <img src="/img/photography/IMG_20260731_021750_133_2026-07-31_02-39-14_100.webp" alt="2026年7月31日 夜景" loading="lazy">
@@ -92,37 +103,64 @@ permalink: /photography/
   position: relative;
   overflow: hidden;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f8f9fa;
+  margin-bottom: 12px;
 }
 
 .photo-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  z-index: 10;
+}
+
+.photo-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.25));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.photo-card:hover::before {
+  opacity: 1;
 }
 
 .photo-card img {
   width: 100%;
   height: auto;
   display: block;
-  transition: transform 0.4s ease;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .photo-card:hover img {
-  transform: scale(1.08);
+  transform: scale(1.12);
 }
 
 .photo-card::after {
-  content: '';
+  content: attr(data-date);
   position: absolute;
-  inset: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,0.3));
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.75));
+  color: white;
+  font-size: 14px;
   opacity: 0;
   transition: opacity 0.3s ease;
+  text-align: center;
+  font-weight: 500;
 }
 
 .photo-card:hover::after {
   opacity: 1;
+  transform: translateY(0);
 }
 
 .lightbox {
@@ -132,14 +170,47 @@ permalink: /photography/
 </style>
 
 <script>
-  // 简单轻箱支持（使用 fancybox 已配置）
-  document.addEventListener('DOMContentLoaded', () => {
-    const images = document.querySelectorAll('.photo-card img');
-    images.forEach(img => {
-      img.addEventListener('click', () => {
-        // 这里可以扩展 fancybox 调用
-        console.log('点击查看大图', img.src);
-      });
+// 摄影过滤器 + 增强效果
+document.addEventListener('DOMContentLoaded', () => {
+  const filterSelect = document.getElementById('month-filter');
+  const cards = document.querySelectorAll('.photo-card');
+
+  // 从文件名解析日期 (如 IMG_20260731_..._2026-07-31_...)
+  function getCardDate(filename) {
+    const match = filename.match(/IMG_\d+_\d+_\d+_(20\d{2}-\d{2}-\d{2})_\d+/);
+    return match ? match[1] : '未知';
+  }
+
+  // 初始化卡片日期属性
+  cards.forEach(card => {
+    const img = card.querySelector('img');
+    if (img) {
+      const date = getCardDate(img.getAttribute('src').split('/').pop());
+      card.setAttribute('data-date', date);
+      card.dataset.month = date;
+    }
+  });
+
+  // 过滤器功能
+  filterSelect.addEventListener('change', (e) => {
+    const selected = e.target.value;
+    cards.forEach(card => {
+      if (selected === 'all' || card.dataset.month === selected) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
     });
   });
+
+  // 轻箱点击支持
+  const images = document.querySelectorAll('.photo-card img');
+  images.forEach(img => {
+    img.addEventListener('click', () => {
+      console.log('点击查看大图:', img.src);
+    });
+  });
+
+  console.log('摄影页已加载，共', cards.length, '张照片，可用月份筛选');
+});
 </script>
