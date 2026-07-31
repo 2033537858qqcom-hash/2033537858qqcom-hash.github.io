@@ -13,18 +13,6 @@ permalink: /photography/
     <p>记录生活中的光影瞬间。希望能带给你一些治愈和灵感。</p>
   </header>
 
-  <div class="photography-filters">
-    <select id="month-filter">
-      <option value="all">全部月份</option>
-      <option value="2026-07">2026 年 7 月</option>
-      <option value="2026-06">2026 年 6 月</option>
-      <option value="2026-05">2026 年 5 月</option>
-      <option value="2026-04">2026 年 4 月</option>
-      <option value="2026-03">2026 年 3 月</option>
-    </select>
-    <input type="text" id="search-input" placeholder="搜索照片..." style="margin-left: 15px; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px;">
-  </div>
-
   <div class="photo-grid" id="photo-grid">
     <div class="photo-card">
       <img src="/img/photography/IMG_20260731_021750_133_2026-07-31_02-39-14_100.webp" alt="2026年7月31日 夜景" loading="lazy">
@@ -107,9 +95,8 @@ permalink: /photography/
   border-radius: 16px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  background: #fff;
+  background: transparent;
   margin-bottom: 24px;
-  counter-increment: photo-count;
 }
 
 .photo-card:hover {
@@ -145,25 +132,17 @@ permalink: /photography/
 }
 
 .photo-card::after {
-  content: attr(data-date);
+  content: '';
   position: absolute;
-  bottom: 16px;
-  left: 16px;
-  right: 16px;
-  padding: 12px 16px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-  color: white;
-  font-size: 15px;
+  inset: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.25));
   opacity: 0;
-  transition: all 0.4s ease;
-  text-align: center;
-  font-weight: 500;
-  letter-spacing: 0.5px;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .photo-card:hover::after {
   opacity: 1;
-  transform: translateY(-4px);
 }
 
 .lightbox {
