@@ -43,21 +43,31 @@ jobs:
 
       - name: Smoke checks
         run: |
+          VERSION=$(node -p "require('./package.json').version")
           test -f public/index.html
           grep -q 'fab fa-weixin' public/index.html
           grep -q 'wechat-contact.js' public/index.html
-          grep -q 'cursor-enhance.js?v=1.5.7' public/index.html
-          grep -q 'custom.css?v=1.5.7' public/index.html
+          grep -q "cursor-enhance.js?v=${VERSION}" public/index.html
+          grep -q "custom.css?v=${VERSION}" public/index.html
+          ! grep -q 'html:not(.site-loaded) body' public/index.html
           # hidden posts must not appear on home / sidebar
           ! grep -q 'blog-setup-notes' public/index.html
           ! grep -q 'butterfly-page-structure' public/index.html
           grep -q 'what-i-write-here' public/index.html || grep -q 'what-i-write-here' public/2026/07/22/what-i-write-here/index.html
           test -f public/moments/index.html
           test -f public/music/index.html
+          # photography page must list cards from source/img/photography
+          test -f public/photography/index.html
+          grep -q 'class="photo-card"' public/photography/index.html
+          grep -q '/img/photography/' public/photography/index.html
+          ! grep -q '<!-- photo-list -->' public/photography/index.html
+          ! grep -q 'month-filter' public/photography/index.html
           # RSS / search should not list hidden posts
           ! grep -q 'blog-setup-notes' public/atom.xml
           ! grep -q 'blog-setup-notes' public/search.xml
           test -f public/img/favicon.ico
+          # related posts must not recommend hidden notes
+          ! grep -q 'blog-setup-notes' public/2026/07/22/what-i-write-here/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

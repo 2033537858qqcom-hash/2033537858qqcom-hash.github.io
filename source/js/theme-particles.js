@@ -206,6 +206,9 @@
         (theme.kind === 'star' && (p.type === 'star' || p.type === 'firefly'))
       if (!ok) particles[i] = createParticle(theme)
     }
+    if (theme.kind === 'petal') {
+      particles.sort((a, b) => (a.depth || 0) - (b.depth || 0))
+    }
   }
 
   const resize = () => {
@@ -419,11 +422,7 @@
     ctx.clearRect(0, 0, width, height)
     layerAlpha += (1 - layerAlpha) * 0.06
 
-    if (mode === 'light') {
-      updateWind()
-      // 远→近绘制
-      particles.sort((a, b) => (a.depth || 0) - (b.depth || 0))
-    }
+    if (mode === 'light') updateWind()
 
     for (let i = 0; i < particles.length; i += 1) {
       const p = particles[i]

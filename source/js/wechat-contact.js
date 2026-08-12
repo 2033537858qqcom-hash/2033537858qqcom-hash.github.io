@@ -44,11 +44,12 @@
 
   const isWechatLink = link => {
     if (!link) return false
+    if (link.closest && link.closest('.social-share, .post-share, .social-share-icon')) return false
     const href = (link.getAttribute('href') || '').trim()
-    const title = (link.getAttribute('title') || '') + ' ' + (link.getAttribute('aria-label') || '')
     if (href === '#wechat' || href.endsWith('#wechat')) return true
-    if (/微信|weixin|wechat/i.test(title)) return true
-    if (link.querySelector && link.querySelector('.fa-weixin, .fab.fa-weixin')) return true
+    if (link.closest && link.closest('.card-info-social-icons, #site_social_icons')) {
+      if (link.querySelector && link.querySelector('.fa-weixin, .fab.fa-weixin')) return true
+    }
     return false
   }
 

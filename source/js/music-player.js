@@ -12,7 +12,10 @@
   // 一律 https；bootcdn 国内较稳，失败则回退本地曲目
   const APLAYER_CSS = 'https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.css'
   const APLAYER_JS = 'https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js'
-  const METING_JS = 'https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js'
+  const METING_JS_CANDIDATES = [
+    'https://unpkg.com/meting@2.0.1/dist/Meting.min.js',
+    'https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js'
+  ]
   // 第三方歌单代理（仅点击播放器后请求；失败 6s 回退本地）
   const METING_API =
     'https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r'
@@ -52,15 +55,39 @@
   })
 
   const loadScript = src => new Promise((resolve, reject) => {
-    if (document.querySelector('script[data-blog-music="' + src + '"]')) return resolve()
+    const existing = document.querySelector('script[data-blog-music="' + src + '"]')
+    if (existing) {
+      if (existing.dataset.blogMusicOk === '1') return resolve()
+      if (existing.dataset.blogMusicFail === '1') return reject(new Error('cached fail'))
+      existing.addEventListener('load', () => resolve(), { once: true })
+      existing.addEventListener('error', () => reject(new Error('cached fail')), { once: true })
+      return
+    }
     const script = document.createElement('script')
     script.src = src
     script.async = true
     script.setAttribute('data-blog-music', src)
-    script.onload = resolve
-    script.onerror = reject
+    script.onload = () => {
+      script.dataset.blogMusicOk = '1'
+      resolve()
+    }
+    script.onerror = () => {
+      script.dataset.blogMusicFail = '1'
+      script.remove()
+      reject(new Error('load fail ' + src))
+    }
     document.body.appendChild(script)
   })
+
+  const loadScriptWithFallback = async urls => {
+    for (let i = 0; i < urls.length; i++) {
+      try {
+        await loadScript(urls[i])
+        return true
+      } catch (e) { /* try next */ }
+    }
+    return false
+  }
 
   const ensureLauncher = () => {
     let btn = document.getElementById('blog-music-launcher')
@@ -159,24 +186,16 @@
 
     loadCss(APLAYER_CSS)
       .then(function () { return loadScript(APLAYER_JS) })
-      .then(function () { return loadScript(METING_JS) })
+      .then(function () { return loadScriptWithFallback(METING_JS_CANDIDATES) })
       .then(function () {
         if (!initNeteaseMeting()) initLocalFallback()
         launcher.classList.remove('is-loading')
         if (!window.__blogMusicPlayer) loading = false
       })
       .catch(function () {
-        // 仅 APlayer 成功时仍可用本地回退
-        loadScript(APLAYER_JS)
-          .then(function () {
-            initLocalFallback()
-            launcher.classList.remove('is-loading')
-            if (!window.__blogMusicPlayer) loading = false
-          })
-          .catch(function () {
-            loading = false
-            launcher.classList.remove('is-loading')
-          })
+        if (window.APlayer) initLocalFallback()
+        loading = !window.__blogMusicPlayer
+        launcher.classList.remove('is-loading')
       })
   }
 
@@ -192,17 +211,31 @@
     if (window.matchMedia('(prefers-reduced-data: reduce)').matches) return
 
     const launcher = ensureLauncher()
-    launcher.addEventListener('click', boot)
+    if (!launcher.dataset.bound) {
+      launcher.dataset.bound = '1'
+      launcher.addEventListener('click', boot)
+    }
 
-    // 音乐页：自动准备播放器（仍不自动播放）
     if (/\/music\/?$/.test(location.pathname)) {
       window.setTimeout(boot, 400)
     }
 
-    // 供音乐页展示外链
     window.__blogNeteasePlaylist = {
       id: NETEASE_PLAYLIST_ID,
       url: NETEASE_PLAYLIST_URL
     }
+  })
+
+  document.addEventListener('pjax:complete', function () {
+    onReady(function () {
+      const launcher = ensureLauncher()
+      if (!launcher.dataset.bound) {
+        launcher.dataset.bound = '1'
+        launcher.addEventListener('click', boot)
+      }
+      if (/\/music\/?$/.test(location.pathname) && !window.__blogMusicPlayer) {
+        window.setTimeout(boot, 400)
+      }
+    })
   })
 })()

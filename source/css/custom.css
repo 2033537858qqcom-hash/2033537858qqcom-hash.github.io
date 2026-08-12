@@ -267,7 +267,12 @@ html.cursor-enhance textarea,
 html.cursor-enhance [contenteditable='true'],
 html.cursor-enhance code,
 html.cursor-enhance pre,
-html.cursor-enhance pre * {
+html.cursor-enhance pre *,
+html.cursor-enhance #article-container,
+html.cursor-enhance #article-container p,
+html.cursor-enhance #article-container li,
+html.cursor-enhance .shuoshuo-content,
+html.cursor-enhance .shuoshuo-content p {
   cursor: text !important;
 }
 
@@ -576,7 +581,7 @@ body::after {
   box-sizing: border-box;
 }
 
-#site-title::after {
+#page-header.full_page #site-title::after {
   display: block;
   margin-top: 0.72rem;
   color: rgba(255, 255, 255, 0.92);
@@ -587,7 +592,7 @@ body::after {
   transition: opacity 0.42s ease, transform 0.42s ease;
 }
 
-#site-title.subtitle-changing::after {
+#page-header.full_page #site-title.subtitle-changing::after {
   opacity: 0;
   transform: translateY(6px);
 }

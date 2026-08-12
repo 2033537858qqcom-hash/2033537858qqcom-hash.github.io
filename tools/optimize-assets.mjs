@@ -205,7 +205,8 @@ if (await exists(photoDir)) {
   for (const f of files) {
     if (f.toLowerCase().endsWith('.jpg')) {
       const inputPath = path.join(photoDir, f);
-      const outputPath = path.join(photoDir, f.replace(/\.jpg$/, '.webp'));
+      const outputPath = path.join(photoDir, f.replace(/\.jpg$/i, '.webp'));
+      if (await exists(outputPath)) continue
       await sharp(inputPath)
         .webp({ quality: 80, effort: 6 })
         .toFile(outputPath);

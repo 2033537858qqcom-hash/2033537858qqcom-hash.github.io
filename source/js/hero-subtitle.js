@@ -1,8 +1,5 @@
 (function () {
   const root = document.documentElement
-  const title = document.getElementById('site-title')
-  if (!title) return
-
   const subtitles = {
     light: [
       '先读随笔，再读文章——随便点开就好',
@@ -24,35 +21,58 @@
 
   let index = -1
   let timer
+  let observer
 
   const currentMode = () => root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'
 
-  const setSubtitle = text => {
+  const heroTitle = () => document.querySelector('#page-header.full_page #site-title')
+
+  const setSubtitle = (title, text) => {
     title.classList.add('subtitle-changing')
     window.setTimeout(() => {
-      title.style.setProperty('--hero-subtitle', `"${text}"`)
+      if (!document.body.contains(title)) return
+      title.style.setProperty('--hero-subtitle', '"' + text + '"')
       title.classList.remove('subtitle-changing')
     }, 240)
   }
 
   const nextSubtitle = reset => {
+    const title = heroTitle()
+    if (!title) return
     const pool = subtitles[currentMode()]
     index = reset ? 0 : (index + 1) % pool.length
-    setSubtitle(pool[index])
+    setSubtitle(title, pool[index])
+  }
+
+  const stop = () => {
+    window.clearInterval(timer)
+    timer = null
+    if (observer) {
+      observer.disconnect()
+      observer = null
+    }
   }
 
   const start = () => {
-    window.clearInterval(timer)
+    stop()
+    const title = heroTitle()
+    if (!title) return
+
     nextSubtitle(true)
     timer = window.setInterval(() => nextSubtitle(false), 4600)
+
+    observer = new MutationObserver(mutations => {
+      if (mutations.some(mutation => mutation.attributeName === 'data-theme')) {
+        nextSubtitle(true)
+      }
+    })
+    observer.observe(root, { attributes: true })
   }
 
-  const observer = new MutationObserver(mutations => {
-    const changed = mutations.some(mutation => mutation.attributeName === 'data-theme')
-    if (!changed) return
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start, { once: true })
+  } else {
     start()
-  })
-
-  observer.observe(root, { attributes: true })
-  start()
+  }
+  document.addEventListener('pjax:complete', start)
 })()

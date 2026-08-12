@@ -4,87 +4,78 @@ const fs = require('fs')
 const path = require('path')
 
 const root = path.resolve(__dirname, '..')
-const sourceDir = path.join(root, 'img')
+const sourceDir = path.join(root, 'source', 'img', 'photography')
 
-// Copy all images from D:\MyBolg/img to public/img/photography/ so they are served under /img/
-const targetDir = path.join(root, 'public', 'img', 'photography')
-fs.mkdirSync(targetDir, { recursive: true })
-const imgFiles = fs.readdirSync(sourceDir)
-  .filter(file => file.toLowerCase().endsWith('.jpg') || file.toLowerCase().endsWith('.webp'))
-  .sort()
-for (const file of imgFiles) {
-  fs.copyFileSync(path.join(sourceDir, file), path.join(targetDir, file))
-}
-console.log(`[photography] synced ${imgFiles.length} images from img/ to public/img/photography`)
+const escapeAttr = value => String(value || '')
+  .replace(/&/g, '&amp;')
+  .replace(/"/g, '&quot;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
 
-function getImageFiles() {
+function getImageFiles () {
   try {
     const files = fs.readdirSync(sourceDir)
-      .filter(file => file.toLowerCase().endsWith('.jpg') || file.toLowerCase().endsWith('.webp'))
-      .sort()
-    return files
+    const byStem = new Map()
+
+    for (const file of files) {
+      const ext = path.extname(file).toLowerCase()
+      if (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.webp') continue
+      const stem = file.slice(0, -ext.length).toLowerCase()
+      const prev = byStem.get(stem)
+      if (!prev || ext === '.webp') byStem.set(stem, file)
+    }
+
+    return [...byStem.values()].sort((a, b) => a.localeCompare(b, 'en'))
   } catch (e) {
     console.error('[photography] error reading dir:', e.message)
     return []
   }
 }
 
-function getPhotoCard(file) {
-  const ext = path.extname(file).toLowerCase()
-  let src = `/img/${file}`
-  if (ext === '.jpg') {
-    const webpName = file.replace('.jpg', '.webp')
-    const webpPath = path.join(sourceDir, webpName)
-    if (fs.existsSync(webpPath)) {
-      src = `/img/${webpName}`
-    }
-  }
-  const alt = file.replace(/\.(jpg|webp)$/, '')
+function getPhotoCard (file) {
+  const src = `/img/photography/${file}`
+  const alt = file.replace(/\.(jpg|jpeg|webp)$/i, '')
+  const safeSrc = escapeAttr(src)
+  const safeAlt = escapeAttr(alt)
   return `<div class="photo-card">
-    <img src="${src}" alt="${alt}" loading="lazy" decoding="async">
+    <a href="${safeSrc}" data-fancybox="photography" data-caption="${safeAlt}">
+      <img src="${safeSrc}" alt="${safeAlt}" loading="lazy" decoding="async">
+    </a>
   </div>`
 }
 
-function renderPhotoGrid(images) {
+function renderPhotoGrid (images) {
+  if (!images.length) {
+    return '<p class="photo-grid__empty">还没有照片。把 jpg/webp 放到 source/img/photography/ 后重新生成即可。</p>'
+  }
   return images.map(getPhotoCard).join('\n')
 }
 
-try {
-  hexo.extend.filter.register('before_post_render', data => {
-    console.log('[photography] before_render filter running for', data.source)
-    if (data.source !== 'pages/photography.md') return data
-
-    const images = getImageFiles()
-    const html = renderPhotoGrid(images)
-    
-    // Replace placeholder in content
-    if (data.content.includes('<!-- photo-list -->')) {
-      data.content = data.content.replace('<!-- photo-list -->', html)
-    } else if (data.content.includes('更多照片')) {
-      // fallback
-      data.content = data.content.replace('更多照片可以在这里继续添加', html)
-    } else {
-      data.content += '\n\n' + html
-    }
-    return data
-  })
-} catch (e) {
-  console.error('[photography] filter registration failed:', e.message)
-}
-  console.log('[photography] before_render filter running for', data.source)
-  if (data.source !== 'pages/photography.md') return data
-
-  const images = getImageFiles()
-  const html = renderPhotoGrid(images)
-  
-  // Replace placeholder in content
-  if (data.content.includes('<!-- photo-list -->')) {
-    data.content = data.content.replace('<!-- photo-list -->', html)
-  } else if (data.content.includes('更多照片')) {
-    // fallback
-    data.content = data.content.replace('更多照片可以在这里继续添加', html)
-  } else {
-    data.content += '\n\n' + html
+function injectCards (html) {
+  if (typeof html !== 'string') return html
+  const cards = renderPhotoGrid(getImageFiles())
+  if (html.includes('id="photo-grid"')) {
+    return html.replace(
+      /(<div class="photo-grid"[^>]*>)[\s\S]*?(<\/div>\s*<\/section>)/,
+      `$1\n${cards}\n  $2`
+    )
   }
+  if (html.includes('<!-- photo-list -->')) {
+    return html.replace('<!-- photo-list -->', cards)
+  }
+  return html
+}
+
+hexo.extend.filter.register('before_post_render', data => {
+  if (data.source !== 'pages/photography.md') return data
+  data.content = injectCards(data.content)
   return data
+})
+
+hexo.extend.filter.register('after_generate', () => {
+  const dest = path.join(hexo.public_dir, 'photography', 'index.html')
+  if (!fs.existsSync(dest)) return
+  const before = fs.readFileSync(dest, 'utf8')
+  const after = injectCards(before)
+  if (after !== before) fs.writeFileSync(dest, after)
 })

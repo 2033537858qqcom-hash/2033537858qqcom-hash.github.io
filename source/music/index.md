@@ -33,31 +33,5 @@ top_img: false
     </iframe>
   </div>
 
-  <div class="music-page__fallback" id="netease-fallback" hidden>
-    <p>内嵌播放器暂时无法加载（网络或地区限制）。</p>
-    <p>
-      <a class="music-page__link" href="https://music.163.com/playlist?id=5355255169" target="_blank" rel="noopener noreferrer">前往网易云收听</a>
-    </p>
-    <p class="music-page__tip">也可点击左下角音符，使用站内迷你播放器（优先歌单，失败则回退本地曲目）。</p>
-  </div>
-
-  <p class="music-page__tip">若长时间白屏，请用上方按钮打开网易云。</p>
+  <p class="music-page__tip">内嵌播放器若白屏，可用上方按钮打开网易云，或点左下角音符使用站内迷你播放器（失败则回退本地曲目）。</p>
 </div>
-
-<script>
-(function () {
-  var iframe = document.getElementById('netease-embed')
-  var fallback = document.getElementById('netease-fallback')
-  if (!iframe || !fallback) return
-  var done = false
-  var showFallback = function () {
-    if (done) return
-    done = true
-    fallback.hidden = false
-  }
-  window.setTimeout(function () {
-    // 无法可靠检测 iframe 跨域失败，超时仍显示备用入口
-    fallback.hidden = false
-  }, 8000)
-})()
-</script>

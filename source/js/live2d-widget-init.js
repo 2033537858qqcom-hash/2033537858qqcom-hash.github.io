@@ -159,13 +159,14 @@
     schedule()
   }
 
-  document.addEventListener('pjax:send', () => {
-    // 切页前清掉旧节点，防止残留或「假死」
-    window.__blogLive2DReady = false
-  })
-
   document.addEventListener('pjax:complete', () => {
-    purgeWidget()
+    if (!shouldLoadLive2D()) {
+      purgeWidget()
+      return
+    }
+    if (document.getElementById('live2d-widget') || document.getElementById('live2dcanvas')) return
+    window.__blogLive2DLoaded = false
+    window.__blogLive2DReady = false
     schedule()
   })
 

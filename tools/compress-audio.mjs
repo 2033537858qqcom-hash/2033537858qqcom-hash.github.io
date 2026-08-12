@@ -1,5 +1,5 @@
 /**
- * 将 source/music-files 下较大的 MP3 转码为约 96kbps，原地覆盖。
+ * 将 source/music-files 下较大的 MP3 转码为约 64kbps，原地覆盖。
  */
 import { spawn } from 'node:child_process'
 import { readdir, rename, stat, unlink } from 'node:fs/promises'

@@ -9,7 +9,7 @@
   const ignoredSelector = 'input, textarea, select, option, [contenteditable="true"], .aplayer, .aplayer *, a, button'
 
   const isPostPage = () => {
-    return Boolean(document.getElementById('post') || document.getElementById('article-container') && document.body.querySelector('#post'))
+    return Boolean(document.getElementById('post'))
   }
 
   const showWord = event => {

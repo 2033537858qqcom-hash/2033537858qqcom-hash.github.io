@@ -39,8 +39,4 @@ hexo.on('generateBefore', () => {
   }
 })
 
-hexo.extend.filter.register('after_render:html', (str, data) => {
-  // 移动端去掉自定义光标，减少「控件错位感」
-  if (typeof str !== 'string') return str
-  return str
-})
+

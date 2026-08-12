@@ -18,3 +18,6 @@ tools/netease-migrate-report.json
 
 tools/verify-output/
 
+# 摄影原图仅本地保留；站点使用 source/img/photography/ 下的优化图
+/img/
+

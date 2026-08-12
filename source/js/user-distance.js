@@ -358,9 +358,7 @@
   }
 
   function initUserDistance () {
-    // PJAX 换页后 DOM 重建，允许重新挂载；定位结果仍用缓存
-    geoStarted = false
-    lastState = null
+    // Pjax 只重挂 DOM，不丢定位结果、不重打接口
     mountAndLoad()
 
     var tries = 0

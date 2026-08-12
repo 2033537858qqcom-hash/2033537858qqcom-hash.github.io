@@ -15,7 +15,6 @@ permalink: /photography/
 
   <div class="photo-grid" id="photo-grid">
     <!-- photo-list -->
-    <!-- 更多照片可以在这里继续添加（建议直接在 source/img/photography/ 目录中添加图片，页面会自动更新） -->
   </div>
 </section>
 
@@ -27,7 +26,13 @@ permalink: /photography/
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-  counter-reset: photo-count;
+}
+
+.photo-grid__empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--lijiahao-muted, #66738a);
+  text-align: center;
 }
 
 .photo-card {
@@ -35,9 +40,8 @@ permalink: /photography/
   overflow: hidden;
   border-radius: 16px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   background: transparent;
-  margin-bottom: 24px;
 }
 
 .photo-card:hover {
@@ -47,18 +51,8 @@ permalink: /photography/
   filter: brightness(1.02);
 }
 
-.photo-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(145deg, transparent, rgba(255,255,255,0.4), transparent);
-  opacity: 0;
-  transition: opacity 0.6s ease;
-  pointer-events: none;
-}
-
-.photo-card:hover::before {
-  opacity: 1;
+.photo-card a {
+  display: block;
 }
 
 .photo-card img {
@@ -69,88 +63,6 @@ permalink: /photography/
 }
 
 .photo-card:hover img {
-  transform: scale(1.18) rotate(0.8deg);
-}
-
-.photo-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,0.25));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.photo-card:hover::after {
-  opacity: 1;
-}
-
-.lightbox {
-  max-width: 90vw;
-  max-height: 90vh;
+  transform: scale(1.08);
 }
 </style>
-
-<script>
-// 高级摄影页：月份筛选 + 搜索 + 精美 hover
-document.addEventListener('DOMContentLoaded', () => {
-  const filterSelect = document.getElementById('month-filter');
-  const searchInput = document.getElementById('search-input');
-  const cards = document.querySelectorAll('.photo-card');
-
-  function getCardDate(filename) {
-    const match = filename.match(/IMG_\d+_\d+_\d+_(20\d{2}-\d{2}-\d{2})_\d+/);
-    return match ? match[1] : '未知';
-  }
-
-  // 初始化日期属性
-  cards.forEach(card => {
-    const img = card.querySelector('img');
-    if (img) {
-      const date = getCardDate(img.getAttribute('src').split('/').pop());
-      card.setAttribute('data-date', date);
-      card.dataset.month = date;
-    }
-  });
-
-  // 高级过滤器
-  function filterCards() {
-    const selectedMonth = filterSelect.value;
-    const searchTerm = searchInput.value.toLowerCase().trim();
-
-    cards.forEach(card => {
-      let show = true;
-
-      // 月份筛选
-      if (selectedMonth !== 'all' && card.dataset.month !== selectedMonth) {
-        show = false;
-      }
-
-      // 搜索
-      if (searchTerm) {
-        const img = card.querySelector('img');
-        if (img && !img.alt.toLowerCase().includes(searchTerm)) {
-          show = false;
-        }
-      }
-
-      card.style.display = show ? 'block' : 'none';
-    });
-  }
-
-  filterSelect.addEventListener('change', filterCards);
-  searchInput.addEventListener('input', filterCards);
-
-  // 初始显示所有
-  filterCards();
-
-  // 轻箱点击
-  const images = document.querySelectorAll('.photo-card img');
-  images.forEach(img => {
-    img.addEventListener('click', () => {
-      console.log('点击查看大图:', img.src);
-    });
-  });
-});
-</script>
