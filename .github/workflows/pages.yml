@@ -36,8 +36,13 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
+        env:
+          COREPACK_ENABLE_STRICT: 0
+          COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
         run: |
+          corepack disable || true
           node -v
+          command -v pnpm
           pnpm -v
           pnpm install --frozen-lockfile
 
