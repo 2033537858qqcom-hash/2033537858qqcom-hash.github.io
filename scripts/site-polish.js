@@ -39,4 +39,12 @@ hexo.on('generateBefore', () => {
   }
 })
 
+hexo.extend.filter.register('after_render:html', str => {
+  if (typeof str !== 'string') return str
+  return str.replace(
+    /(<span class="search-dialog-title">)搜索(<\/span>)/g,
+    '$1在文字里找$2'
+  )
+})
+
 

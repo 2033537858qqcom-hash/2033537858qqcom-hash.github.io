@@ -10,6 +10,8 @@ tags:
 cover: /img/optimized/post-slime.webp
 top_img: /img/optimized/post-slime.webp
 description: 给番剧页设计一个轻量的记录方式，先从列表和观后感开始。
+# 规划稿，不进首页；番剧页本身已上线
+hidden: true
 ---
 
 ## 番剧页规划

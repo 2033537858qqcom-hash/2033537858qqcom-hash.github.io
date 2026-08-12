@@ -36,6 +36,11 @@ ok('photography uses photography path', photography.includes('/img/photography/'
 ok('photography no placeholder', !photography.includes('<!-- photo-list -->'))
 ok('photography no leftover filter', !photography.includes('month-filter'))
 ok('photography fancybox', photography.includes('data-fancybox="photography"'))
+ok('photography year groups', photography.includes('photo-year'))
+ok('home now block', index.includes('class="home-now"'))
+ok('planning post hidden', !index.includes('anime-page-plan'))
+ok('search quiet placeholder', index.includes('找一篇随笔，或一个名字'))
+ok('search title restyle', index.includes('在文字里找'))
 
 const failed = checks.filter(c => !c.pass)
 console.log('\n' + (checks.length - failed.length) + '/' + checks.length + ' passed')

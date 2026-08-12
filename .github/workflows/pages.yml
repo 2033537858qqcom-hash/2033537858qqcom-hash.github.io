@@ -64,12 +64,15 @@ jobs:
           # hidden posts must not appear on home / sidebar
           ! grep -q 'blog-setup-notes' public/index.html
           ! grep -q 'butterfly-page-structure' public/index.html
+          ! grep -q 'anime-page-plan' public/index.html
+          grep -q 'home-now' public/index.html
           grep -q 'what-i-write-here' public/index.html || grep -q 'what-i-write-here' public/2026/07/22/what-i-write-here/index.html
           test -f public/moments/index.html
           test -f public/music/index.html
           # photography page must list cards from source/img/photography
           test -f public/photography/index.html
           grep -q 'class="photo-card"' public/photography/index.html
+          grep -q 'photo-year' public/photography/index.html
           grep -q '/img/photography/' public/photography/index.html
           ! grep -q '<!-- photo-list -->' public/photography/index.html
           ! grep -q 'month-filter' public/photography/index.html
