@@ -2845,6 +2845,83 @@ body #page:has(.shuoshuo-item) h1.page-title {
   line-height: 1.7;
 }
 
+/* ==========================================================================
+   随笔按年成章：和摄影年份同一套细线标题，不用手风琴按钮
+   ========================================================================== */
+.moment-year {
+  margin: 0 0 2rem;
+  border: none;
+  background: transparent;
+}
+
+.moment-year > summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 0 0 8px;
+  list-style: none;
+  border-bottom: 1px dashed rgba(77, 142, 219, 0.22);
+  cursor: pointer;
+  user-select: none;
+}
+
+.moment-year > summary::-webkit-details-marker {
+  display: none;
+}
+
+.moment-year__name {
+  font-family: var(--lijiahao-essay-accent);
+  font-size: 1.35rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--lijiahao-ink);
+}
+
+[data-theme='dark'] .moment-year__name {
+  color: #eef3ff;
+}
+
+.moment-year__count {
+  color: var(--lijiahao-muted);
+  font-size: 0.84rem;
+  letter-spacing: 0.04em;
+}
+
+.moment-year:not([open]) > summary {
+  opacity: 0.68;
+}
+
+.moment-year:not([open]) > summary:hover,
+.moment-year:not([open]) > summary:focus-visible {
+  opacity: 1;
+}
+
+.moment-year > summary:focus {
+  outline: none;
+}
+
+.moment-year > summary:focus-visible {
+  outline: 1px dashed rgba(77, 142, 219, 0.45);
+  outline-offset: 4px;
+}
+
+.moment-year__list .shuoshuo-item + .shuoshuo-item {
+  margin-top: 18px;
+}
+
+#page:has(.moment-year) .shuoshuo-navigation,
+#article-container:has(.moment-year) + .shuoshuo-navigation {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .moment-year > summary {
+    transition: none;
+  }
+}
+
 
 
 

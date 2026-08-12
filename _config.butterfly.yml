@@ -1081,19 +1081,20 @@ css_prefix: true
 inject:
   head:
     - '<style id="butterfly-layout-critical">html,body{width:100%;max-width:100%;overflow-x:hidden}img{max-width:100%;height:auto}.avatar-img{overflow:hidden;margin:0 auto;width:110px;height:110px;border-radius:70px}.avatar-img img{display:block;width:100%;height:100%;object-fit:cover}#sidebar{position:fixed;inset:0;z-index:100002;visibility:hidden;pointer-events:none}#sidebar:has(#sidebar-menus.open){visibility:visible;pointer-events:auto}#sidebar #menu-mask{position:fixed;z-index:100002;display:none;inset:0;background:rgba(0,0,0,.45)}#sidebar #sidebar-menus{position:fixed;top:0;right:-330px;z-index:100003;box-sizing:border-box;width:300px;max-width:82vw;height:100%;overflow-y:auto;background:var(--sidebar-bg,#f6f8fa);visibility:hidden;transition:transform .3s ease,visibility 0s linear .3s;transform:translateZ(0)}#sidebar #sidebar-menus.open{visibility:visible;transition:transform .3s ease;transform:translate3d(-100%,0,0)}#nav #toggle-menu{display:none}#nav.hide-menu .menus_items{display:none}#nav.hide-menu #toggle-menu{display:inline-block!important}.layout{box-sizing:border-box;width:100%;max-width:1180px;margin-right:auto;margin-left:auto}#aside-content,.recent-posts,#recent-posts{box-sizing:border-box;max-width:100%}@media (max-width:768px){.layout{padding-right:14px;padding-left:14px}#aside-content{width:100%}.aplayer.aplayer-fixed{max-width:calc(100vw - 20px)}}#live2d-widget,#live2dcanvas{max-width:min(220px,42vw)}</style>'
-    - <link rel="stylesheet" href="/css/custom.css?v=1.5.9">
+    - <link rel="stylesheet" href="/css/custom.css?v=1.5.10">
   bottom:
-    - <script src="/js/theme-transition.js?v=1.5.9" defer></script>
-    - <script src="/js/hero-subtitle.js?v=1.5.9" defer></script>
-    - <script src="/js/hero-latest.js?v=1.5.9" defer></script>
-    - <script src="/js/theme-particles.js?v=1.5.9" defer></script>
-    - <script src="/js/context-menu.js?v=1.5.9" defer></script>
-    - <script src="/js/music-player.js?v=1.5.9" defer></script>
-    - <script src="/js/live2d-widget-init.js?v=1.5.9" defer></script>
-    - <script src="/js/user-distance.js?v=1.5.9" defer></script>
-    - <script src="/js/wechat-contact.js?v=1.5.9" defer></script>
-    - <script src="/js/cursor-enhance.js?v=1.5.9" defer></script>
-    - <script src="/js/click-values.js?v=1.5.9" defer></script>
+    - <script src="/js/theme-transition.js?v=1.5.10" defer></script>
+    - <script src="/js/hero-subtitle.js?v=1.5.10" defer></script>
+    - <script src="/js/hero-latest.js?v=1.5.10" defer></script>
+    - <script src="/js/theme-particles.js?v=1.5.10" defer></script>
+    - <script src="/js/context-menu.js?v=1.5.10" defer></script>
+    - <script src="/js/music-player.js?v=1.5.10" defer></script>
+    - <script src="/js/live2d-widget-init.js?v=1.5.10" defer></script>
+    - <script src="/js/user-distance.js?v=1.5.10" defer></script>
+    - <script src="/js/wechat-contact.js?v=1.5.10" defer></script>
+    - <script src="/js/cursor-enhance.js?v=1.5.10" defer></script>
+    - <script src="/js/click-values.js?v=1.5.10" defer></script>
+    - <script src="/js/moments-years.js?v=1.5.10" defer></script>
 
 # CDN Settings
 # Don't modify the following settings unless you know how they work

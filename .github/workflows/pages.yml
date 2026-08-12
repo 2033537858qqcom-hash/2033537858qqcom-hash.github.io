@@ -68,6 +68,8 @@ jobs:
           grep -q 'home-now' public/index.html
           grep -q 'what-i-write-here' public/index.html || grep -q 'what-i-write-here' public/2026/07/22/what-i-write-here/index.html
           test -f public/moments/index.html
+          grep -q 'moments-years.js' public/moments/index.html
+          test -f public/js/moments-years.js
           test -f public/music/index.html
           # photography page must list cards from source/img/photography
           test -f public/photography/index.html

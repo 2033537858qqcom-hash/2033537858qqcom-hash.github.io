@@ -7,7 +7,7 @@ top_img: false
 
 <div class="content-lead">
   <p class="content-lead__eyebrow">Moments</p>
-  <p>短句、雨天、一时兴起。不必从头读到尾——<strong>随便点开一条</strong>就好。</p>
+  <p>短句、雨天、一时兴起。近年摊开，往年折进年份里——<strong>随便点开一条</strong>就好。</p>
   <p class="content-lead__links">
     <a href="/">返回首页看文章</a>
     <span aria-hidden="true">·</span>

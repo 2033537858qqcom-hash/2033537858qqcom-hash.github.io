@@ -69,7 +69,7 @@ pnpm run server
 ## 缓存与版本
 
 自定义 CSS/JS 的 `?v=` 由 `scripts/site-polish.js` 统一写成 **`package.json` 的 `version`**。  
-改前端后请同步 bump 版本号（当前 `1.5.9`），否则用户可能一直用旧脚本。
+改前端后请同步 bump 版本号（当前 `1.5.10`），否则用户可能一直用旧脚本。
 
 ## 部署
 

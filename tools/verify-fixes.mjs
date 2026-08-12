@@ -41,6 +41,7 @@ ok('home now block', index.includes('class="home-now"'))
 ok('planning post hidden', !index.includes('anime-page-plan'))
 ok('search quiet placeholder', index.includes('找一篇随笔，或一个名字'))
 ok('search title restyle', index.includes('在文字里找'))
+ok('moments year script', fs.readFileSync('public/js/moments-years.js', 'utf8').includes('moment-year'))
 
 const failed = checks.filter(c => !c.pass)
 console.log('\n' + (checks.length - failed.length) + '/' + checks.length + ' passed')
