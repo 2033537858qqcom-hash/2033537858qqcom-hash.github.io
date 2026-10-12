@@ -20,13 +20,13 @@
 
 ### 网易云随笔迁移
 
-公开动态可批量写入随笔页（会排除对他人攻击、活动模板与过短噪声）：
+公开动态按动态 ID 合并进随笔页。已有正文会保留，只追加新动态。攻击、活动模板和指定条目写在 `tools/migrate-netease-shuoshuo.mjs` 的 `DENY_IDS` 里。条目若变少，脚本会拒绝写入。
 
 ```bash
-node tools/fetch-netease-events.mjs   # 默认 uid=3988339491
-node tools/migrate-netease-shuoshuo.mjs
-# 配图会下载到 source/img/moments/netease/*.webp 并写入随笔 Markdown
-# 可选：--no-images  仅文字；--force-images  强制重下
+pnpm run moments:sync
+# 配图会下载到 source/img/moments/netease/*.webp
+# 可选：node tools/migrate-netease-shuoshuo.mjs --no-images
+#       node tools/migrate-netease-shuoshuo.mjs --force-images
 ```
 
 ## 本地开发
@@ -69,7 +69,7 @@ pnpm run server
 ## 缓存与版本
 
 自定义 CSS/JS 的 `?v=` 由 `scripts/site-polish.js` 统一写成 **`package.json` 的 `version`**。  
-改前端后请同步 bump 版本号（当前 `1.5.10`），否则用户可能一直用旧脚本。
+改前端后请同步 bump 版本号（当前 `1.5.11`），否则用户可能一直用旧脚本。
 
 ## 部署
 

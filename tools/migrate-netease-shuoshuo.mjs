@@ -1,10 +1,11 @@
 /**
- * 从 tools/netease-events.json 迁移公开动态到 source/_data/shuoshuo.yml
- * 并下载配图 → source/img/moments/netease/*.webp
- *
- * 排除：对他人攻击、活动模板垃圾、过短噪声；雨夜随笔保留博客配图版
+ * 从 tools/netease-events.json 按动态 ID 合并进 source/_data/shuoshuo.yml。
+ * 已有随笔只补配乐链接和配图说明，不改写正文。新动态才追加。
+ * 配图下载到 source/img/moments/netease/*.webp。
  *
  * 用法：
+ *   pnpm run moments:sync
+ *   # 或分步：
  *   node tools/fetch-netease-events.mjs
  *   node tools/migrate-netease-shuoshuo.mjs
  *   # 跳过图片下载（仅文）：  node tools/migrate-netease-shuoshuo.mjs --no-images
@@ -21,6 +22,7 @@ const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
 const eventsPath = path.join(root, 'tools/netease-events.json')
+const rawEventsPath = path.join(root, 'tools/netease-events-raw.json')
 const outPath = path.join(root, 'source/_data/shuoshuo.yml')
 const reportPath = path.join(root, 'tools/netease-migrate-report.json')
 const imgDir = path.join(root, 'source/img/moments/netease')
@@ -28,6 +30,20 @@ const imgDir = path.join(root, 'source/img/moments/netease')
 const args = new Set(process.argv.slice(2))
 const noImages = args.has('--no-images')
 const forceImages = args.has('--force-images')
+
+/**
+ * 明确不发布的动态 ID。
+ * 攻击 6 条、活动模板 11 条、与博客雨夜随笔重复的 1 条。
+ * 2026-10-01 且正文写到姥姥的动态由 isGrandmaHold 拦截（当时尚未进入这份归档）。
+ */
+const DENY_IDS = new Set([
+  30566223206, 30360088008, 24833936828, 24799678762, 24799654752, 24788275255,
+  37677442659, 37659617772, 30590773110, 30522558536, 30451293552,
+  30326740319, 30226227155, 30218964535, 30153228260, 24900907186, 24530486663,
+  37694195909
+])
+
+const HIDDEN_TAGS = new Set(['随笔', '配乐', '配图'])
 
 let sharp = null
 try {
@@ -78,20 +94,17 @@ function cleanMsg (msg) {
   return t.trim()
 }
 
-function extractTags (msg, song, hasPics) {
-  const tags = new Set(['随笔'])
+function extractTags (msg) {
+  const tags = []
   const t = msg
-  if (/雨|雨夜|雨声|打在/.test(t)) tags.add('雨')
-  if (/夜|深夜|失眠|夜深/.test(t)) tags.add('夜')
-  if (/高考|考试|毕业/.test(t)) tags.add('回忆')
-  if (/梦|梦见/.test(t)) tags.add('梦')
-  if (/杭州|实习/.test(t)) tags.add('杭州')
-  if (/读后|打卡《|观后|影片|电影|小说|书/.test(t)) tags.add('观感')
-  if (/春|夏|秋|冬/.test(t)) tags.add('季节')
-  if (song) tags.add('配乐')
-  if (hasPics) tags.add('配图')
-  if (msg.length >= 300) tags.add('长文')
-  return [...tags]
+  if (/雨|雨夜|雨声|打在/.test(t)) tags.push('雨')
+  if (/夜|深夜|失眠|夜深/.test(t)) tags.push('夜')
+  if (/高考|考试|毕业/.test(t)) tags.push('回忆')
+  if (/梦|梦见/.test(t)) tags.push('梦')
+  if (/杭州|实习/.test(t)) tags.push('杭州')
+  if (/读后|打卡《|观后|影片|电影|小说/.test(t)) tags.push('观感')
+  if (msg.length >= 300) tags.push('长文')
+  return tags
 }
 
 function isDuplicateRain (msg) {
@@ -106,6 +119,120 @@ function isWorthKeeping (msg) {
     if (!poetic) return false
   }
   return true
+}
+
+function isGrandmaHold (msg, date) {
+  return String(date || '').startsWith('2026-10-01') && /姥姥|外婆/.test(msg || '')
+}
+
+function visibleTags (tags) {
+  return (tags || []).filter(tag => tag && !HIDDEN_TAGS.has(tag))
+}
+
+function proseOf (text) {
+  return String(text || '')
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+    .replace(/^—— 配乐：.*$/gm, '')
+    .replace(/\s+/g, '')
+}
+
+function altText (content, index, total) {
+  const line = String(content || '')
+    .split('\n')
+    .map(item => item.trim())
+    .find(item => item && !item.startsWith('![') && !item.startsWith('——') && !item.startsWith('<'))
+  let alt = (line || '这一则随笔').replace(/[[\]()]/g, '').replace(/\s+/g, ' ').trim()
+  if (alt.length > 28) alt = alt.slice(0, 28).replace(/[，。、\s]+$/g, '')
+  if (!alt) alt = '这一则随笔'
+  if (total > 1) alt += ' ' + (index + 1)
+  return alt
+}
+
+function upgradeImages (content) {
+  const re = /!\[([^\]]*)\]\((\/img\/moments\/netease\/\d+-\d+\.webp)\)/g
+  const matches = [...String(content).matchAll(re)]
+  if (!matches.length) return content
+  let index = 0
+  return String(content).replace(re, (full, alt, src) => {
+    const next = altText(content, index, matches.length)
+    index += 1
+    if (alt && !/^配图(?: \d+)?$/.test(alt)) return full
+    return `![${next}](${src})`
+  })
+}
+
+function songLinkLine (song) {
+  const name = String(song.name || '这首歌').replace(/[[\]]/g, '')
+  const artists = song.artists ? String(song.artists) : ''
+  const linked = `[${name}](https://music.163.com/song?id=${song.id})`
+  return '—— 配乐：' + linked + (artists ? ' / ' + artists : '')
+}
+
+function upgradeSong (content, song) {
+  if (!song || !song.id) return content
+  if (!/^—— 配乐：/m.test(content)) return content
+  if (/music\.163\.com\/song\?id=/.test(content)) return content
+  return String(content).replace(/^—— 配乐：.*$/m, songLinkLine(song))
+}
+
+function loadSongMeta (events) {
+  const map = new Map()
+  for (const event of events) {
+    if (event.song && event.song.id) {
+      map.set(String(event.id), {
+        id: event.song.id,
+        name: event.song.name || '',
+        artists: event.song.artists || ''
+      })
+    }
+  }
+  if (!fs.existsSync(rawEventsPath)) return map
+  let rawEvents = []
+  try {
+    rawEvents = JSON.parse(fs.readFileSync(rawEventsPath, 'utf8'))
+  } catch {
+    return map
+  }
+  for (const event of rawEvents) {
+    let json = {}
+    try {
+      json = typeof event.json === 'string' ? JSON.parse(event.json) : event.json || {}
+    } catch {
+      continue
+    }
+    if (!json.song || !json.song.id) continue
+    map.set(String(event.id), {
+      id: json.song.id,
+      name: json.song.name || '',
+      artists: (json.song.artists || []).map(artist => artist.name).filter(Boolean).join('/')
+    })
+  }
+  return map
+}
+
+function parseShuoshuo (text) {
+  const newline = text.includes('\r\n') ? '\r\n' : '\n'
+  const normalized = text.replace(/\r\n/g, '\n')
+  const entries = []
+  const re = /^- (?:id: (\d+)\n  )?content: \|\n([\s\S]*?)\n  date: ([^\n]+)(?:\n  tags:\n((?:    - .*\n?)*))?/gm
+  let match
+  while ((match = re.exec(normalized))) {
+    const content = match[2]
+      .split('\n')
+      .map(line => (line.startsWith('    ') ? line.slice(4) : line))
+      .join('\n')
+    const tags = match[4]
+      ? [...match[4].matchAll(/^    - (.*)$/gm)].map(item => item[1].trim()).filter(Boolean)
+      : []
+    const fromImage = content.match(/\/img\/moments\/netease\/(\d+)-\d+\.webp/)
+    entries.push({
+      id: match[1] || (fromImage ? fromImage[1] : null),
+      content,
+      date: match[3].trim(),
+      tags
+    })
+  }
+  return { entries, newline }
 }
 
 function httpsUrl (url) {
@@ -208,21 +335,33 @@ async function mapPool (items, concurrency, worker) {
 }
 
 const kept = []
-const excluded = { attack: [], spam: [], short: [], dup: [] }
+const excluded = { deny: [], attack: [], spam: [], short: [], dup: [], grandma: [] }
+const songMeta = loadSongMeta(raw)
 
 for (const e of raw) {
   if (!e.msg || !String(e.msg).trim()) continue
   const msg = cleanMsg(e.msg)
+  const id = Number(e.id)
+  const listed = DENY_IDS.has(id)
+  const grandma = isGrandmaHold(msg, e.date)
+  if (listed || grandma) {
+    const bucket = grandma ? excluded.grandma : excluded.deny
+    bucket.push({ id, date: e.date, preview: msg.slice(0, 80) })
+    continue
+  }
   if (isAttack(msg)) {
-    excluded.attack.push({ date: e.date, preview: msg.slice(0, 100) })
+    excluded.attack.push({ id, date: e.date, preview: msg.slice(0, 100) })
+    console.warn('[migrate] 新的攻击类动态，请写入 DENY_IDS:', id, e.date)
     continue
   }
   if (isSpam(msg)) {
-    excluded.spam.push({ date: e.date, preview: msg.slice(0, 100) })
+    excluded.spam.push({ id, date: e.date, preview: msg.slice(0, 100) })
+    console.warn('[migrate] 新的活动模板，请写入 DENY_IDS:', id, e.date)
     continue
   }
   if (isDuplicateRain(msg)) {
-    excluded.dup.push({ date: e.date, preview: '雨夜随笔（博客已有配图增强版）' })
+    excluded.dup.push({ id, date: e.date, preview: '雨夜随笔（博客已有配图增强版）' })
+    console.warn('[migrate] 新的雨夜重复，请写入 DENY_IDS:', id, e.date)
     continue
   }
   if (!isWorthKeeping(msg)) {
@@ -231,23 +370,54 @@ for (const e of raw) {
   }
 
   const pics = Array.isArray(e.pics) ? e.pics.filter(Boolean).slice(0, 9) : []
+  const song = songMeta.get(String(e.id)) || (e.song
+    ? { id: e.song.id || null, name: e.song.name || '', artists: e.song.artists || '' }
+    : null)
 
   kept.push({
     msg,
     date: e.date,
-    tags: extractTags(msg, e.song, pics.length > 0),
+    tags: extractTags(msg),
     source: 'netease',
     id: e.id,
-    song: e.song || null,
+    song,
     pics
   })
 }
 
 kept.sort((a, b) => (a.date < b.date ? 1 : -1))
 
-// —— 下载图片 ——
+const previousText = fs.existsSync(outPath) ? fs.readFileSync(outPath, 'utf8') : ''
+const parsed = previousText
+  ? parseShuoshuo(previousText)
+  : { entries: [], newline: '\n' }
+
+if (previousText) {
+  const markerCount = (previousText.replace(/\r\n/g, '\n').match(/^- (?:id: \d+\n  )?content: \|/gm) || []).length
+  if (parsed.entries.length !== markerCount) {
+    console.error('[migrate] 拒绝写入：随笔解析数量对不上', parsed.entries.length, markerCount)
+    process.exit(1)
+  }
+}
+
+const eventsByDate = new Map(raw.map(event => [event.date, event]))
+for (const entry of parsed.entries) {
+  if (entry.id) continue
+  const event = eventsByDate.get(entry.date)
+  if (!event || !event.msg) continue
+  const left = proseOf(entry.content).slice(0, 24)
+  const right = proseOf(cleanMsg(event.msg)).slice(0, 24)
+  const same = left && right && (left.startsWith(right.slice(0, 12)) || right.startsWith(left.slice(0, 12)))
+  if (same) entry.id = String(event.id)
+}
+
+const existingIds = new Set(parsed.entries.map(entry => entry.id).filter(Boolean).map(String))
+const existingDates = new Set(parsed.entries.map(entry => entry.date))
+const fresh = kept.filter(item => !existingIds.has(String(item.id)) && !existingDates.has(item.date))
+
+// —— 只下载新增动态的配图 ——
 const imageJobs = []
-for (const item of kept) {
+for (const item of fresh) {
   item.pics.forEach((url, i) => {
     imageJobs.push({ item, url: httpsUrl(url), index: i })
   })
@@ -276,29 +446,27 @@ if (!noImages && imageJobs.length) {
   console.log(`[migrate] images done ok=${imgStats.ok} fail=${imgStats.fail}`)
 }
 
-// 组装 content
-for (const item of kept) {
+for (const item of fresh) {
   let content = item.msg
-
   const locals = (item.localPics || []).filter(Boolean)
   if (locals.length) {
     content += '\n'
-    locals.forEach((src, i) => {
-      const alt = locals.length === 1 ? '配图' : `配图 ${i + 1}`
-      content += `\n![${alt}](${src})`
+    locals.forEach((src, index) => {
+      content += `\n![${altText(content, index, locals.length)}](${src})`
     })
     content += '\n'
   }
-
   if (item.song && item.song.name) {
-    content += `\n\n—— 配乐：${item.song.name}${item.song.artists ? ' / ' + item.song.artists : ''}`
+    const line = item.song.id
+      ? songLinkLine(item.song)
+      : `—— 配乐：${item.song.name}${item.song.artists ? ' / ' + item.song.artists : ''}`
+    content += `\n\n${line}`
   }
-
   item.content = content
-  item.tags = extractTags(item.msg, item.song, locals.length > 0)
+  item.tags = visibleTags(item.tags)
 }
 
-/** 博客站内原有 / 增强版，不覆盖 */
+/** 博客原有条目只在文件里还没有同一日期时补回，避免整文件重写把它们盖掉 */
 const blogNative = [
   {
     content: `**所感所想**
@@ -351,63 +519,98 @@ const blogNative = [
   }
 ]
 
-const all = [
-  ...blogNative,
-  ...kept.map(k => ({ content: k.content, date: k.date, tags: k.tags }))
-].sort((a, b) => (a.date < b.date ? 1 : -1))
+const upgraded = parsed.entries.map(entry => {
+  const song = entry.id ? songMeta.get(String(entry.id)) : null
+  return {
+    id: entry.id ? String(entry.id) : null,
+    content: upgradeSong(upgradeImages(entry.content), song),
+    date: entry.date,
+    tags: visibleTags(entry.tags)
+  }
+})
 
-function yamlBlock (s) {
-  return String(s)
-    .replace(/\r\n/g, '\n')
-    .split('\n')
-    .map(l => '    ' + l)
-    .join('\n')
+for (const entry of parsed.entries) {
+  const next = upgraded.find(item => item.date === entry.date)
+  if (!next || proseOf(next.content) !== proseOf(entry.content)) {
+    console.error('[migrate] 拒绝写入：已有正文被改动', entry.date)
+    process.exit(1)
+  }
 }
 
-function tagsYaml (tags) {
-  return tags.map(t => '    - ' + t).join('\n')
+const restored = blogNative
+  .filter(item => !existingDates.has(item.date))
+  .map(item => ({ id: null, content: item.content, date: item.date, tags: visibleTags(item.tags) }))
+
+const appended = fresh.map(item => ({
+  id: String(item.id),
+  content: item.content,
+  date: item.date,
+  tags: item.tags
+}))
+
+const all = [...upgraded, ...restored, ...appended].sort((a, b) => (a.date < b.date ? 1 : -1))
+const lost = parsed.entries.filter(entry => !all.some(item => item.date === entry.date))
+if (lost.length || all.length < parsed.entries.length) {
+  console.error('[migrate] 拒绝写入：条目变少', lost.map(entry => entry.date))
+  process.exit(1)
+}
+
+function yamlBlock (text) {
+  return String(text)
+    .replace(/\r\n/g, '\n')
+    .replace(/\n$/, '')
+    .split('\n')
+    .map(line => '    ' + line)
+    .join('\n')
 }
 
 let out = ''
 out += '# 随笔 / 说说\n'
-out += '# 网易云 Rogue_lr (uid 3988339491) 公开动态迁移\n'
-out += '# 规则：排除对他人攻击、活动模板、过短噪声；雨夜随笔保留博客配图版\n'
+out += '# 网易云 Rogue_lr (uid 3988339491) 公开动态。按动态 ID 合并，不覆盖已有正文。\n'
+out += '# 排除名单：tools/migrate-netease-shuoshuo.mjs 的 DENY_IDS；2026-10-01 姥姥相关见 isGrandmaHold\n'
 out += '# 配图：source/img/moments/netease/（WebP）\n'
 out += `# 生成时间: ${new Date().toISOString()}\n`
-out += `# 条目数: ${all.length}（博客原有 ${blogNative.length} + 网易云 ${kept.length}）\n`
+out += `# 条目数: ${all.length}（原有 ${parsed.entries.length} + 新增 ${appended.length}）\n`
 out += `# 配图: ok=${imgStats.ok} fail=${imgStats.fail} planned=${imgStats.planned}\n\n`
 
 for (const item of all) {
-  out += '- content: |\n'
+  if (item.id) out += `- id: ${item.id}\n  content: |\n`
+  else out += '- content: |\n'
   out += yamlBlock(item.content) + '\n'
   out += `  date: ${item.date}\n`
-  out += '  tags:\n'
-  out += tagsYaml(item.tags) + '\n\n'
+  if (item.tags && item.tags.length) {
+    out += '  tags:\n'
+    out += item.tags.map(tag => '    - ' + tag).join('\n') + '\n'
+  }
+  out += '\n'
 }
 
-fs.writeFileSync(outPath, out, 'utf8')
+const fileText = parsed.newline === '\r\n' ? out.replace(/\n/g, '\r\n') : out
+fs.writeFileSync(outPath, fileText, 'utf8')
 
-const withLocalPics = kept.filter(k => (k.localPics || []).filter(Boolean).length > 0).length
-
+const linkedSongs = all.filter(item => /music\.163\.com\/song\?id=/.test(item.content)).length
 const report = {
   totalEvents: raw.length,
-  withMsg: raw.filter(e => e.msg && String(e.msg).trim()).length,
-  migratedFromNetease: kept.length,
-  blogNative: blogNative.length,
+  withMsg: raw.filter(event => event.msg && String(event.msg).trim()).length,
+  keptFromNetease: kept.length,
+  previousCount: parsed.entries.length,
+  appended: appended.length,
+  restoredBlog: restored.length,
   finalCount: all.length,
+  linkedSongs,
   images: imgStats,
-  essaysWithLocalPics: withLocalPics,
   excluded: {
+    deny: excluded.deny.length,
+    grandma: excluded.grandma.length,
     attack: excluded.attack.length,
     spam: excluded.spam.length,
     short: excluded.short.length,
-    dup: excluded.dup.length,
-    attackSamples: excluded.attack
+    dup: excluded.dup.length
   },
-  dateRange: kept.length
-    ? { newest: kept[0].date, oldest: kept[kept.length - 1].date }
+  dateRange: all.length
+    ? { newest: all[0].date, oldest: all[all.length - 1].date }
     : null
 }
 fs.writeFileSync(reportPath, JSON.stringify(report, null, 2))
 console.log(JSON.stringify(report, null, 2))
-console.log('wrote', outPath, 'bytes', Buffer.byteLength(out))
+console.log('wrote', outPath, 'bytes', Buffer.byteLength(fileText))

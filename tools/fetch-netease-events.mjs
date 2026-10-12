@@ -12,7 +12,7 @@ const uid = process.argv[2] || '3988339491'
 const outPath = path.join(__dirname, 'netease-events.json')
 const rawPath = path.join(__dirname, 'netease-events-raw.json')
 
-function get (url) {
+function get (url, attempt = 0) {
   return new Promise((resolve, reject) => {
     const u = new URL(url)
     const req = https.request(
@@ -31,15 +31,32 @@ function get (url) {
         let d = ''
         res.on('data', (c) => (d += c))
         res.on('end', () => {
+          const fail = (err) => {
+            if (attempt < 2) {
+              setTimeout(() => get(url, attempt + 1).then(resolve, reject), 800 * (attempt + 1))
+              return
+            }
+            reject(err)
+          }
+          if (res.statusCode !== 200) {
+            fail(new Error('HTTP ' + res.statusCode + ' ' + url))
+            return
+          }
           try {
             resolve(JSON.parse(d))
           } catch {
-            reject(new Error('JSON parse fail: ' + d.slice(0, 200)))
+            fail(new Error('JSON parse fail: ' + d.slice(0, 200)))
           }
         })
       }
     )
-    req.on('error', reject)
+    req.on('error', (err) => {
+      if (attempt < 2) {
+        setTimeout(() => get(url, attempt + 1).then(resolve, reject), 800 * (attempt + 1))
+        return
+      }
+      reject(err)
+    })
     req.end()
   })
 }
@@ -115,6 +132,7 @@ const simplified = all.map((ev) => {
     pics,
     song: json.song
       ? {
+          id: json.song.id || null,
           name: json.song.name,
           artists: (json.song.artists || []).map((a) => a.name).join('/')
         }

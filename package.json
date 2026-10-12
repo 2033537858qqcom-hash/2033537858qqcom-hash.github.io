@@ -1,6 +1,6 @@
 {
   "name": "hexo-site",
-  "version": "1.5.10",
+  "version": "1.5.11",
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "scripts": {
@@ -10,6 +10,7 @@
     "optimize:assets": "node tools/optimize-assets.mjs",
     "optimize:audio": "node tools/compress-audio.mjs",
     "optimize": "pnpm run optimize:assets && pnpm run optimize:audio",
+    "moments:sync": "node tools/fetch-netease-events.mjs && node tools/migrate-netease-shuoshuo.mjs",
     "server": "hexo server",
     "new": "hexo new"
   },
