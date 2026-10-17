@@ -78,3 +78,7 @@ pnpm run server
 ## 许可
 
 主题基于 Butterfly；文章与自定义代码版权归作者。
+
+## 雨夜模式 · 沉浸式阅读
+
+右下角按钮栏的「雨夜」按钮（`#rain-toggle`，`aria-pressed`）开启 `.rain-mode`：整体调暗、背景雨滴画布、隐藏侧栏/统计等干扰项，正文居中约 38em。选择保存在 localStorage（`rain-mode`），关闭后恢复开启前的日/夜主题；`Esc` 退出。雨声需手动点「播放雨声」，由 Web Audio 实时合成（滤波噪声 + 稀疏水滴），**不含任何外部音频文件，无版权/授权问题**。实现：`source/js/rain-mode.js` + `custom.css` 末尾「雨夜模式」段 + `_config.butterfly.yml` inject.head 的早期内联脚本。

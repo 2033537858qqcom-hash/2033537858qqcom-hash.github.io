@@ -3602,3 +3602,181 @@ body #page:has(.shuoshuo-item) h1.page-title {
   font-size: 0.8rem;
   letter-spacing: 0.12em;
 }
+
+/* ==========================================================================
+   雨夜模式 · 沉浸式阅读（opt-in，html/body.rain-mode；脚本 /js/rain-mode.js）
+   ========================================================================== */
+#rain-toggle {
+  position: relative;
+  display: block;
+  width: 35px;
+  height: 35px;
+  margin-bottom: 2px;
+  cursor: pointer;
+}
+#rain-toggle .rain-toggle-text {
+  position: absolute;
+  inset: auto 0 1px 0;
+  font-size: 9px;
+  line-height: 1;
+  text-align: center;
+  opacity: 0.85;
+  pointer-events: none;
+}
+#rain-toggle i { font-size: 13px; transform: translateY(-4px); }
+#rain-toggle:focus-visible,
+#rain-sound:focus-visible,
+#rain-volume:focus-visible { outline: 2px solid #8ab4f8; outline-offset: 2px; }
+#rain-toggle[aria-pressed='true'] { color: #9ec5ff; }
+
+#rain-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+#rain-canvas[hidden] { display: none; }
+
+/* 降低亮度：整页暗幕（在内容之上、控件之下，不拦截点击） */
+.rain-mode body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  pointer-events: none;
+  background: rgba(4, 7, 14, 0.34);
+}
+body::after { transition: background 0.6s ease; }
+
+#rain-panel {
+  position: fixed;
+  right: 60px;
+  bottom: 18px;
+  z-index: 100002;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid rgba(160, 180, 210, 0.25);
+  border-radius: 8px;
+  background: rgba(14, 20, 32, 0.92);
+  color: #cdd6e3;
+  font-size: 13px;
+}
+#rain-panel[hidden] { display: none; }
+#rain-sound {
+  padding: 4px 10px;
+  border: 1px solid rgba(160, 180, 210, 0.4);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+#rain-sound[aria-pressed='true'] { background: rgba(110, 160, 230, 0.25); }
+#rain-panel input[type='range'] { width: 90px; vertical-align: middle; }
+
+/* 阅读聚焦：隐藏侧栏、统计、页脚杂项，正文成为主角 */
+html.rain-mode #aside-content,
+html.rain-mode .card-widget.card-webinfo,
+html.rain-mode #hide-aside-btn,
+html.rain-mode #to_comment,
+html.rain-mode #post-info .post-meta,
+html.rain-mode #post-meta,
+html.rain-mode .post-meta,
+html.rain-mode .article-meta-wrap,
+html.rain-mode #post-outdate-notice,
+html.rain-mode .post-copyright,
+html.rain-mode .post-reward,
+html.rain-mode .footer-other,
+html.rain-mode #footer .framework-info,
+html.rain-mode #footer .footer_custom_text,
+html.rain-mode .live2d-widget,
+html.rain-mode #live2d-widget,
+html.rain-mode #rightside-config,
+html.rain-mode #rightside-config-hide,
+html.rain-mode .shuoshuo-footer .shuoshuo-info,
+html.rain-mode .relatedPosts,
+html.rain-mode .pagination-related {
+  display: none !important;
+}
+html.rain-mode #rightside #rightside-config-show { display: block !important; transform: none !important; opacity: 1 !important; }
+
+html.rain-mode .layout {
+  display: block;
+  max-width: min(46em, 100%);
+  margin-right: auto;
+  margin-left: auto;
+}
+html.rain-mode .layout > div:first-child,
+html.rain-mode .layout > #page,
+html.rain-mode .layout > #post,
+html.rain-mode .layout > #archive {
+  width: 100% !important;
+  max-width: 100%;
+  background: rgba(10, 14, 22, 0.55);
+  border-color: rgba(160, 180, 210, 0.10);
+  box-shadow: none;
+  animation: rain-fade-in 0.7s ease both;
+}
+html.rain-mode #article-container,
+html.rain-mode .type-shuoshuo,
+html.rain-mode #page .timeline-wrap,
+html.rain-mode #page > .page-title ~ * {
+  max-width: 38em;
+  margin-right: auto;
+  margin-left: auto;
+}
+html.rain-mode #article-container,
+html.rain-mode .type-shuoshuo,
+html.rain-mode #page {
+  color: #c3ccd8;
+  line-height: 2;
+  letter-spacing: 0.02em;
+}
+html.rain-mode #article-container p,
+html.rain-mode #article-container li,
+html.rain-mode .type-shuoshuo p { line-height: 2; }
+html.rain-mode #article-container a,
+html.rain-mode .type-shuoshuo a { color: #9db8de; }
+html.rain-mode #article-container h1,
+html.rain-mode #article-container h2,
+html.rain-mode #article-container h3,
+html.rain-mode #post-info .post-title,
+html.rain-mode .page-title { color: #dbe2ec; }
+html.rain-mode #page-header::before,
+html.rain-mode #page-header::after { opacity: 0.55; }
+
+@keyframes rain-fade-in { from { opacity: 0.2; } to { opacity: 1; } }
+
+@media (max-width: 768px) {
+  #rain-panel { right: 10px; bottom: 64px; }
+  html.rain-mode .layout { padding-right: 10px; padding-left: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.rain-mode .layout > div:first-child,
+  html.rain-mode .layout > #page,
+  html.rain-mode .layout > #post { animation: none; }
+}
+
+/* 雨夜按钮常驻：未滚动时右侧按钮栏本来是隐藏的，这里只让「雨夜」按钮始终可见 */
+#rightside:not(.rightside-show) {
+  opacity: 0.8;
+  transform: translate(-58px, 0);
+}
+#rightside:not(.rightside-show) #rightside-config-show > *:not(#rain-toggle) {
+  display: none;
+}
+@media (max-width: 768px) {
+  #rightside:not(.rightside-show) { transform: translate(0, 0); }
+}
+#rain-toggle { background: rgba(30, 40, 60, 0.82) !important; color: #cfe0f7 !important; border: 1px solid rgba(160, 190, 230, 0.28); }
+#rain-toggle:hover { background: rgba(60, 85, 130, 0.9) !important; }
+html.rain-mode #page-header:not(.full_page) { height: 24vh !important; min-height: 140px; }
+html.rain-mode #article-container,
+html.rain-mode .type-shuoshuo,
+html.rain-mode #page { color: #e2e8f1; }
+.rain-mode body::after { background: rgba(4, 7, 14, 0.26); }
