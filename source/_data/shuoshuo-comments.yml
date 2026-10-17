@@ -1,0 +1,965 @@
+# 李 自己的网易云评论（uid 3988339491），一次性手动同步，不含别人的评论内容
+# 生成：tools/migrate-netease-comments.mjs；kind: continue 接在正文后，note 折起为「我后来写的」
+# event 不在 shuoshuo.yml 里的，页面上作为独立短评论并链回原动态
+# 条数: 120（随笔下 81，独立 39）
+
+- cid: 6027427127
+  event: "24548485562"
+  date: "2023-12-24 23:47:49"
+  content: "是，对，今天是今天，可明天不也是明天吗？\n今天就要消逝，我能抓住祂吗？\n到底是明天拥有了什么，或许只有昨天拥有了\n总有人苦心婆口，那又不是你\n若是再给你今天，你又能怎样\n可你不甘，是，但又有什么用\n旁人随口：努力有用的话，还要天才干什么\n你呢，是的，你想了想\n只是想了想\n总有一天，你还会"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6027437831
+  event: "24548485562"
+  date: "2023-12-24 23:56:12"
+  content: "那样\n不一定，可，时间已经去了\n那又怎样\n不咋样\n你是痛快了，你是懊悔了，你是迷茫了\n行动啊，行动啊，切\n你总归活成你唾弃的，\n是，是活的轻松，可只有表面\n你累了，可你又做了什么\nnothing\n对啊，那也是活该\n可，可，可\n只想拥有那7秒或9秒\n就那么几瞬\n就能忘记一切\nԾ‸Ծ"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6027436444
+  event: "24548485562"
+  date: "2023-12-25 00:00:05"
+  content: "算了，圣诞节快乐"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6028058275
+  event: "24551483835"
+  date: "2023-12-26 00:09:33"
+  content: "哦，又第二天了，睡不着，睡不着，听会歌吧，可听后更睡不着，看小说吧，怕上瘾，玩游戏吧，感觉已经过了那个时期，三四页游戏，已经吸引不了己了，学习吧，感觉已经没之前那种毅力和恒力，也许，是不是闭上眼睛，听着那鼾声，那游戏声，那嘿嘿声……\n算了先闭上眼睛吧，总能睡着的，是吧，嗯，也许"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6028107964
+  event: "24551483835"
+  date: "2023-12-26 02:18:09"
+  content: "不学了，睡会吧😑"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6028114486
+  event: "24551483835"
+  date: "2023-12-26 03:08:43"
+  content: "算了，睡不着就睡不着吧😵"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6028657755
+  event: "24553286133"
+  date: "2023-12-26 21:46:40"
+  content: "算了，认输了，看小说吧，又是不眠之夜😣"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6029368400
+  event: "24556285884"
+  date: "2023-12-28 00:31:45"
+  content: "哎，安慰了他人\n他人可能会舒服些，\n可，又有谁能安慰我呢？\n( •̥́ ˍ •̀ू )"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6033711152
+  event: "24581316443"
+  date: "2024-01-04 18:02:05"
+  content: "自己的乌托邦"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6034826235
+  event: "24587367810"
+  date: "2024-01-06 18:15:35"
+  content: "睡醒了，真舒服"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6042264125
+  event: "24621126722"
+  date: "2024-01-19 01:21:26"
+  content: "醒了🤔👋👋👋👋"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6042321932
+  event: "24621527315"
+  date: "2024-01-19 07:13:06"
+  content: "那小学，挺符合我现在对小学的样式\n小学叫太辉小学，坐落再路边上\n有大门进去，左边是操场（是真草皮）\n右边是教学楼，有好几栋\n在那，不会在规定时间内背完书就会被请出教室（因为自己是常客），那时自己班好像在办公室旁\n在那，有个什么鼓课，每人一个系腰鼓，好像是一周两节\n在那，课间休息时会放轻"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6042317458
+  event: "24621527315"
+  date: "2024-01-19 07:15:40"
+  content: "乐\n在那，每天中午的饭大多数是海带苞菜（挺不喜欢吃的）\n在那，在节日时会体验节日"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6042321399
+  event: "24621527315"
+  date: "2024-01-19 07:21:58"
+  content: "在一年级毕业的那天，好像母亲来了（参加一个什么会，会是在早晨，在那操场上）\n在会后给了一本代有签名的书（书好像是感恩的心，这本书也对我影响挺大的，在之后了解那）在领完书后，母亲就带着我坐上了父亲开的货车走了，离开了那奇妙的地方"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6043066512
+  event: "24624154481"
+  date: "2024-01-20 06:39:08"
+  content: "哈哈哈一家人没一个正常的"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6043859088
+  event: "24626885649"
+  date: "2024-01-21 02:21:10"
+  content: "2.需要把生物钟更正\n_-2023.1.21"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6044239900
+  event: "24626885649"
+  date: "2024-01-21 16:38:42"
+  content: "3.大声音乐可提高专注力\n_-2023.1.21"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6047821064
+  event: "24641859941"
+  date: "2024-01-27 00:56:17"
+  content: "可在他生日时，男孩又收到了女孩的礼物，男孩本以为女孩已经……\n可，是的，男孩忘不掉了，从那之后好像，记忆好像纪录片，一直在男孩脑中闪过，男孩想约女孩，可女孩好像已经\n是的，那个男孩就是自己\n对不起，你能原谅我吗？"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6048980495
+  event: "24647198998"
+  date: "2024-01-29 01:13:33"
+  content: "欠张影票"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6049704330
+  event: "24650127046"
+  date: "2024-01-30 06:55:42"
+  content: "自我评价\n2024最强番\n继《偷星九月天》《尸兄》最强漫\n当然更多是遗憾\n(_ _)"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 6072953443
+  event: "24755164708"
+  date: "2024-03-10 12:16:59"
+  content: "感觉心里难受\n但就是不知道为什么\n好伤心\n为什么？"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7404451067
+  event: "30038627601"
+  date: "2024-08-23 19:23:06"
+  content: "也对，我就是犟\n可是犟，你们也从来没有听过我的话呀\n总说要考虑的远\n可也没人问过现在啊"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7404451196
+  event: "30038627601"
+  date: "2024-08-23 19:24:37"
+  content: "整天在家，让我出去转转\n就那么大个地方，还有哪里没转过\n说是不社交\n微信就那么几个人\n没意思"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7404453795
+  event: "30038627601"
+  date: "2024-08-23 19:26:49"
+  content: "我真的受不了了\n感觉都是活在你们的阴影下\n你们说要努力，活的比你们好\n可我就是一个正常人，甚至正常人都算不上"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7404455527
+  event: "30038627601"
+  date: "2024-08-23 19:28:13"
+  content: "活着真没意思"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7404456082
+  event: "30038627601"
+  date: "2024-08-23 19:34:56"
+  content: "是，我就是羡慕别人\n我就是小人\n但我从没背叛过本心\n就是羡慕我也只是远远的在远方观看\n我就随口说说又怎么了\n是，现在自己没工作\n可想想又有什么错"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7418874806
+  event: "30071036102"
+  date: "2024-09-14 15:26:15"
+  content: "那一年，遇见你我很快乐\n谢谢你\n是我的原因使你受伤，对不起\n也希望你快乐"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7532828277
+  event: "30270406016"
+  date: "2025-01-27 23:34:30"
+  content: "也许，多年以后会有所感触\n可我并非遗憾\n正因己选其路\n定由己决\n无憾\n🛫"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7574084960
+  event: "30377936178"
+  date: "2025-03-26 01:05:29"
+  content: "但唯一知晓的是，那是盛气的烈日"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7574573881
+  event: "30379729889"
+  date: "2025-03-27 00:32:28"
+  content: "“我觉得我可真是个……用老师的话来说，我真是个劳模，我真的做了好多事情，好多我以前不敢想的事情。”\n　　“当然这都是在你们的帮助下完成的，特别是赵叔、老爹还有王叔，你们真的特别厉害，非常靠得住，请接受我的再次夸奖！”"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7574588436
+  event: "30379729889"
+  date: "2025-03-27 00:32:42"
+  content: "“bg，白杨，我还有话要对你说，嗯……本来是只想对你说的，不过这视频肯定会被很多人看到，算了，看到就看到吧，我死后管它洪水滔天，我想跟你道歉，刚刚吼了你真对不起，不过你是男孩子，被吼就被吼了嘛，老师以前还天天骂我呢。”"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7574587481
+  event: "30379729889"
+  date: "2025-03-27 00:34:02"
+  content: "“唉，想不明白，太复杂了，这个世界和时间都太复杂，不过复杂往往代表着有很多很多的可能性，bg，我之所以要专门跟你说，是因为我觉得你以后会伤心，"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7574573906
+  event: "30379729889"
+  date: "2025-03-27 00:34:14"
+  content: "你就是那种有事喜欢憋在心里的人，别说不是，这么长时间我可早把你看穿了，可是呢，既然世界和时间都是这么复杂的东西，复杂到谁都看不明白，那么bg呀，亲爱的bg，最亲爱的bg，最最亲爱的bg，你一定要有希望，在未来那么宽广的世界和那么漫长的时光里，你一定要相信……”"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7574594363
+  event: "30379729889"
+  date: "2025-03-27 00:34:23"
+  content: "“我们还会再见的。”"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7574584814
+  event: "30379729889"
+  date: "2025-03-27 00:46:40"
+  content: "感触深也是因为半夏有着她的影子"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7581290583
+  event: "30399309062"
+  date: "2025-04-05 11:09:33"
+  content: "有了几次经验，出来游玩要找志趣相近的人，其实更多的是“趣”，有趣的灵魂千里挑一，有时“趣”不在此时，人就会察觉，而这也是检验两人感情的重要时刻，人嘛，总会不一样，但既然出来了，那就要照顾他人感受，自己也有过如此，那时是去爬山，"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588196062
+  event: "30420056694"
+  date: "2025-04-15 09:16:46"
+  content: "\"四单元的老王家孩子，一个月6000\"\"\n你已经这样了，你想让孩子也输？\"你没说话，回屋给媳妇转了6000块钱\n这笔钱，你原本打算给自己过个生日，买个新电脑"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588192237
+  event: "30420056694"
+  date: "2025-04-15 09:17:30"
+  content: "38岁，孩子上了一年级\n老师说一年级最关键，打好基础很重要你笑着说，是是是，老师您多照顾\n新生接待的老师看着你不明事理的脸\n\"课外辅导班，一个月2200\"\n40岁的时候，孩子上了三年级\n老师说，三年级，最关键，承上启下很重要\n你笑着说：是是是，正打算再报个补习班"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588191228
+  event: "30420056694"
+  date: "2025-04-15 09:17:49"
+  content: "44岁，孩子上了初中\n有一天回到家，她对你说\n爸爸，我想学钢琴\n你没什么犹豫的\n你以为这些年，你已经习惯了\n但那句\"爸爸现在买不起\"你始终说不出口好在孩子比较懂事\n她说：爸爸没事，要不我先学陶笛也可以\n你看着这么懂事的孩子，却开心不起来"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588204778
+  event: "30420056694"
+  date: "2025-04-15 09:18:16"
+  content: "46岁，孩子上了一个不好不差的高中有﹣天你在开会，接到了老师的电话\n电话里说你的孩子在学校打架了\n你唯唯诺诺的\n和那个比你还小5岁的领导请了个假．到学校又被老师训了一﹣通\n无非台词就是那一句\n你们做家长的就知道工作，能不能陪陪孩子你看着这个老师，有点可笑\n好像当时说："
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588192251
+  event: "30420056694"
+  date: "2025-04-15 09:18:41"
+  content: "家长在外辛苦点多赚点钱让孩子多补补课的和他不是一个人\n50岁，孩子上了大学很争气，是一个一本\n你只知道工作不一定好找而且学费还死贵\n准备了半斤白酒，一碟花生米你说着那些曾经你最讨\n厌的话还是要为以后工作着想\n挑个热门的专业\n活着比热爱重要\n你们从交流变成了争吵\n你发现，你老了"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588195121
+  event: "30420056694"
+  date: "2025-04-15 09:19:13"
+  content: "50岁的人了\n一定是酒太辣了，对不对一定是酒太辣了\n55岁，孩子工作了，似乎有一点理解你了\n但你却反了过来，你说不要妥协\n56岁，孩子也结婚了你问他喜欢那个姑娘吗他愣了愣说：喜欢吧"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588203827
+  event: "30420056694"
+  date: "2025-04-15 09:19:26"
+  content: "60岁，辛苦了一辈子，想出去走走\n身边的那个人过了30年\n你依旧分不清到底喜不喜欢\n你们开始规划旅游路线\n这么多年了\n你们还是存在分歧，还是在争吵\n某个瞬间，你觉得\n这样可能也挺好\n一切都准备好了\n儿子说：可以帮我照顾一下孩子么\n你们退了机票，又回到了30年前"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588209542
+  event: "30420056694"
+  date: "2025-04-15 09:19:44"
+  content: "70岁，孩子的孩子也长大了，不用天天操心了\n你下定决心说：一定要去玩一趟\n可是手边的拐杖\n只能支持你走到楼下的花园\n75岁，你在医院的病床上\n身边聚满了人，你迷迷糊糊的看见医生摇了摇头周围那些人神情肃穆\n你明白了，你要死掉了\n你没有感到一丝害怕"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588190252
+  event: "30420056694"
+  date: "2025-04-15 09:19:56"
+  content: "你突然问自己，我到底是什么时候死掉的呢？你想起来\n30岁的那场婚礼\n原来，那时候，你就死掉了吧\n依照惯例\n死前的3秒，你的大脑要走马灯\n倒叙你这75个年头的一生画面一张一张的过\n两秒过去了\n你面无表情的看着这两秒内的回忆\n第3秒\n突然你笑了"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588212473
+  event: "30420056694"
+  date: "2025-04-15 09:20:17"
+  content: "原来已经回到了15岁的那一年你看见一个男孩\n他叼着一袋牛奶，背着书包从另一个女孩家的阳台下跑过那个男孩朝窗户里看了看\n那是15岁的你暗恋的那个女孩子你想不起来她长什么样子了\n最后一秒你努力回忆着\n然后终于笑了出来\n3秒过去了"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7588194176
+  event: "30420056694"
+  date: "2025-04-15 09:20:26"
+  content: "身边的人突然间开始嚎啕大哭\n你可能听不清了\n你最后听到的嘈杂声音\n是一群十五六的少年起着哄说的\n\"答应他！答应他！答应他！"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7604490343
+  event: "30467167411"
+  date: "2025-05-08 00:39:30"
+  content: "补第一张"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7604465103
+  event: "30467167411"
+  date: "2025-05-08 00:40:10"
+  content: "和第二张"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7604490376
+  event: "30467167411"
+  date: "2025-05-08 00:40:48"
+  content: "也许...哎"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7645839714
+  event: "30590865799"
+  date: "2025-07-02 04:48:39"
+  content: "读罢，清晨日光升起\n李文姬在最后的信，是她最后的勇气\n离开也许并非离去\n其实，李文姬才真正活的是自己，她才是最懂爱的，不管是男女之爱，还是对这个社会下层之爱"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7658313945
+  event: "24582849718"
+  date: "2025-07-18 01:36:50"
+  content: "嘿，25年也一样，不过看淡了许多，开朗了许多"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 7753644465
+  event: "30851031857"
+  date: "2025-10-15 00:42:31"
+  content: "我还是没有考虑周全\n或许就不应该准备这个生日\n人与人本就不同，永远无法分析全面\n还妄想掌握一切\n到头来自己都掌握不了\n我不懂\n这一刻只想捂住一切"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7753643903
+  event: "30851031857"
+  date: "2025-10-15 00:55:11"
+  content: "静了一会儿\n也许只是小事\n对他们对自己\n也就有着些许的意义\n仅自己罢了\n我发现自己越来越无感\n有也只是发生的那段时间\n自己也没想到就用了那么短的时间就想通了\n或许这就是时间带来的成长吧\n嗯...\n既然气氛到这里\n那么祝自己生日快乐！\n21岁，我来喽！\n愿新的一岁，运气好一些\n当然也希望能成熟些\n嘿嘿"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 7753637059
+  event: "30851031857"
+  date: "2025-10-15 00:57:56"
+  content: "祝身边的人\n岁岁平\n岁岁安\n年年岁岁\n岁岁平安\n🤪"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9443191014
+  event: "37275631783"
+  date: "2026-01-18 12:17:50"
+  content: "不准笑😠😠😠"
+  reply_to: "Write__z"
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9447927666
+  event: "37275631783"
+  date: "2026-01-24 00:17:50"
+  content: "😡"
+  reply_to: "Write__z"
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470072347
+  event: "37348799524"
+  date: "2026-02-14 23:04:45"
+  content: "PS：网上找的图"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9470072614
+  event: "24506392080"
+  date: "2026-02-14 23:26:17"
+  content: "现在也一样"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470055966
+  event: "24540783205"
+  date: "2026-02-14 23:27:04"
+  content: "身体累，心也累"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470090394
+  event: "24548485562"
+  date: "2026-02-14 23:28:42"
+  content: "我又能有什么办法呢"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470057947
+  event: "24548897435"
+  date: "2026-02-14 23:30:06"
+  content: "正如他的小说一般，高开低走，烂尾了"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470048149
+  event: "24551483835"
+  date: "2026-02-14 23:31:25"
+  content: "哎呦喂，那时竟然没有分段写，看着真难受😡"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470045172
+  event: "24553286133"
+  date: "2026-02-14 23:33:29"
+  content: "哈哈哈，的却挺小丑行为的，还是 事先没有了解情况"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470082636
+  event: "24556285884"
+  date: "2026-02-14 23:35:00"
+  content: "切，到现在还是没有人安慰我😅"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470084573
+  event: "24559305340"
+  date: "2026-02-14 23:35:56"
+  content: "哈哈哈，其实24年过的并不好"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470061022
+  event: "24562685350"
+  date: "2026-02-14 23:37:02"
+  content: "还是别加油了，遇不见了，再次相见只能靠缘分"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470049151
+  event: "24566366321"
+  date: "2026-02-14 23:37:27"
+  content: "呼"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470065949
+  event: "24582849718"
+  date: "2026-02-14 23:39:16"
+  content: "26年越发不如从前"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470051171
+  event: "24621527315"
+  date: "2026-02-14 23:41:04"
+  content: "没分段，看着好难受"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470056158
+  event: "24624091967"
+  date: "2026-02-14 23:41:38"
+  content: "把怀疑去掉"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470074772
+  event: "24626885649"
+  date: "2026-02-14 23:42:10"
+  content: "还是不要静下来为好"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9470069016
+  event: "24682625328"
+  date: "2026-02-14 23:45:18"
+  content: "今年好像没有烟花🎆了"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9507653271
+  event: "37490320207"
+  date: "2026-04-09 20:32:49"
+  content: "雷声，雨，舒服"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9508601236
+  event: "37493429759"
+  date: "2026-04-11 00:21:01"
+  content: "是春也是夏\n这里的风很大\n这里的雨很多\n这里的梦还是那样暖"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9512632281
+  event: "37508159540"
+  date: "2026-04-16 23:15:47"
+  content: "也就那一刻"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9513859042
+  event: "30364608397"
+  date: "2026-04-18 19:58:15"
+  content: "今年忘记了"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9516243030
+  event: "37521327815"
+  date: "2026-04-22 00:08:38"
+  content: "我有很多不懂的\n我想要了解一切\n可是现实为什么会这样\n人不都是激情奋斗的吗\n虽说都有自己的活法\n可这真的是想要的吗\n是前路太过绝望还是就这样了\n亦或是自己无法理解"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9516246023
+  event: "37521327815"
+  date: "2026-04-22 00:09:40"
+  content: "我不懂\n我也不会\n至少在这个阶段不会"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9516254987
+  event: "37521327815"
+  date: "2026-04-22 00:11:27"
+  content: "要是之前\n可能想法和有着类似\n可现实还是不可想象\n至于自己\n的确不一样\n至少在一些观念上\n就这样吧"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9521297948
+  event: "37540113697"
+  date: "2026-04-29 00:18:12"
+  content: "也许应该用酒精来麻痹祂"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9522645875
+  event: "37545119849"
+  date: "2026-05-01 00:37:50"
+  content: "睡到天昏地暗\n睡到世界毁灭\n蠕动着疲惫的身躯\n只想把它抛到荒芜\n明明头昏脑胀\n就是无法入眠\n翻来覆去\n我不想陷入回忆\n它是禁药\n色彩斑斓\n诱着我\n..."
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9522654671
+  event: "37545119849"
+  date: "2026-05-01 00:40:56"
+  content: "迷药发作了\n我也要睡了\n睡吧睡吧"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9522666343
+  event: "37545119849"
+  date: "2026-05-01 00:44:41"
+  content: "睡吧\n同你同我\n同时间\n睡吧睡吧"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9540461927
+  event: "37606910155"
+  date: "2026-05-24 23:53:31"
+  content: "我究竟要做些什么，不知道\n我想要怎样的未来，不知道\n已死的，将死的，寻死的，心死的，我是哪个"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9540465900
+  event: "37606910155"
+  date: "2026-05-24 23:55:38"
+  content: "在无人的路上，在寂静的夜里\n到底还有什么可以让我继续前进"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9540480615
+  event: "37606910155"
+  date: "2026-05-24 23:57:25"
+  content: "可能是一阵风，一股气味，一首音乐\n我又回到那个地方\n望向四周，充满陌生"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9540472911
+  event: "37606910155"
+  date: "2026-05-24 23:59:02"
+  content: "可我不能停，这好似是一个规定\n我口渴不已，热风，潮湿，幽暗的灯光"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9540478949
+  event: "37606910155"
+  date: "2026-05-25 00:02:47"
+  content: "对面有个便利店，我想买杯解渴\n但规定让我继续向前\n我路过一片柳林，莎莎~\n剥着枝条，来到湖边，风在这里变得轻盈"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9540482032
+  event: "37606910155"
+  date: "2026-05-25 00:06:16"
+  content: "我还是不能停止\n日晕显现\n我喝到了第一口水\n回到了家，清洗之后\n便重重睡去\n鸡鸣，哭闹，鸟叫，吵闹\n我又睁开眼，遵守规则"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9540492698
+  event: "37606910155"
+  date: "2026-05-25 00:08:09"
+  content: "一次，两次，三次\n我应该做些什么\n没有思考，我又回到了这里\n..."
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9540509342
+  event: "37606910155"
+  date: "2026-05-25 00:09:40"
+  content: "规则，不过自己的软弱\n知晓了，又有什么用\n没用，这也是规则的一部分"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9540486976
+  event: "37606910155"
+  date: "2026-05-25 00:09:52"
+  content: "晚安"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9556969877
+  event: "37662089361"
+  date: "2026-06-14 23:43:23"
+  content: "可以，但还是少弄这些比较好一点"
+  reply_to: "Write__z"
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9562260496
+  event: "37681745816"
+  date: "2026-06-22 00:17:17"
+  content: "应该再配上《明天会更好》"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9562260675
+  event: "37681745816"
+  date: "2026-06-22 00:38:25"
+  content: "道不清，语不净\n或许在那死寂的宇宙\n我可以找到自己的意义\n也或许在无数个平行世界里\n我活的无比欢快\n夜深了，闭上眼，睁开眼\n下一次，投出的会是6\n..."
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9562271619
+  event: "37681745816"
+  date: "2026-06-22 00:42:25"
+  content: "也许就在20分钟后\n蝴蝶又一次扇动翅膀\n我会在那时又一次的闭上眼睛"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9586340679
+  event: "37737634901"
+  date: "2026-07-22 01:19:02"
+  content: "加油啊，你还很年轻，大胆的去试错，错了不一定是坏的🎉🎉"
+  reply_to: ""
+  likes: 1
+  kind: note
+  source: netease
+- cid: 9598721765
+  event: "37796919179"
+  date: "2026-08-04 05:14:26"
+  content: "我还想写那历史\n写第一次站起 交谈\n...\n我就这样看着屏幕\n我不知道到底写着什么\n或许一个符号 一个文字\n就这样周围慢慢变得清晰\n或许我不应该写些什么\n一切都与我无关"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9598710895
+  event: "37796919179"
+  date: "2026-08-04 05:27:39"
+  content: "我写不写  它都在\n我写了  它也依然与我无关\n但那股迷恋本身\n已经是宇宙在我身上留下的痕迹了"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9665647017
+  event: "24559305340"
+  date: "2026-10-16 01:43:59"
+  content: "其实也挺好的"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665655927
+  event: "24556285884"
+  date: "2026-10-16 01:45:13"
+  content: "安慰也没什么用了"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665672577
+  event: "24566366321"
+  date: "2026-10-16 01:46:01"
+  content: "唉（长叹版）"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665645024
+  event: "24621527315"
+  date: "2026-10-16 01:48:57"
+  content: "真叙事文"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665695377
+  event: "24624091967"
+  date: "2026-10-16 01:49:39"
+  content: "很平静，记忆力下降很严重"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665633300
+  event: "24626885649"
+  date: "2026-10-16 01:50:27"
+  content: "希望有个静不下来的方法"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665630300
+  event: "24647198998"
+  date: "2026-10-16 01:50:50"
+  content: "米子哈"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665666728
+  event: "24660853670"
+  date: "2026-10-16 01:52:19"
+  content: "其实现实几乎没有这般的"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665649024
+  event: "24688078964"
+  date: "2026-10-16 01:53:03"
+  content: "每个人的活法不同"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665651001
+  event: "24707352360"
+  date: "2026-10-16 01:54:53"
+  content: "歌没了🍉"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665649033
+  event: "24707352360"
+  date: "2026-10-16 01:55:01"
+  content: "可惜"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665656976
+  event: "24715499816"
+  date: "2026-10-16 01:56:09"
+  content: "应该挺幸福的，可惜只剩下偷偷视奸的自己"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665653040
+  event: "24845444692"
+  date: "2026-10-16 01:58:19"
+  content: "是啊"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9665696418
+  event: "24921052142"
+  date: "2026-10-16 01:59:24"
+  content: "现在只剩躺了"
+  reply_to: ""
+  likes: 0
+  kind: note
+  source: netease
+- cid: 9667475628
+  event: "37996566748"
+  date: "2026-10-18 01:47:50"
+  content: "而是明明有那么多机会，自己却一次次选择了退缩。\n也曾想过，倘若那晚我走了出去，倘若后来没有食言，倘若生日时不只是说一句谢谢。\n又会是怎样的结局呢。\n可惜没有倘若。\n过去的事情终究无法改变。\n如今再去追究，也没有什么意义。\n只是这种怯懦，似乎一直延续到了现在。"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9667455044
+  event: "37996566748"
+  date: "2026-10-18 01:48:15"
+  content: "心中想谈，身体怯懦。\n有时也会幻想，倘若以后真的遇见一个喜欢自己的女孩，大概会很开心吧。\n可紧接着，又会害怕。\n害怕自己做得不够好，害怕无法回应别人的期待，害怕某一天，又像当年那样，因为自己的懦弱而伤害一个愿意靠近自己的人。\n甚至会觉得，自己没有那个资格。\n说来真是矛盾。"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9667445189
+  event: "37996566748"
+  date: "2026-10-18 01:48:38"
+  content: "明明渴望着被人喜欢，却又害怕别人真的走近。\n似乎这些年过去，自己也并没有改变多少。\n有时候觉得成长就是不断认识自己的过程，可认识得越多，反而越不知道该如何面对自己。\n以前总觉得未来有着无限的可能。\n如今倒是越来越习惯在开始之前，先考虑那些可能发生的不好的结果。"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9667494360
+  event: "37996566748"
+  date: "2026-10-18 01:49:04"
+  content: "或许也正因为如此，才渐渐失去了许多心气。\n其实我知道，当年的自己做错了许多事情。\n可那时的自己，也确实没有能力好好面对那些事情。\n这样说来，倒有些像是在为自己开脱。\n罢了。\n错过了就是错过了。\n没有必要再为过去寻找什么理由。"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9667492376
+  event: "37996566748"
+  date: "2026-10-18 01:49:18"
+  content: "只是偶尔还是会想起，她曾经那么认真地对待过我，而我却没能好好回应。\n如今她有了自己的生活。\n挺好的。\n我也有自己的生活。\n只是有些记忆，大概会一直留在那里。\n以前并不喜欢雨天。\n后来因为她，慢慢觉得雨似乎也没有那么讨厌了。\n如今即使很多事情已经模糊，却还是记得那天的雨。\n人真是奇怪。"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
+- cid: 9667447125
+  event: "37996566748"
+  date: "2026-10-18 01:49:30"
+  content: "一些人早已离开，一些习惯却始终没有改变。\n也不知道以后还会不会遇见喜欢的人。\n若是真的遇见了，希望那时的自己能够勇敢一些吧。\n至少，不要再让一个真心想见自己的人，在雨里等那么久。\n写到这里，突然有些不知道该说些什么。\n已经凌晨了。\n室友应该都睡了。\n窗外很安静。\n罢了，就这样吧。"
+  reply_to: ""
+  likes: 0
+  kind: continue
+  source: netease
