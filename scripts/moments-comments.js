@@ -3,7 +3,7 @@
 /**
  * 把 李 自己的网易云评论（source/_data/shuoshuo-comments.yml）并进随笔页的 #shuoshuo-data：
  *  - 父动态在随笔里的 → 挂到该随笔的 comments 字段（前端按 kind 渲染）
- *  - 父动态不在随笔里的 → 追加成独立的短「评论」条目（standalone），链回原动态
+ *  - 父动态不在随笔里的 → 按父动态合并成一条「评论组」（standalone+group），带父动态摘要/歌名，链回原动态
  * 只含 李 自己写的话。
  */
 
@@ -50,7 +50,7 @@ hexo.extend.filter.register('after_render:html', (str, data) => {
     if (item && item.id) byEvent.set(String(item.id), item)
   })
 
-  const standalone = []
+  const groups = new Map()
   comments.forEach(c => {
     const event = String(c.event)
     const comment = {
@@ -66,16 +66,27 @@ hexo.extend.filter.register('after_render:html', (str, data) => {
       if (!parent.comments) parent.comments = []
       parent.comments.push(comment)
     } else {
-      standalone.push({
-        standalone: true,
-        cid: comment.cid,
-        date: comment.date,
-        content: '<p>' + escapeHtml(comment.content).replace(/\n/g, '<br>') + '</p>',
-        reply_to: comment.reply_to || '',
-        link: `https://music.163.com/#/event?id=${encodeURIComponent(event)}&uid=${UID}`,
-        tags: []
-      })
+      // 父动态不在随笔里：同一父动态的评论合并成一条「评论组」
+      if (!groups.has(event)) {
+        groups.set(event, {
+          standalone: true,
+          group: true,
+          event,
+          parent_excerpt: String(c.parent_excerpt || ''),
+          parent_title: String(c.parent_title || ''),
+          parent_date: String(c.parent_date || ''),
+          link: `https://music.163.com/#/event?id=${encodeURIComponent(event)}&uid=${UID}`,
+          tags: [],
+          comments: []
+        })
+      }
+      groups.get(event).comments.push(comment)
     }
+  })
+  const standalone = [...groups.values()]
+  standalone.forEach(g => {
+    g.comments.sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    g.date = g.comments[g.comments.length - 1].date // 以最新一条评论定位
   })
 
   items.forEach(item => {

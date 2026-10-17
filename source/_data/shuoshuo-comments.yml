@@ -1,6 +1,6 @@
 # 李 自己的网易云评论（uid 3988339491），一次性手动同步，不含别人的评论内容
-# 生成：tools/migrate-netease-comments.mjs；kind: continue 接在正文后，note 折起为「我后来写的」
-# event 不在 shuoshuo.yml 里的，页面上作为独立短评论并链回原动态
+# 生成：tools/migrate-netease-comments.mjs；kind: 随笔下合并为「作者的评论」组，continue 标「接着写」，note 标「后来补的」
+# event 不在 shuoshuo.yml 里的，页面上按父动态合并成一条「评论组」（带 parent_excerpt / parent_title / parent_date），并链回原动态
 # 条数: 120（随笔下 81，独立 39）
 
 - cid: 6027427127
@@ -75,6 +75,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: ""
+  parent_title: "罗曼蒂克乌托邦 - 门尼"
+  parent_date: "2024-01-04 17:59:00"
 - cid: 6034826235
   event: "24587367810"
   date: "2024-01-06 18:15:35"
@@ -83,6 +86,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: ""
+  parent_title: "花火が瞬く夜に - 羽肿"
+  parent_date: "2024-01-06 18:14:00"
 - cid: 6042264125
   event: "24621126722"
   date: "2024-01-19 01:21:26"
@@ -91,6 +97,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "今天早点睡"
+  parent_title: "Some - Nils Frahm"
+  parent_date: "2024-01-18 23:55:00"
 - cid: 6042321932
   event: "24621527315"
   date: "2024-01-19 07:13:06"
@@ -131,6 +140,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "静下来的有效方法 1.醒来及时洗漱后及时开始计划任务 _-20323.1.20"
+  parent_title: ""
+  parent_date: "2024-01-21 02:20:00"
 - cid: 6044239900
   event: "24626885649"
   date: "2024-01-21 16:38:42"
@@ -139,6 +151,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "静下来的有效方法 1.醒来及时洗漱后及时开始计划任务 _-20323.1.20"
+  parent_title: ""
+  parent_date: "2024-01-21 02:20:00"
 - cid: 6047821064
   event: "24641859941"
   date: "2024-01-27 00:56:17"
@@ -155,6 +170,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "算是二刷吧 和之前观看又有了不同的感受 但依旧震撼"
+  parent_title: "夢灯籠 - RADWIMPS"
+  parent_date: "2024-01-29 01:11:00"
 - cid: 6049704330
   event: "24650127046"
   date: "2024-01-30 06:55:42"
@@ -163,6 +181,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "历时7个小时 打卡《我独自升级》 ……"
+  parent_title: ""
+  parent_date: "2024-01-30 06:46:00"
 - cid: 6072953443
   event: "24755164708"
   date: "2024-03-10 12:16:59"
@@ -171,6 +192,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "也不知道怎么回事 就是想哭就哭"
+  parent_title: ""
+  parent_date: "2024-03-10 12:05:00"
 - cid: 7404451067
   event: "30038627601"
   date: "2024-08-23 19:23:06"
@@ -179,6 +203,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "有时候真想死去 感觉也就是时间问题 没人懂 也没人问 可能是自己问题 没意思"
+  parent_title: ""
+  parent_date: "2024-08-23 19:20:00"
 - cid: 7404451196
   event: "30038627601"
   date: "2024-08-23 19:24:37"
@@ -187,6 +214,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "有时候真想死去 感觉也就是时间问题 没人懂 也没人问 可能是自己问题 没意思"
+  parent_title: ""
+  parent_date: "2024-08-23 19:20:00"
 - cid: 7404453795
   event: "30038627601"
   date: "2024-08-23 19:26:49"
@@ -195,6 +225,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "有时候真想死去 感觉也就是时间问题 没人懂 也没人问 可能是自己问题 没意思"
+  parent_title: ""
+  parent_date: "2024-08-23 19:20:00"
 - cid: 7404455527
   event: "30038627601"
   date: "2024-08-23 19:28:13"
@@ -203,6 +236,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "有时候真想死去 感觉也就是时间问题 没人懂 也没人问 可能是自己问题 没意思"
+  parent_title: ""
+  parent_date: "2024-08-23 19:20:00"
 - cid: 7404456082
   event: "30038627601"
   date: "2024-08-23 19:34:56"
@@ -211,6 +247,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "有时候真想死去 感觉也就是时间问题 没人懂 也没人问 可能是自己问题 没意思"
+  parent_title: ""
+  parent_date: "2024-08-23 19:20:00"
 - cid: 7418874806
   event: "30071036102"
   date: "2024-09-14 15:26:15"
@@ -291,6 +330,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "可能带队很难吧，也可能本来就不应该"
+  parent_title: ""
+  parent_date: "2025-04-05 10:57:00"
 - cid: 7588196062
   event: "30420056694"
   date: "2025-04-15 09:16:46"
@@ -387,6 +429,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: ""
+  parent_title: ""
+  parent_date: "2025-05-08 00:38:00"
 - cid: 7604465103
   event: "30467167411"
   date: "2025-05-08 00:40:10"
@@ -395,6 +440,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: ""
+  parent_title: ""
+  parent_date: "2025-05-08 00:38:00"
 - cid: 7604490376
   event: "30467167411"
   date: "2025-05-08 00:40:48"
@@ -403,6 +451,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: ""
+  parent_title: ""
+  parent_date: "2025-05-08 00:38:00"
 - cid: 7645839714
   event: "30590865799"
   date: "2025-07-02 04:48:39"
@@ -427,6 +478,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "岁岁平，岁岁安，年年岁岁，岁岁平安"
+  parent_title: "Finding It There - Goldmund"
+  parent_date: "2025-10-15 00:00:00"
 - cid: 7753643903
   event: "30851031857"
   date: "2025-10-15 00:55:11"
@@ -435,6 +489,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "岁岁平，岁岁安，年年岁岁，岁岁平安"
+  parent_title: "Finding It There - Goldmund"
+  parent_date: "2025-10-15 00:00:00"
 - cid: 7753637059
   event: "30851031857"
   date: "2025-10-15 00:57:56"
@@ -443,6 +500,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "岁岁平，岁岁安，年年岁岁，岁岁平安"
+  parent_title: "Finding It There - Goldmund"
+  parent_date: "2025-10-15 00:00:00"
 - cid: 9443191014
   event: "37275631783"
   date: "2026-01-18 12:17:50"
@@ -483,6 +543,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "真累啊😔(ಡωಡ)hiahiahia"
+  parent_title: ""
+  parent_date: "2023-12-22 19:51:00"
 - cid: 9470090394
   event: "24548485562"
   date: "2026-02-14 23:28:42"
@@ -547,6 +610,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "呼"
+  parent_title: ""
+  parent_date: "2023-12-31 02:01:00"
 - cid: 9470065949
   event: "24582849718"
   date: "2026-02-14 23:39:16"
@@ -571,6 +637,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "哎 现在真的是够了 专注力越来越差 胡思乱想 感觉要疯掉 大抵是病了吧🤯"
+  parent_title: ""
+  parent_date: "2024-01-20 02:54:00"
 - cid: 9470074772
   event: "24626885649"
   date: "2026-02-14 23:42:10"
@@ -579,6 +648,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "静下来的有效方法 1.醒来及时洗漱后及时开始计划任务 _-20323.1.20"
+  parent_title: ""
+  parent_date: "2024-01-21 02:20:00"
 - cid: 9470069016
   event: "24682625328"
   date: "2026-02-14 23:45:18"
@@ -595,6 +667,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "最近���也听的少了"
+  parent_title: ""
+  parent_date: "2026-04-09 20:30:00"
 - cid: 9508601236
   event: "37493429759"
   date: "2026-04-11 00:21:01"
@@ -619,6 +694,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "今天是你的生日 祝你生日快乐"
+  parent_title: ""
+  parent_date: "2025-03-19 17:31:00"
 - cid: 9516243030
   event: "37521327815"
   date: "2026-04-22 00:08:38"
@@ -627,6 +705,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "想了很多 还是没能写下去 就这样吧"
+  parent_title: ""
+  parent_date: "2026-04-22 00:03:00"
 - cid: 9516246023
   event: "37521327815"
   date: "2026-04-22 00:09:40"
@@ -635,6 +716,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "想了很多 还是没能写下去 就这样吧"
+  parent_title: ""
+  parent_date: "2026-04-22 00:03:00"
 - cid: 9516254987
   event: "37521327815"
   date: "2026-04-22 00:11:27"
@@ -643,6 +727,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "想了很多 还是没能写下去 就这样吧"
+  parent_title: ""
+  parent_date: "2026-04-22 00:03:00"
 - cid: 9521297948
   event: "37540113697"
   date: "2026-04-29 00:18:12"
@@ -651,6 +738,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "灰蒙蒙的不止天气 还有自己 风越来越大 吹到肚腩 胃也嘟囔着 不过强撑罢了"
+  parent_title: ""
+  parent_date: "2026-04-29 00:16:00"
 - cid: 9522645875
   event: "37545119849"
   date: "2026-05-01 00:37:50"
@@ -659,6 +749,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "按你来说 睡吧睡吧"
+  parent_title: ""
+  parent_date: "2026-05-01 00:24:00"
 - cid: 9522654671
   event: "37545119849"
   date: "2026-05-01 00:40:56"
@@ -667,6 +760,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "按你来说 睡吧睡吧"
+  parent_title: ""
+  parent_date: "2026-05-01 00:24:00"
 - cid: 9522666343
   event: "37545119849"
   date: "2026-05-01 00:44:41"
@@ -675,6 +771,9 @@
   likes: 0
   kind: continue
   source: netease
+  parent_excerpt: "按你来说 睡吧睡吧"
+  parent_title: ""
+  parent_date: "2026-05-01 00:24:00"
 - cid: 9540461927
   event: "37606910155"
   date: "2026-05-24 23:53:31"
@@ -827,6 +926,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "呼"
+  parent_title: ""
+  parent_date: "2023-12-31 02:01:00"
 - cid: 9665645024
   event: "24621527315"
   date: "2026-10-16 01:48:57"
@@ -843,6 +945,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "哎 现在真的是够了 专注力越来越差 胡思乱想 感觉要疯掉 大抵是病了吧🤯"
+  parent_title: ""
+  parent_date: "2024-01-20 02:54:00"
 - cid: 9665633300
   event: "24626885649"
   date: "2026-10-16 01:50:27"
@@ -851,6 +956,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "静下来的有效方法 1.醒来及时洗漱后及时开始计划任务 _-20323.1.20"
+  parent_title: ""
+  parent_date: "2024-01-21 02:20:00"
 - cid: 9665630300
   event: "24647198998"
   date: "2026-10-16 01:50:50"
@@ -859,6 +967,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "算是二刷吧 和之前观看又有了不同的感受 但依旧震撼"
+  parent_title: "夢灯籠 - RADWIMPS"
+  parent_date: "2024-01-29 01:11:00"
 - cid: 9665666728
   event: "24660853670"
   date: "2026-10-16 01:52:19"
@@ -883,6 +994,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "听的最舒服的音乐 ღ(✞╹◡╹✞)ற"
+  parent_title: "面会菜 - 林生祥"
+  parent_date: "2024-02-19 22:32:00"
 - cid: 9665649033
   event: "24707352360"
   date: "2026-10-16 01:55:01"
@@ -891,6 +1005,9 @@
   likes: 0
   kind: note
   source: netease
+  parent_excerpt: "听的最舒服的音乐 ღ(✞╹◡╹✞)ற"
+  parent_title: "面会菜 - 林生祥"
+  parent_date: "2024-02-19 22:32:00"
 - cid: 9665656976
   event: "24715499816"
   date: "2026-10-16 01:56:09"

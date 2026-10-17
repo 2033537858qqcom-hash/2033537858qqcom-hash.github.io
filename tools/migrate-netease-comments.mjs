@@ -66,6 +66,18 @@ function isGrandmaHeld (eventId) {
   return String(ev.date || '').startsWith('2026-10-01') && /姥姥|外婆/.test(ev.msg || '')
 }
 
+// 父动态摘要：父动态都是 李 自己发的动态，只取 李 自己的话（前 60 字）或歌名
+function parentInfo (eventId) {
+  const ev = eventById.get(String(eventId))
+  if (!ev) return { excerpt: '', title: '', date: '' }
+  const msg = String(ev.msg || '').replace(/\r\n?/g, '\n').replace(/\[([^\[\]\n]{1,8})\]/g, (all, name) => (name in EMOJI ? EMOJI[name] : ''))
+  const flat = msg.replace(/\s+/g, ' ').trim()
+  const chars = Array.from(flat)
+  const excerpt = chars.length > 60 ? chars.slice(0, 60).join('') + '…' : flat
+  const title = ev.song && ev.song.name ? ev.song.name + (ev.song.artists ? ' - ' + ev.song.artists : '') : ''
+  return { excerpt, title, date: ev.date || '' }
+}
+
 const seen = new Set()
 const out = []
 const skipped = { deny: 0, grandma: 0, empty: 0, dup: 0 }
@@ -88,19 +100,23 @@ for (const c of comments) {
     likes: c.likes || 0,
     kind: !c.isReply && within ? 'continue' : 'note',
     source: 'netease',
-    inBlog: blogIds.has(eid)
+    inBlog: blogIds.has(eid),
+    parent: parentInfo(eid)
   })
 }
 out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
 
 const q = s => JSON.stringify(String(s))
 let yml = '# 李 自己的网易云评论（uid 3988339491），一次性手动同步，不含别人的评论内容\n'
-yml += '# 生成：tools/migrate-netease-comments.mjs；kind: continue 接在正文后，note 折起为「我后来写的」\n'
-yml += '# event 不在 shuoshuo.yml 里的，页面上作为独立短评论并链回原动态\n'
+yml += '# 生成：tools/migrate-netease-comments.mjs；kind: 随笔下合并为「作者的评论」组，continue 标「接着写」，note 标「后来补的」\n'
+yml += '# event 不在 shuoshuo.yml 里的，页面上按父动态合并成一条「评论组」（带 parent_excerpt / parent_title / parent_date），并链回原动态\n'
 yml += `# 条数: ${out.length}（随笔下 ${out.filter(c => c.inBlog).length}，独立 ${out.filter(c => !c.inBlog).length}）\n\n`
 for (const c of out) {
   yml += `- cid: ${c.cid}\n  event: ${q(c.event)}\n  date: ${q(c.date)}\n  content: ${q(c.content)}\n`
   yml += `  reply_to: ${q(c.reply_to)}\n  likes: ${c.likes}\n  kind: ${c.kind}\n  source: ${c.source}\n`
+  if (!c.inBlog) {
+    yml += `  parent_excerpt: ${q(c.parent.excerpt)}\n  parent_title: ${q(c.parent.title)}\n  parent_date: ${q(c.parent.date)}\n`
+  }
 }
 fs.writeFileSync(outPath, yml, 'utf8')
 console.log(JSON.stringify({

@@ -57,39 +57,67 @@
     return match[1] + '.' + Number(match[2]) + '.' + Number(match[3]) + (match[4] ? ' ' + match[4] + ':' + match[5] : '')
   }
 
-  // 李 自己后来接着写的：continue 紧跟正文，note 折起
+  // 李 自己的评论：同一条动态的评论合并成一组，按时间排列，默认展开；超过 5 条先显示前 3 条
+  const OWN_PREVIEW = 3
+  const OWN_LIMIT = 5
+  const renderOwnItem = (c, withKind) => {
+    const kindTag = withKind
+      ? '<span class="shuoshuo-own__kind shuoshuo-own__kind--' + (c.kind === 'continue' ? 'continue' : 'note') + '">' +
+        (c.kind === 'continue' ? '接着写' : '后来补的') + '</span>'
+      : ''
+    return '<li class="shuoshuo-own__item" data-cid="' + escapeHtml(c.cid) + '">' +
+      '<div class="shuoshuo-own__meta"><time datetime="' + escapeHtml(String(c.date).replace(' ', 'T')) + '">' +
+      escapeHtml(shortTime(c.date)) + '</time>' + kindTag +
+      (c.reply_to ? '<span class="shuoshuo-own__to">回 ' + escapeHtml(c.reply_to) + '</span>' : '') + '</div>' +
+      '<div class="shuoshuo-own__text">' + nl2br(c.content) + '</div></li>'
+  }
+
+  const renderOwnList = (list, withKind) => {
+    const sorted = list.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    if (sorted.length <= OWN_LIMIT) {
+      return '<ol class="shuoshuo-own__list">' + sorted.map(c => renderOwnItem(c, withKind)).join('') + '</ol>'
+    }
+    const rest = sorted.slice(OWN_PREVIEW)
+    return '<ol class="shuoshuo-own__list">' + sorted.slice(0, OWN_PREVIEW).map(c => renderOwnItem(c, withKind)).join('') + '</ol>' +
+      '<details class="shuoshuo-own__more"><summary>展开全部（还有 ' + rest.length + ' 条）</summary>' +
+      '<ol class="shuoshuo-own__list" start="' + (OWN_PREVIEW + 1) + '">' + rest.map(c => renderOwnItem(c, withKind)).join('') + '</ol></details>'
+  }
+
   const renderOwnComments = item => {
     const list = Array.isArray(item.comments) ? item.comments : []
     if (!list.length) return ''
-    const sorted = list.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)))
-    const cont = sorted.filter(c => c.kind === 'continue')
-    const notes = sorted.filter(c => c.kind !== 'continue')
-    let html = ''
-    if (cont.length) {
-      html += '<div class="shuoshuo-continue">' + cont.map(c =>
-        '<p class="shuoshuo-continue__item"><time datetime="' + escapeHtml(String(c.date).replace(' ', 'T')) + '">' +
-        escapeHtml(shortTime(c.date)) + '</time>' + nl2br(c.content) + '</p>'
-      ).join('') + '</div>'
-    }
-    if (notes.length) {
-      html += '<details class="shuoshuo-notes"><summary>我后来写的<span>' + notes.length + '</span></summary>' +
-        notes.map(c =>
-          '<p class="shuoshuo-notes__item"><time datetime="' + escapeHtml(String(c.date).replace(' ', 'T')) + '">' +
-          escapeHtml(shortTime(c.date)) + '</time>' +
-          (c.reply_to ? '<span class="shuoshuo-notes__to">回 ' + escapeHtml(c.reply_to) + '：</span>' : '') +
-          nl2br(c.content) + '</p>'
-        ).join('') + '</details>'
-    }
-    return html
+    return '<section class="shuoshuo-own" aria-label="作者的评论">' +
+      '<h4 class="shuoshuo-own__title">作者的评论<span>（' + list.length + '）</span></h4>' +
+      renderOwnList(list, true) + '</section>'
   }
 
+  const trimText = (value, max) => {
+    const chars = Array.from(String(value || '').replace(/\s+/g, ' ').trim())
+    return chars.length > max ? chars.slice(0, max).join('') + '…' : chars.join('')
+  }
+
+  // 父动态不在随笔里：同一条父动态的评论合并成一条，头部写明评论的是什么
   const renderStandalone = item => {
+    const list = Array.isArray(item.comments) ? item.comments : []
     const datetime = escapeHtml(String(item.date || '').replace(' ', 'T'))
-    return '<article class="shuoshuo-item shuoshuo-item--comment" data-tags="">' +
+    const title = item.parent_title ? '《' + escapeHtml(item.parent_title) + '》' : ''
+    const excerpt = item.parent_excerpt ? escapeHtml(trimText(item.parent_excerpt, 60)) : ''
+    const subject = excerpt
+      ? '“' + excerpt + '”' + (title ? '<span class="shuoshuo-group__song">配乐 ' + title + '</span>' : '')
+      : (title ? '分享单曲 ' + title : '一条动态')
+    return '<article class="shuoshuo-item shuoshuo-item--comment-group" data-tags="" data-event="' + escapeHtml(item.event || '') + '">' +
       '<div class="container">' +
+        '<header class="shuoshuo-group__head">' +
+          '<p class="shuoshuo-group__label">评论 · ' + list.length + ' 条，评论的是我的这条动态' +
+            (item.parent_date ? '（' + escapeHtml(shortTime(item.parent_date)) + '）' : '') + '</p>' +
+          '<p class="shuoshuo-group__parent">' + subject + '</p>' +
+        '</header>' +
         '<div class="shuoshuo-content">' +
-          '<p class="shuoshuo-comment-label">评论 · <time datetime="' + datetime + '">' + escapeHtml(formatDate(item.date)) + '</time></p>' +
-          (item.content || '') +
+          '<section class="shuoshuo-own" aria-label="作者的评论">' +
+            '<h4 class="shuoshuo-own__title">作者的评论<span>（' + list.length + '）</span>' +
+              '<time datetime="' + datetime + '">最近 ' + escapeHtml(shortTime(item.date)) + '</time></h4>' +
+            renderOwnList(list, false) +
+          '</section>' +
           '<p class="shuoshuo-comment-origin"><a href="' + escapeHtml(item.link || '#') + '" target="_blank" rel="noopener noreferrer">在网易云看原动态</a></p>' +
         '</div>' +
       '</div>' +
@@ -133,12 +161,14 @@
     const keys = [...months.keys()].sort((a, b) => Number(b) - Number(a))
     return keys.map(month => {
       const items = months.get(month)
+      const essays = items.filter(i => !i.standalone).length
+      const groupsN = items.length - essays
       const open = year === newestYear && month === newestMonth
       const label = month === '00' ? '未写月份' : Number(month) + ' 月'
       return '<details class="moment-month"' + (open ? ' open' : '') + ' data-open-default="' + (open ? '1' : '0') + '">' +
         '<summary>' +
           '<span class="moment-month__name">' + escapeHtml(label) + '</span>' +
-          '<span class="moment-year__count">' + items.length + ' 则</span>' +
+          '<span class="moment-year__count">' + essays + ' 则' + (groupsN ? ' · ' + groupsN + ' 组评论' : '') + '</span>' +
         '</summary>' +
         '<div class="moment-month__list">' + items.map(renderItem).join('') + '</div>' +
       '</details>'
@@ -161,7 +191,7 @@
       if (b === '未标注') return -1
       return Number(b) - Number(a)
     })
-    const newest = data[0] || {}
+    const newest = data.find(i => !i.standalone) || data[0] || {}
     const newestYear = yearOf(newest)
     const newestMonth = monthOf(newest)
 
@@ -180,7 +210,7 @@
       '<p class="content-lead__eyebrow">Moments</p>' +
       '<p>短句、雨天、一时兴起。最近一个月摊开，更早的收在月份里。</p>' +
       '<div class="moment-filters" role="group" aria-label="按标签筛选">' +
-        '<button type="button" class="is-active" data-moment-tag="">全部<span>' + data.length + '</span></button>' +
+        '<button type="button" class="is-active" data-moment-tag="">全部<span>' + data.filter(i => !i.standalone).length + '</span></button>' +
         tagButtons +
       '</div>' +
       '<p class="content-lead__links">' +
@@ -194,13 +224,15 @@
 
     const chapters = years.map(year => {
       const months = groups.get(year)
-      const count = [...months.values()].reduce((sum, items) => sum + items.length, 0)
+      const all = [...months.values()].reduce((arr, items) => arr.concat(items), [])
+      const count = all.filter(i => !i.standalone).length
+      const groupCount = all.length - count
       const open = year === newestYear
       const name = year === '未标注' ? '未写日期' : year
       return '<details class="moment-year"' + (open ? ' open' : '') + ' data-open-default="' + (open ? '1' : '0') + '">' +
         '<summary>' +
           '<span class="moment-year__name">' + escapeHtml(name) + '</span>' +
-          '<span class="moment-year__count">' + count + ' 则</span>' +
+          '<span class="moment-year__count">' + count + ' 则' + (groupCount ? ' · ' + groupCount + ' 组评论' : '') + '</span>' +
         '</summary>' +
         '<div class="moment-year__list">' + renderMonths(year, months, newestYear, newestMonth) + '</div>' +
       '</details>'
