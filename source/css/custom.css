@@ -3028,58 +3028,114 @@ body #page:has(.shuoshuo-item) h1.page-title {
 
 
 
-/* ===== 随笔：我自己的补写（网易云评论） ===== */
-.shuoshuo-continue {
-  margin-top: 0.9rem;
-  padding-top: 0.7rem;
-  border-top: 1px dashed var(--panel-border, rgba(127, 127, 127, 0.28));
+/* ===== 随笔：作者的评论（网易云评论，同一动态合并成组） ===== */
+.shuoshuo-own {
+  margin-top: 1rem;
+  padding: 0.7rem 0.9rem 0.8rem;
+  border: 1px solid var(--panel-border, rgba(127, 127, 127, 0.28));
+  border-left: 3px solid var(--lijiahao-accent, rgba(127, 127, 127, 0.55));
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.05);
+  font-size: 0.95em;
 }
-.shuoshuo-continue__item,
-.shuoshuo-notes__item {
-  margin: 0.55rem 0 0;
+.shuoshuo-own__title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.2em 0.6em;
+  margin: 0 0 0.2rem;
+  padding: 0;
+  font-size: 0.95em;
+  font-weight: 600;
+  border: 0;
+}
+.shuoshuo-own__title::before { content: none; }
+.shuoshuo-own__title span { font-weight: 400; opacity: 0.75; margin-left: -0.4em; }
+.shuoshuo-own__title time {
+  margin-left: auto;
+  font-size: 0.82em;
+  font-weight: 400;
+  color: var(--lijiahao-muted, #8a8f98);
+}
+.shuoshuo-own__list { list-style: none; margin: 0; padding: 0; }
+.shuoshuo-own__item {
+  margin: 0;
+  padding: 0.55rem 0 0.1rem;
   line-height: 1.85;
 }
-.shuoshuo-continue__item time,
-.shuoshuo-notes__item time {
-  display: block;
-  margin-bottom: 0.1rem;
+.shuoshuo-own__item + .shuoshuo-own__item {
+  margin-top: 0.5rem;
+  border-top: 1px dashed var(--panel-border, rgba(127, 127, 127, 0.25));
+}
+.shuoshuo-own__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
   font-size: 0.78em;
   letter-spacing: 0.04em;
   color: var(--lijiahao-muted, #8a8f98);
 }
-.shuoshuo-notes {
-  margin-top: 0.9rem;
-  font-size: 0.94em;
+.shuoshuo-own__kind {
+  padding: 0 0.5em;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.92em;
+  line-height: 1.6;
+  opacity: 0.8;
 }
-.shuoshuo-notes > summary {
+.shuoshuo-own__text { overflow-wrap: anywhere; }
+.shuoshuo-own__more { margin-top: 0.4rem; }
+.shuoshuo-own__more > .shuoshuo-own__list { margin-top: 0.2rem; }
+.shuoshuo-own__more > .shuoshuo-own__list .shuoshuo-own__item:first-child {
+  margin-top: 0.5rem;
+  border-top: 1px dashed var(--panel-border, rgba(127, 127, 127, 0.25));
+}
+.shuoshuo-own__more > summary {
   cursor: pointer;
   list-style: none;
+  padding: 0.3rem 0;
+  font-size: 0.85em;
   color: var(--lijiahao-muted, #8a8f98);
   user-select: none;
 }
-.shuoshuo-notes > summary::-webkit-details-marker { display: none; }
-.shuoshuo-notes > summary::before { content: "▸ "; }
-.shuoshuo-notes[open] > summary::before { content: "▾ "; }
-.shuoshuo-notes > summary span {
-  margin-left: 0.4em;
-  font-size: 0.82em;
-  opacity: 0.75;
-}
-.shuoshuo-notes__item {
-  padding-left: 0.8rem;
-  border-left: 2px solid var(--panel-border, rgba(127, 127, 127, 0.28));
-}
-.shuoshuo-notes__to { color: var(--lijiahao-muted, #8a8f98); }
+.shuoshuo-own__more > summary::-webkit-details-marker { display: none; }
+.shuoshuo-own__more > summary::before { content: "▸ "; }
+.shuoshuo-own__more[open] > summary::before { content: "▾ "; }
+.shuoshuo-own__more[open] > summary { font-size: 0; }
+.shuoshuo-own__more[open] > summary::before { font-size: 0.85rem; content: "▾ 收起"; }
 
-/* 父动态不在随笔里的独立短评论 */
-.shuoshuo-item--comment .shuoshuo-content { font-size: 0.95em; }
-.shuoshuo-item--comment .shuoshuo-comment-label {
-  margin: 0 0 0.3rem;
+/* 父动态不在随笔里：按父动态合并的评论组 */
+.shuoshuo-item--comment-group .shuoshuo-group__head {
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.2rem;
+  border-bottom: 1px solid var(--panel-border, rgba(127, 127, 127, 0.28));
+}
+.shuoshuo-group__label {
+  margin: 0 0 0.25rem;
   font-size: 0.78em;
   letter-spacing: 0.04em;
   color: var(--lijiahao-muted, #8a8f98);
 }
-.shuoshuo-item--comment .shuoshuo-comment-origin {
-  margin: 0.4rem 0 0;
-  font-size: 0.8em;
+.shuoshuo-group__parent {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.shuoshuo-group__song {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.85em;
+  font-weight: 400;
+  color: var(--lijiahao-muted, #8a8f98);
+}
+.shuoshuo-item--comment-group .shuoshuo-own { margin-top: 0.4rem; }
+.shuoshuo-item--comment-group .shuoshuo-comment-origin {
+  margin: 0.6rem 0 0;
+  font-size: 0.82em;
+}
+@media (max-width: 600px) {
+  .shuoshuo-own { padding: 0.6rem 0.7rem 0.7rem; }
+  .shuoshuo-own__title time { margin-left: 0; width: 100%; }
 }
