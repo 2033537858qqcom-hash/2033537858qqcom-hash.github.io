@@ -10,7 +10,7 @@
     "optimize:assets": "node tools/optimize-assets.mjs",
     "optimize:audio": "node tools/compress-audio.mjs",
     "optimize": "pnpm run optimize:assets && pnpm run optimize:audio",
-    "moments:sync": "node tools/fetch-netease-events.mjs && node tools/migrate-netease-shuoshuo.mjs",
+    "moments:sync": "node tools/fetch-netease-events.mjs && node tools/migrate-netease-shuoshuo.mjs && node tools/fetch-netease-comments.mjs && node tools/migrate-netease-comments.mjs",
     "server": "hexo server",
     "new": "hexo new"
   },

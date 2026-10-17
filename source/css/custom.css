@@ -3027,3 +3027,59 @@ body #page:has(.shuoshuo-item) h1.page-title {
 
 
 
+
+/* ===== 随笔：我自己的补写（网易云评论） ===== */
+.shuoshuo-continue {
+  margin-top: 0.9rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed var(--panel-border, rgba(127, 127, 127, 0.28));
+}
+.shuoshuo-continue__item,
+.shuoshuo-notes__item {
+  margin: 0.55rem 0 0;
+  line-height: 1.85;
+}
+.shuoshuo-continue__item time,
+.shuoshuo-notes__item time {
+  display: block;
+  margin-bottom: 0.1rem;
+  font-size: 0.78em;
+  letter-spacing: 0.04em;
+  color: var(--lijiahao-muted, #8a8f98);
+}
+.shuoshuo-notes {
+  margin-top: 0.9rem;
+  font-size: 0.94em;
+}
+.shuoshuo-notes > summary {
+  cursor: pointer;
+  list-style: none;
+  color: var(--lijiahao-muted, #8a8f98);
+  user-select: none;
+}
+.shuoshuo-notes > summary::-webkit-details-marker { display: none; }
+.shuoshuo-notes > summary::before { content: "▸ "; }
+.shuoshuo-notes[open] > summary::before { content: "▾ "; }
+.shuoshuo-notes > summary span {
+  margin-left: 0.4em;
+  font-size: 0.82em;
+  opacity: 0.75;
+}
+.shuoshuo-notes__item {
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--panel-border, rgba(127, 127, 127, 0.28));
+}
+.shuoshuo-notes__to { color: var(--lijiahao-muted, #8a8f98); }
+
+/* 父动态不在随笔里的独立短评论 */
+.shuoshuo-item--comment .shuoshuo-content { font-size: 0.95em; }
+.shuoshuo-item--comment .shuoshuo-comment-label {
+  margin: 0 0 0.3rem;
+  font-size: 0.78em;
+  letter-spacing: 0.04em;
+  color: var(--lijiahao-muted, #8a8f98);
+}
+.shuoshuo-item--comment .shuoshuo-comment-origin {
+  margin: 0.4rem 0 0;
+  font-size: 0.8em;
+}

@@ -49,7 +49,55 @@
 
   const visibleTags = item => (Array.isArray(item.tags) ? item.tags : []).filter(tag => !HIDDEN_TAGS.has(tag))
 
+  const nl2br = value => escapeHtml(value).replace(/\n/g, '<br>')
+
+  const shortTime = dateStr => {
+    const match = String(dateStr || '').match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/)
+    if (!match) return ''
+    return match[1] + '.' + Number(match[2]) + '.' + Number(match[3]) + (match[4] ? ' ' + match[4] + ':' + match[5] : '')
+  }
+
+  // 李 自己后来接着写的：continue 紧跟正文，note 折起
+  const renderOwnComments = item => {
+    const list = Array.isArray(item.comments) ? item.comments : []
+    if (!list.length) return ''
+    const sorted = list.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    const cont = sorted.filter(c => c.kind === 'continue')
+    const notes = sorted.filter(c => c.kind !== 'continue')
+    let html = ''
+    if (cont.length) {
+      html += '<div class="shuoshuo-continue">' + cont.map(c =>
+        '<p class="shuoshuo-continue__item"><time datetime="' + escapeHtml(String(c.date).replace(' ', 'T')) + '">' +
+        escapeHtml(shortTime(c.date)) + '</time>' + nl2br(c.content) + '</p>'
+      ).join('') + '</div>'
+    }
+    if (notes.length) {
+      html += '<details class="shuoshuo-notes"><summary>我后来写的<span>' + notes.length + '</span></summary>' +
+        notes.map(c =>
+          '<p class="shuoshuo-notes__item"><time datetime="' + escapeHtml(String(c.date).replace(' ', 'T')) + '">' +
+          escapeHtml(shortTime(c.date)) + '</time>' +
+          (c.reply_to ? '<span class="shuoshuo-notes__to">回 ' + escapeHtml(c.reply_to) + '：</span>' : '') +
+          nl2br(c.content) + '</p>'
+        ).join('') + '</details>'
+    }
+    return html
+  }
+
+  const renderStandalone = item => {
+    const datetime = escapeHtml(String(item.date || '').replace(' ', 'T'))
+    return '<article class="shuoshuo-item shuoshuo-item--comment" data-tags="">' +
+      '<div class="container">' +
+        '<div class="shuoshuo-content">' +
+          '<p class="shuoshuo-comment-label">评论 · <time datetime="' + datetime + '">' + escapeHtml(formatDate(item.date)) + '</time></p>' +
+          (item.content || '') +
+          '<p class="shuoshuo-comment-origin"><a href="' + escapeHtml(item.link || '#') + '" target="_blank" rel="noopener noreferrer">在网易云看原动态</a></p>' +
+        '</div>' +
+      '</div>' +
+    '</article>'
+  }
+
   const renderItem = item => {
+    if (item.standalone) return renderStandalone(item)
     const tags = visibleTags(item)
     const tagHtml = tags.length
       ? tags.map(tag => '<span class="shuoshuo-tag">' + escapeHtml(tag) + '</span>').join('')
@@ -71,7 +119,7 @@
             '<time class="shuoshuo-date" datetime="' + datetime + '">' + escapeHtml(formatDate(item.date)) + '</time>' +
           '</div>' +
         '</div>' +
-        '<div class="shuoshuo-content">' + (item.content || '') + '</div>' +
+        '<div class="shuoshuo-content">' + (item.content || '') + renderOwnComments(item) + '</div>' +
         '<div class="shuoshuo-footer ' + (tagHtml ? 'flex-between' : 'flex-end') + '">' +
           (tagHtml ? '<div class="shuoshuo-tags">' + tagHtml + '</div>' : '') +
           commentButton +
