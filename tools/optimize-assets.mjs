@@ -114,6 +114,12 @@ const jobs = [
     webp: { quality: 72, effort: 6 }
   },
   {
+    input: 'assets/raw/anime-covers/luoxiaohei.jpg',
+    output: `${outDir}/anime-luoxiaohei.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
+  {
     input: 'assets/raw/anime-covers/hello-world.jpg',
     output: `${outDir}/anime-hello-world.webp`,
     resize: { width: 480, withoutEnlargement: true },
