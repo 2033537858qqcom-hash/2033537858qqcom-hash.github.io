@@ -9,6 +9,7 @@
   const AUTHOR = 'Rogue_l'
   const HIDDEN_TAGS = new Set(['随笔', '配乐', '配图'])
   let cachedData = null
+  let pendingFetch = null
 
   const normalizeDate = raw => {
     if (!raw) return ''
@@ -17,19 +18,72 @@
     return iso ? `${iso[1]} ${iso[2]}` : s
   }
 
-  const readData = () => {
-    if (cachedData) return cachedData
-    const dataEl = document.getElementById('shuoshuo-data')
-    if (!dataEl) return null
+  const normalizeList = parsed => Array.isArray(parsed)
+    ? parsed
+      .filter(Boolean)
+      .map(item => Object.assign({}, item, { date: normalizeDate(item.date) }))
+    : []
+
+  const parseJsonEl = el => {
+    if (!el) return null
     try {
-      const parsed = JSON.parse(dataEl.textContent || '[]')
-      cachedData = Array.isArray(parsed)
-        ? parsed.map(item => item ? Object.assign({}, item, { date: normalizeDate(item.date) }) : item)
-        : []
+      const items = normalizeList(JSON.parse(el.textContent || '[]'))
+      return items.length ? items : null
     } catch (e) {
-      cachedData = []
+      return null
     }
-    return cachedData
+  }
+
+  const readData = () => {
+    if (cachedData && cachedData.length) return cachedData
+    const items =
+      parseJsonEl(document.getElementById('moments-years-data')) ||
+      parseJsonEl(document.getElementById('shuoshuo-data'))
+    if (items) cachedData = items
+    return items
+  }
+
+  const fetchData = () => {
+    if (cachedData && cachedData.length) return Promise.resolve(cachedData)
+    if (pendingFetch || typeof window.fetch !== 'function') return pendingFetch
+    const url = window.location.origin + window.location.pathname
+    pendingFetch = window.fetch(url, { credentials: 'same-origin' })
+      .then(res => (res.ok ? res.text() : ''))
+      .then(html => {
+        if (!html) return null
+        let items = null
+        if (typeof window.DOMParser === 'function') {
+          try {
+            const doc = new window.DOMParser().parseFromString(html, 'text/html')
+            items =
+              parseJsonEl(doc.getElementById('moments-years-data')) ||
+              parseJsonEl(doc.getElementById('shuoshuo-data'))
+          } catch (e) {
+            /* fallback to regex */
+          }
+        }
+        if (!items) {
+          const m = html.match(/<script type="application\/json" id="(?:moments-years-data|shuoshuo-data)">([\s\S]*?)<\/script>/)
+          if (m) {
+            try {
+              const parsed = normalizeList(JSON.parse(m[1] || '[]'))
+              if (parsed.length) items = parsed
+            } catch (e) {
+              /* ignore invalid JSON */
+            }
+          }
+        }
+        if (items && items.length) {
+          cachedData = items
+          return items
+        }
+        return null
+      })
+      .catch(() => null)
+      .finally(() => {
+        pendingFetch = null
+      })
+    return pendingFetch
   }
 
   readData()
@@ -361,6 +415,12 @@
     tpl.innerHTML = render(data)
     decorateContent(tpl.content)
 
+    // 保留 #shuoshuo-data 于容器外，防止主题后续脚本找不到它而报错
+    const rawDataEl = document.getElementById('shuoshuo-data')
+    if (rawDataEl && container.contains(rawDataEl) && container.parentNode) {
+      container.parentNode.insertBefore(rawDataEl, container.nextSibling)
+    }
+
     container.replaceChildren(tpl.content)
     container.dataset.momentTag = ''
 
@@ -392,9 +452,20 @@
     return true
   }
 
+  const ensureRendered = () => {
+    if (!isMoments()) return
+    if (apply()) return
+    const promise = fetchData()
+    if (promise && typeof promise.then === 'function') {
+      promise.then(items => {
+        if (items && items.length && isMoments()) apply()
+      })
+    }
+  }
+
   const watch = () => {
     if (!isMoments()) return
-    const ok = apply()
+    ensureRendered()
     const container = document.getElementById('article-container')
     if (!container || container.__momentsYearsWatch) return
     container.__momentsYearsWatch = true
@@ -403,26 +474,47 @@
         observer.disconnect()
         return
       }
-      if (!container.querySelector('.moment-year')) apply()
+      if (!container.querySelector('.moment-year')) ensureRendered()
     })
     observer.observe(container, { childList: true })
-    if (ok && !document.querySelector('.shuoshuo-navigation')) {
-      window.setTimeout(() => observer.disconnect(), 1500)
+  }
+
+  const scheduleWatch = () => {
+    if (!isMoments()) return
+    watch()
+    ;[60, 240, 600].forEach(delay => {
+      window.setTimeout(() => {
+        if (!isMoments()) return
+        const container = document.getElementById('article-container')
+        if (!container || !container.querySelector('.moment-year')) watch()
+      }, delay)
+    })
+  }
+
+  const registerBtfPjax = () => {
+    if (window.btf && typeof window.btf.addGlobalFn === 'function') {
+      window.btf.addGlobalFn('pjaxComplete', scheduleWatch, 'momentsYears')
     }
   }
 
+  registerBtfPjax()
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', watch)
+    document.addEventListener('DOMContentLoaded', () => {
+      registerBtfPjax()
+      scheduleWatch()
+    })
   } else {
-    watch()
+    scheduleWatch()
   }
   window.addEventListener('load', () => {
-    window.setTimeout(apply, 0)
-    window.setTimeout(apply, 300)
+    registerBtfPjax()
+    scheduleWatch()
   })
   window.addEventListener('hashchange', () => {
     const container = document.getElementById('article-container')
     if (container && isMoments()) openHashTarget(container)
   })
-  document.addEventListener('pjax:complete', () => window.setTimeout(watch, 0))
+  document.addEventListener('pjax:complete', () => window.setTimeout(scheduleWatch, 0))
+  document.addEventListener('pjax:success', () => window.setTimeout(scheduleWatch, 0))
 })()
