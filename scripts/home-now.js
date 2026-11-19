@@ -22,11 +22,6 @@ function shortDate (value) {
   return m ? `${m[1]}.${Number(m[2])}.${Number(m[3])}` : ''
 }
 
-function songOfMoment (item) {
-  const m = String((item && item.content) || '').match(/^—— 配乐：\[([^\]]+)\]/m)
-  return m ? m[1] : ''
-}
-
 function excerptFromMoment (item, maxLen = 62) {
   const text = String((item && item.content) || '')
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
@@ -64,20 +59,13 @@ function recentPhotos (files, limit = 3) {
 
 function renderMomentSnippets (moments) {
   if (!moments.length) {
-    return '<a class="home-now__entry" href="/moments/"><p>随便点开一条就好。</p></a>'
+    return '<li><a href="/moments/"><span>随便点开一条就好。</span></a></li>'
   }
   return moments.map(item => {
     const id = item && item.id ? String(item.id) : dateKey(item && item.date).slice(0, 10).replace(/-/g, '')
     const d = shortDate(item && item.date)
-    const song = songOfMoment(item)
-    const excerpt = excerptFromMoment(item, 58)
-    return `<a class="home-now__entry" href="/moments/#m-${escapeHtml(id)}">
-      <div class="home-now__entry-meta">
-        ${d ? `<time>${escapeHtml(d)}</time>` : ''}
-        ${song ? `<span class="home-now__song"><i class="fas fa-music" aria-hidden="true"></i> ${escapeHtml(song)}</span>` : ''}
-      </div>
-      <p>${escapeHtml(excerpt)}</p>
-    </a>`
+    const excerpt = excerptFromMoment(item, 44)
+    return `<li><a href="/moments/#m-${escapeHtml(id)}">${d ? `<time>${escapeHtml(d)}</time>` : ''}<span>${escapeHtml(excerpt)}</span></a></li>`
   }).join('')
 }
 
@@ -89,29 +77,24 @@ function renderHomeNow () {
   const photoFiles = getPhotographyFiles()
   const { total: photoTotal, picks } = recentPhotos(photoFiles, 3)
 
-  const collageImgs = picks.map((src, idx) =>
-    `<img src="${escapeHtml(src)}" alt="近期摄影 ${idx + 1}" loading="lazy" decoding="async">`
+  const thumbs = picks.map((src, idx) =>
+    `<img src="${escapeHtml(src)}" alt="近期摄影 ${idx + 1}" loading="lazy" decoding="async" width="60" height="60">`
   ).join('')
 
   return `<section class="home-now" aria-label="近期随笔与风景">
-    <div class="home-now__grid">
-      <div class="home-now__card home-now__card--moment">
-        <div class="home-now__card-top">
-          <span class="home-now__label">最近随笔</span>
-          <a class="home-now__more" href="/moments/">去读全部 <i class="fas fa-angle-right" aria-hidden="true"></i></a>
+    <div class="home-now__strip">
+      <div class="home-now__notes">
+        <div class="home-now__row">
+          <span class="home-now__label">最近在写</span>
+          <a class="home-now__more" href="/moments/">全部随笔 →</a>
         </div>
-        <div class="home-now__entries">
+        <ul class="home-now__list">
           ${renderMomentSnippets(latestMoments)}
-        </div>
+        </ul>
       </div>
-      <a class="home-now__card home-now__card--photo" href="/photography/">
-        <div class="home-now__collage home-now__collage--${Math.min(picks.length, 3)}">
-          ${collageImgs}
-        </div>
-        <div class="home-now__photo-caption">
-          <span class="home-now__label">光影日常 · ${photoTotal} 张</span>
-          <span class="home-now__go">去翻看 <i class="fas fa-angle-right" aria-hidden="true"></i></span>
-        </div>
+      <a class="home-now__photos" href="/photography/">
+        <div class="home-now__thumbs">${thumbs}</div>
+        <span class="home-now__go">光影 · ${photoTotal} 张 →</span>
       </a>
     </div>
   </section>`

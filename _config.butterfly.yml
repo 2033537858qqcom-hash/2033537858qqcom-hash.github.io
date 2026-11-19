@@ -18,21 +18,20 @@ nav:
   fixed: true
 
 menu:
-  首页: / || fas fa-home
-  文章 || fas fa-book:
-    归档: /archives/ || fas fa-archive
-    分类: /categories/ || fas fa-folder-open
-    标签: /tags/ || fas fa-tags
-  生活 || fas fa-cloud-sun:
-    随笔: /moments/ || fas fa-feather-alt
-    时间轴: /timeline/ || fas fa-timeline
-    番剧: /anime/ || fas fa-tv
-    音乐: /music/ || fas fa-music
-    摄影: /photography/ || fas fa-camera
-  社交 || fas fa-heart:
-    留言板: /message/ || fas fa-comments
-    友链: /links/ || fas fa-link
-  关于: /about/ || fas fa-user-astronaut
+  首页: /
+  随笔: /moments/
+  时间轴: /timeline/
+  摄影: /photography/
+  番剧: /anime/
+  文章:
+    归档: /archives/
+    分类: /categories/
+    标签: /tags/
+  更多:
+    音乐: /music/
+    留言板: /message/
+    友链: /links/
+    关于: /about/
 
 # --------------------------------------
 # Code Blocks Settings
@@ -304,7 +303,7 @@ aside:
     enable: true
     description: 在代码、风景与日常之间
     button:
-      enable: true
+      enable: false
       icon: fab fa-github
       text: Follow Rogue_l
       link: https://github.com/2033537858qqcom-hash
@@ -813,7 +812,7 @@ mask:
 
 # Loading Animation
 preloader:
-  enable: true
+  enable: false
   # source
   # 1. fullpage-loading
   # 2. pace (progress bar)
