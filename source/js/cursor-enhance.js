@@ -1,9 +1,8 @@
 /**
- * 桌面端「仅光圈」光标：
- * - 外层负责定位（translate3d），内层 .cursor-ring__shape 仅用 transform: scale(...) 过渡，不触发布局重算
- * - 鼠标静止时自动停止 rAF 空转，移动时恢复
- * - 悬停跨域 iframe 时自动隐退并恢复原生光标，避免卡在边框
- * - Alt+C 或右键菜单可随时开关（localStorage: blog-cursor-ring）
+ * 桌面端「光圈光标」彩蛋：
+ * - 默认归还系统指针，保证浏览、划选与点击流畅
+ * - 按 Alt+C 或点击右下角工具栏按钮开启/关闭（localStorage: blog-cursor-ring）
+ * - 开启后：外层 translate3d 定位、内层 .cursor-ring__shape 纯合成层缩放，静止自动停帧，悬停 iframe 自动隐退
  */
 (function () {
   const STORAGE_KEY = 'blog-cursor-ring'
@@ -15,8 +14,7 @@
       if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return false
       if (window.matchMedia('(max-width: 900px)').matches) return false
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
-      if (localStorage.getItem(STORAGE_KEY) === 'off') return false
-      return true
+      return localStorage.getItem(STORAGE_KEY) === 'on'
     } catch (e) {
       return false
     }
@@ -105,12 +103,21 @@
     raf = requestAnimationFrame(tick)
   }
 
+  const syncToggleButton = () => {
+    const btn = document.getElementById('toggle-cursor-ring')
+    if (btn) {
+      btn.setAttribute('aria-pressed', enabled ? 'true' : 'false')
+      btn.classList.toggle('is-active', enabled)
+    }
+  }
+
   const setEnabled = on => {
     enabled = Boolean(on)
     document.documentElement.classList.toggle('cursor-enhance', enabled)
     document.documentElement.classList.remove('cursor-hover-interactive')
     hovering = false
     overIframe = false
+    syncToggleButton()
 
     if (!enabled) {
       hideVisual()
@@ -131,15 +138,37 @@
   }
 
   const toggleEnabled = () => {
-    const next = localStorage.getItem(STORAGE_KEY) === 'off' ? 'on' : 'off'
+    const next = localStorage.getItem(STORAGE_KEY) === 'on' ? 'off' : 'on'
     try {
       localStorage.setItem(STORAGE_KEY, next)
     } catch (e) {}
-    setEnabled(next !== 'off' && canEnhance())
-    return next !== 'off'
+    setEnabled(next === 'on' && canEnhance())
+    return next === 'on'
   }
 
   window.__toggleCursorRing = toggleEnabled
+
+  const ensureRightsideButton = () => {
+    if (window.matchMedia('(hover: none), (pointer: coarse), (max-width: 900px)').matches) return
+    const group = document.getElementById('rightside-config-hide')
+    if (!group || document.getElementById('toggle-cursor-ring')) {
+      syncToggleButton()
+      return
+    }
+    const btn = document.createElement('button')
+    btn.id = 'toggle-cursor-ring'
+    btn.type = 'button'
+    btn.title = '切换光圈光标 (Alt+C)'
+    btn.setAttribute('aria-label', '切换光圈光标')
+    btn.setAttribute('aria-pressed', enabled ? 'true' : 'false')
+    const icon = document.createElement('i')
+    icon.className = 'fas fa-bullseye'
+    icon.setAttribute('aria-hidden', 'true')
+    btn.appendChild(icon)
+    btn.addEventListener('click', toggleEnabled)
+    group.appendChild(btn)
+    syncToggleButton()
+  }
 
   const onMove = e => {
     mouse.x = e.clientX
@@ -203,6 +232,7 @@
   }
 
   const boot = () => {
+    ensureRightsideButton()
     setEnabled(canEnhance())
   }
 

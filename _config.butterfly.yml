@@ -157,9 +157,9 @@ post_meta:
 # The top_img settings of home page
 # default: top img - full screen, site info - middle
 # The position of site info, eg: 300px/300em/300rem/10%
-index_site_info_top: 46%
+index_site_info_top: 30%
 # The height of top_img, eg: 300px/300em/300rem
-index_top_img_height: 520px
+index_top_img_height: 620px
 
 # The subtitle on homepage
 subtitle:
@@ -310,9 +310,9 @@ aside:
       link: https://github.com/2033537858qqcom-hash
   card_announcement:
     enable: true
-    content: 欢迎阅读。可以从「随笔」与「人生长廊」开始翻看；微信号可点上方绿标复制。
+    content: 欢迎来到 Rogue_l 的小角落～可以先去「随笔」或「人生长廊」逛逛，微信号点上方绿标即可复制。
   card_recent_post:
-    enable: true
+    enable: false
     # If set 0 will show all
     limit: 5
     # Sort: date / updated
@@ -333,7 +333,7 @@ aside:
     expand: none
     sort_order:
   card_tags:
-    enable: true
+    enable: false
     # If set 0 will show all
     limit: 40
     color: true
@@ -344,7 +344,7 @@ aside:
     order: 1
     sort_order:
   card_archives:
-    enable: true
+    enable: false
     # Type: monthly / yearly
     type: monthly
     # Eg: YYYY年MM月
@@ -363,7 +363,7 @@ aside:
     # Sort of order. 1, asc for ascending; -1, desc for descending
     order: -1
   card_webinfo:
-    enable: true
+    enable: false
     post_count: true
     last_push_date: true
     sort_order:
@@ -1091,7 +1091,6 @@ inject:
     - <script src="/js/hero-subtitle.js?v=1.5.12" defer></script>
     - <script src="/js/hero-latest.js?v=1.5.12" defer></script>
     - <script src="/js/theme-particles.js?v=1.5.12" defer></script>
-    - <script src="/js/context-menu.js?v=1.5.12" defer></script>
     - <script src="/js/music-player.js?v=1.5.12" defer></script>
     - <script src="/js/live2d-widget-init.js?v=1.5.12" defer></script>
     - <script src="/js/user-distance.js?v=1.5.12" defer></script>

@@ -1,8 +1,9 @@
 /**
- * Live2D 看板娘（桌面端）
+ * Live2D 看板娘（桌面端）：
  * - 全站显示（宽屏桌面）；移动端 / 触控 / 省流 / 减少动效关闭
- * - 多 CDN 回退（jsDelivr 在国内常失败）
- * - Pjax 切页时清理残留 canvas，避免叠层或「消失」
+ * - 多 CDN 回退（npmmirror -> unpkg -> jsdelivr）
+ * - 自带轻量应景气泡（按昼夜、页面与点击互动），平时不打扰阅读
+ * - 鼠标移向右侧工具栏 #rightside 时轻微退让透明度，互不遮挡
  */
 (function () {
   const SCRIPT_CANDIDATES = [
@@ -16,6 +17,49 @@
     'https://unpkg.com/live2d-widget-model-haruto@1.0.5/assets/haruto.model.json',
     'https://cdn.jsdelivr.net/npm/live2d-widget-model-haruto@1.0.5/assets/haruto.model.json'
   ]
+
+  const GREET_KEY = 'blog-live2d-greeted'
+  let bubbleTimer = 0
+  let lastLine = ''
+
+  const LINES = {
+    light: [
+      '晴空正好，先翻两条随笔吹吹风吧～',
+      '点一下页面会有小花瓣散开哦，试试看？',
+      '写得出就写，写不出就先去晒会儿太阳！',
+      '欢迎来到 Rogue_l 的小天地，今天心情怎么样？'
+    ],
+    dark: [
+      '夜空和银河出来啦，要不要配一首歌慢慢读？',
+      '夜深了，逛完这一页记得早点休息呀。',
+      '点击星夜里的任何空白处，会有微光飘起哦～',
+      '把白天的吵闹放一边，这里很安静。'
+    ],
+    pages: {
+      moments: '这里记着好多雨天、晚风和一时兴起的句子。',
+      photography: '点开喜欢的照片，可以用左右键一张张翻看！',
+      anime: '有没有哪一部番，你也反复重温过好多遍？',
+      timeline: '一年一章，把照片、随笔和歌都串在了一起。',
+      music: '戴上耳机吧，歌单里藏着好多单曲循环的歌。',
+      message: '留言板一直开着，路过也可以打个招呼呀！'
+    },
+    clicks: [
+      '哎呀，被你发现啦～',
+      '风铃好像轻轻响了一声呢。',
+      '偷偷告诉你，按 Alt+C 可以开关光圈光标彩蛋！',
+      '要不顺便去「人生长廊」逛一圈？',
+      '今天也要元气满满地往前走呀！',
+      '想和站长联系的话，点一下绿色微信图标就能复制啦。'
+    ]
+  }
+
+  const pickLine = pool => {
+    if (!Array.isArray(pool) || !pool.length) return ''
+    const filtered = pool.length > 1 ? pool.filter(l => l !== lastLine) : pool
+    const line = filtered[Math.floor(Math.random() * filtered.length)]
+    lastLine = line
+    return line
+  }
 
   const shouldLoadLive2D = () => {
     try {
@@ -32,9 +76,55 @@
     }
   }
 
+  const ensureBubble = () => {
+    let bubble = document.getElementById('live2d-bubble')
+    if (bubble) return bubble
+    bubble = document.createElement('div')
+    bubble.id = 'live2d-bubble'
+    bubble.className = 'live2d-bubble'
+    bubble.setAttribute('role', 'status')
+    bubble.setAttribute('aria-live', 'polite')
+    document.body.appendChild(bubble)
+    return bubble
+  }
+
+  const hideBubble = () => {
+    const bubble = document.getElementById('live2d-bubble')
+    if (bubble) bubble.classList.remove('is-visible')
+  }
+
+  const showBubble = (text, duration = 4200) => {
+    if (!text || !shouldLoadLive2D()) return
+    const widget = document.getElementById('live2d-widget') || document.getElementById('live2dcanvas')
+    if (!widget) return
+    const bubble = ensureBubble()
+    bubble.textContent = text
+    bubble.classList.add('is-visible')
+    window.clearTimeout(bubbleTimer)
+    bubbleTimer = window.setTimeout(hideBubble, duration)
+  }
+
+  const pageKey = () => {
+    const p = window.location.pathname
+    if (/\/moments\/?/.test(p)) return 'moments'
+    if (/\/photography\/?/.test(p)) return 'photography'
+    if (/\/anime\/?/.test(p)) return 'anime'
+    if (/\/timeline\/?/.test(p)) return 'timeline'
+    if (/\/music\/?/.test(p)) return 'music'
+    if (/\/message\/?/.test(p)) return 'message'
+    return ''
+  }
+
+  const greetForContext = () => {
+    const k = pageKey()
+    if (k && LINES.pages[k]) return LINES.pages[k]
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark'
+    return pickLine(dark ? LINES.dark : LINES.light)
+  }
+
   const purgeWidget = () => {
     try {
-      document.querySelectorAll('#live2d-widget, #live2dcanvas, canvas#live2dcanvas').forEach(el => {
+      document.querySelectorAll('#live2d-widget, #live2dcanvas, canvas#live2dcanvas, #live2d-bubble').forEach(el => {
         if (el && el.parentNode) el.parentNode.removeChild(el)
       })
     } catch (e) {
@@ -46,12 +136,11 @@
 
   const loadScript = src =>
     new Promise((resolve, reject) => {
-      // 已加载成功过
       if (window.L2Dwidget) return resolve()
       const existing = document.querySelector('script[data-blog-live2d-src="' + src + '"]')
       if (existing) {
-        existing.addEventListener('load', () => resolve())
-        existing.addEventListener('error', () => reject(new Error('cached fail')))
+        existing.addEventListener('load', () => resolve(), { once: true })
+        existing.addEventListener('error', () => reject(new Error('cached fail')), { once: true })
         return
       }
       const script = document.createElement('script')
@@ -86,11 +175,35 @@
         const res = await fetch(url, { method: 'HEAD', mode: 'cors', cache: 'force-cache' })
         if (res.ok) return url
       } catch (e) {
-        /* HEAD 可能被 CORS 拦，继续用 GET 探测或直接采用 */
+        /* try next */
       }
     }
-    // HEAD 常失败：直接返回首选（npmmirror）
     return MODEL_CANDIDATES[0]
+  }
+
+  const bindInteractions = () => {
+    if (window.__blogLive2DBound) return
+    window.__blogLive2DBound = true
+
+    document.addEventListener('click', event => {
+      if (event.target && event.target.closest && event.target.closest('#live2d-widget, #live2dcanvas')) {
+        showBubble(pickLine(LINES.clicks), 3800)
+      }
+    })
+
+    document.addEventListener('mouseover', event => {
+      const widget = document.getElementById('live2d-widget')
+      if (!widget) return
+      const overRightside = Boolean(event.target && event.target.closest && event.target.closest('#rightside'))
+      widget.classList.toggle('is-yielding', overRightside)
+    }, { passive: true })
+
+    new MutationObserver(mutations => {
+      if (mutations.some(m => m.attributeName === 'data-theme')) {
+        const dark = document.documentElement.getAttribute('data-theme') === 'dark'
+        showBubble(dark ? '切到星夜模式啦，祝你今晚好梦～' : '天亮啦，晴空和樱花回来陪你～', 3400)
+      }
+    }).observe(document.documentElement, { attributes: true })
   }
 
   const initWidget = modelPath => {
@@ -110,9 +223,22 @@
         vOffset: -12
       },
       mobile: { show: false },
-      react: { opacityDefault: 0.88, opacityOnHover: 1 },
+      react: { opacityDefault: 0.9, opacityOnHover: 1 },
       dialog: { enable: false }
     })
+
+    bindInteractions()
+
+    window.setTimeout(() => {
+      try {
+        if (!sessionStorage.getItem(GREET_KEY)) {
+          sessionStorage.setItem(GREET_KEY, '1')
+          showBubble(greetForContext(), 4800)
+        }
+      } catch (e) {
+        showBubble(greetForContext(), 4800)
+      }
+    }, 900)
   }
 
   const start = async () => {
@@ -130,7 +256,6 @@
     }
 
     const modelPath = await pickModelPath()
-    // 稍等一帧，避免与 Pjax DOM 替换抢跑
     window.requestAnimationFrame(() => {
       if (!shouldLoadLive2D()) return
       try {
@@ -164,7 +289,11 @@
       purgeWidget()
       return
     }
-    if (document.getElementById('live2d-widget') || document.getElementById('live2dcanvas')) return
+    if (document.getElementById('live2d-widget') || document.getElementById('live2dcanvas')) {
+      const k = pageKey()
+      if (k && LINES.pages[k]) showBubble(LINES.pages[k], 3600)
+      return
+    }
     window.__blogLive2DLoaded = false
     window.__blogLive2DReady = false
     schedule()

@@ -14,11 +14,79 @@
     label: '一座临水的城'
   }
 
-  const CACHE_KEY = 'user_distance_cache_v5'
+  const CACHE_KEY = 'user_distance_cache_v6'
   const CACHE_TTL = 24 * 60 * 60 * 1000
   const FAIL_CACHE_TTL = 10 * 60 * 1000
   const ASIDE_ID = 'card-user-distance'
   const HERO_ID = 'hero-user-distance'
+
+  const CITY_ZH = {
+    hangzhou: '杭州',
+    shanghai: '上海',
+    beijing: '北京',
+    shenzhen: '深圳',
+    guangzhou: '广州',
+    chengdu: '成都',
+    wuhan: '武汉',
+    nanjing: '南京',
+    xian: '西安',
+    "xi'an": '西安',
+    suzhou: '苏州',
+    chongqing: '重庆',
+    tianjin: '天津',
+    changsha: '长沙',
+    zhengzhou: '郑州',
+    qingdao: '青岛',
+    xiamen: '厦门',
+    kunming: '昆明',
+    harbin: '哈尔滨',
+    dalian: '大连',
+    shenyang: '沈阳',
+    jinan: '济南',
+    fuzhou: '福州',
+    hefei: '合肥',
+    ningbo: '宁波',
+    wuxi: '无锡',
+    zhuhai: '珠海',
+    dongguan: '东莞',
+    foshan: '佛山',
+    wenzhou: '温州',
+    nanchang: '南昌',
+    taiyuan: '太原',
+    shijiazhuang: '石家庄',
+    nanning: '南宁',
+    guiyang: '贵阳',
+    lanzhou: '兰州',
+    haikou: '海口',
+    sanya: '三亚',
+    'hong kong': '香港',
+    taipei: '台北',
+    macau: '澳门',
+    tokyo: '东京',
+    osaka: '大阪',
+    kyoto: '京都',
+    singapore: '新加坡',
+    seoul: '首尔',
+    london: '伦敦',
+    paris: '巴黎',
+    frankfurt: '法兰克福',
+    berlin: '柏林',
+    'new york': '纽约',
+    'los angeles': '洛杉矶',
+    'san francisco': '旧金山',
+    seattle: '西雅图',
+    sydney: '悉尼',
+    melbourne: '墨尔本',
+    toronto: '多伦多',
+    vancouver: '温哥华'
+  }
+
+  function localizeCity (name) {
+    var raw = String(name || '').trim()
+    if (!raw) return ''
+    var key = raw.toLowerCase().replace(/\s+city$/i, '')
+    return CITY_ZH[key] || raw
+  }
 
   const POEMS = {
     near: [
@@ -236,7 +304,7 @@
 
   function renderState (state, force) {
     var distance = state.distance
-    var city = state.city || ''
+    var city = localizeCity(state.city || '')
     var country = state.country || ''
     var loading = !!state.loading
     var hasDistance = typeof distance === 'number' && !isNaN(distance)
@@ -297,8 +365,7 @@
             (city ? ' · ' + escapeHtml(city) : '')
         } else {
           heroMain = '约 <strong>' + distance + '</strong> 公里' +
-            (city ? ' · ' + escapeHtml(city) : '') +
-            ' · 网络估算'
+            (city ? ' · ' + escapeHtml(city) : '')
         }
       } else if (loading) {
         heroMain = isMobile ? '正在测距…' : '正在测量与你的山海距离…'
@@ -319,7 +386,7 @@
   function paint (state) {
     if (!state.loading && !state.poem) {
       var hasDistance = typeof state.distance === 'number' && !isNaN(state.distance)
-      state.poem = buildPoem(hasDistance ? state.distance : null, state.city || '')
+      state.poem = buildPoem(hasDistance ? state.distance : null, localizeCity(state.city || ''))
     }
     lastState = state
     renderState(state, false)

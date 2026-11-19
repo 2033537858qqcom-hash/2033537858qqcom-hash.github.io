@@ -7,6 +7,12 @@ const escapeHtml = value => String(value || '')
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#39;')
 
+const statusModifier = status => {
+  if (status === '反复重温') return 'rewatch'
+  if (status === '追番中') return 'watching'
+  return 'done'
+}
+
 const renderTags = items => {
   if (!Array.isArray(items) || !items.length) return ''
   return items.map(item => `<span>${escapeHtml(item)}</span>`).join('')
@@ -16,7 +22,7 @@ const renderAnimeCard = (item, index) => `
   <article class="anime-card" id="anime-${index}">
     <div class="anime-card__cover">
       <img src="${escapeHtml(item.cover)}" alt="${escapeHtml(item.title)}" loading="lazy" decoding="async" width="480" height="640">
-      ${item.status ? `<span class="anime-card__status">${escapeHtml(item.status)}</span>` : ''}
+      ${item.status ? `<span class="anime-card__status anime-card__status--${statusModifier(item.status)}">${escapeHtml(item.status)}</span>` : ''}
     </div>
     <div class="anime-card__body">
       <div class="anime-card__meta">
@@ -47,7 +53,7 @@ const renderAnimePage = animeList => `
   <header class="anime-page__header">
     <p class="anime-page__eyebrow">Anime Log</p>
     <h2>番剧记录</h2>
-    <p>看过、想看、反复想起的番。不必按顺序——对上名字读两句短评就好。条目少也正常，慢慢补。</p>
+    <p>看过、正在追、或是反复想起的作品。不必按顺序，挑一部有缘的读两句印象就好。</p>
   </header>
 
   <div class="anime-grid">
