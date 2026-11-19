@@ -48,7 +48,7 @@ for (const name of files) {
   const temp = join(dir, `.tmp-${name}`)
   const before = (await stat(input)).size
   if (before < minBytes) {
-    console.log(`${name}: skip (<1.2MB, ${(before / 1024 / 1024).toFixed(2)}MB)`)
+    console.log(`${name}: skip (<0.8MB, ${(before / 1024 / 1024).toFixed(2)}MB)`)
     continue
   }
   try {

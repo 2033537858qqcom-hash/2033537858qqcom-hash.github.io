@@ -40,24 +40,6 @@ const jobs = [
     resize: { width: 900, withoutEnlargement: true },
     webp: { quality: 64, effort: 6 }
   },
-  {
-    input: 'assets/raw/白天.png',
-    output: `${outDir}/music-day.webp`,
-    resize: { width: 420, height: 420, fit: 'cover' },
-    webp: { quality: 72, effort: 6 }
-  },
-  {
-    input: 'assets/raw/夜晚.png',
-    output: `${outDir}/music-night.webp`,
-    resize: { width: 420, height: 420, fit: 'cover' },
-    webp: { quality: 72, effort: 6 }
-  },
-  {
-    input: 'source/img/avatar.jpg',
-    output: `${outDir}/music-avatar.webp`,
-    resize: { width: 420, height: 420, fit: 'cover' },
-    webp: { quality: 76, effort: 6 }
-  },
   // Anime covers（原图在 assets/raw，线上只保留 optimized webp）
   {
     input: 'assets/raw/anime-covers/summer-time-rendering.png',
@@ -143,6 +125,12 @@ const jobs = [
     resize: { width: 480, withoutEnlargement: true },
     webp: { quality: 72, effort: 6 }
   },
+  {
+    input: 'assets/raw/anime-covers/anime-chao-hua-xi-shi.jpg',
+    output: `${outDir}/anime-chao-hua-xi-shi.webp`,
+    resize: { width: 480, withoutEnlargement: true },
+    webp: { quality: 72, effort: 6 }
+  },
   // Music covers
   {
     input: 'assets/raw/music-covers/yu-zhou-wu-xing-he.jpg',
@@ -164,19 +152,19 @@ const jobs = [
   },
   // Post covers
   {
-    input: 'source/img/post/rednote-1028qjh.jpg',
+    input: 'assets/raw/post-covers/rednote-1028qjh.jpg',
     output: `${outDir}/post-rednote-1028qjh.webp`,
     resize: { width: 1200, withoutEnlargement: true },
     webp: { quality: 75, effort: 6 }
   },
   {
-    input: 'source/img/post/cloud-banner.jpg',
+    input: 'assets/raw/post-covers/cloud-banner.jpg',
     output: `${outDir}/post-cloud-banner.webp`,
     resize: { width: 1200, withoutEnlargement: true },
     webp: { quality: 75, effort: 6 }
   },
   {
-    input: 'source/img/post/Slime.jpg',
+    input: 'assets/raw/post-covers/Slime.jpg',
     output: `${outDir}/post-slime.webp`,
     resize: { width: 1200, withoutEnlargement: true },
     webp: { quality: 75, effort: 6 }
@@ -204,19 +192,21 @@ for (const job of jobs) {
 
 console.log(`optimize-assets: ${ok} written, ${skipped} skipped`)
 
-// Photography images - convert all JPG to webp in same directory
-const photoDir = 'source/img/photography';
+// Photography images - convert any new JPG to resized WebP
+const photoDir = 'source/img/photography'
 if (await exists(photoDir)) {
-  const files = await readdir(photoDir);
+  const files = await readdir(photoDir)
   for (const f of files) {
-    if (f.toLowerCase().endsWith('.jpg')) {
-      const inputPath = path.join(photoDir, f);
-      const outputPath = path.join(photoDir, f.replace(/\.jpg$/i, '.webp'));
+    if (/\.(jpe?g)$/i.test(f)) {
+      const inputPath = path.join(photoDir, f)
+      const outputPath = path.join(photoDir, f.replace(/\.(jpe?g)$/i, '.webp'))
       if (await exists(outputPath)) continue
       await sharp(inputPath)
-        .webp({ quality: 80, effort: 6 })
-        .toFile(outputPath);
-      console.log('Optimized photography:', outputPath);
+        .rotate()
+        .resize({ width: 1600, withoutEnlargement: true })
+        .webp({ quality: 78, effort: 6 })
+        .toFile(outputPath)
+      console.log('Optimized photography:', outputPath)
     }
   }
 }

@@ -13,6 +13,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { DENY_ID_STRINGS as DENY_IDS, isGrandmaHold, fixEncoding } from './netease-config.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
@@ -20,15 +21,6 @@ const commentsPath = path.join(root, 'tools/netease-comments.json')
 const eventsPath = path.join(root, 'tools/netease-events.json')
 const shuoshuoPath = path.join(root, 'source/_data/shuoshuo.yml')
 const outPath = path.join(root, 'source/_data/shuoshuo-comments.yml')
-const migrateSrc = fs.readFileSync(path.join(__dirname, 'migrate-netease-shuoshuo.mjs'), 'utf8')
-
-// 与 migrate-netease-shuoshuo.mjs 共用同一份 DENY_IDS
-const denyBlock = migrateSrc.match(/const DENY_IDS = new Set\(\[([\s\S]*?)\]\)/)
-if (!denyBlock) {
-  console.error('[comments] 读不到 DENY_IDS，拒绝写入')
-  process.exit(1)
-}
-const DENY_IDS = new Set((denyBlock[1].match(/\d{6,}/g) || []).map(String))
 
 const EMOJI = {
   吃瓜: '🍉', 生气: '😠', 发怒: '😡', 汗: '😅', 庆祝: '🎉', 搞怪: '🤪', 一路顺风: '🛫',
@@ -36,12 +28,13 @@ const EMOJI = {
 }
 
 function cleanContent (text) {
-  return String(text || '')
-    .replace(/\r\n?/g, '\n')
-    .replace(/\[([^\[\]\n]{1,8})\]/g, (all, name) => (name in EMOJI ? EMOJI[name] : ''))
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200F\u2028\u2029\uFEFF]/g, '')
-    .replace(/[ \t]+\n/g, '\n')
-    .trim()
+  return fixEncoding(
+    String(text || '')
+      .replace(/\r\n?/g, '\n')
+      .replace(/\[([^\[\]\n]{1,8})\]/g, (all, name) => (name in EMOJI ? EMOJI[name] : ''))
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200F\u2028\u2029\uFEFF]/g, '')
+      .replace(/[ \t]+\n/g, '\n')
+  ).trim()
 }
 
 const comments = JSON.parse(fs.readFileSync(commentsPath, 'utf8'))
@@ -63,14 +56,18 @@ for (const m of shuoText.matchAll(/^- (?:id: (\d+)\n  )?content: \|\n[\s\S]*?\n 
 function isGrandmaHeld (eventId) {
   const ev = eventById.get(String(eventId))
   if (!ev) return false
-  return String(ev.date || '').startsWith('2026-10-01') && /姥姥|外婆/.test(ev.msg || '')
+  return isGrandmaHold(ev.msg || '', ev.date || '')
 }
 
 // 父动态摘要：父动态都是 李 自己发的动态，只取 李 自己的话（前 60 字）或歌名
 function parentInfo (eventId) {
   const ev = eventById.get(String(eventId))
   if (!ev) return { excerpt: '', title: '', date: '' }
-  const msg = String(ev.msg || '').replace(/\r\n?/g, '\n').replace(/\[([^\[\]\n]{1,8})\]/g, (all, name) => (name in EMOJI ? EMOJI[name] : ''))
+  const msg = fixEncoding(
+    String(ev.msg || '')
+      .replace(/\r\n?/g, '\n')
+      .replace(/\[([^\[\]\n]{1,8})\]/g, (all, name) => (name in EMOJI ? EMOJI[name] : ''))
+  )
   const flat = msg.replace(/\s+/g, ' ').trim()
   const chars = Array.from(flat)
   const excerpt = chars.length > 60 ? chars.slice(0, 60).join('') + '…' : flat

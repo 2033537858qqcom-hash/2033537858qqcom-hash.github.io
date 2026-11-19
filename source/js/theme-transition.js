@@ -1,5 +1,6 @@
 (function () {
   const root = document.documentElement
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 
   const runThemeHooks = mode => {
     const themeChange = (window.globalFn && window.globalFn.themeChange) || {}
@@ -41,19 +42,28 @@
     event.stopPropagation()
     event.stopImmediatePropagation()
 
+    if (reduceMotion.matches) {
+      switchTheme()
+      return
+    }
+
     root.classList.add('theme-switching')
 
     if (document.startViewTransition) {
-      const transition = document.startViewTransition(switchTheme)
-      transition.finished.finally(() => {
-        root.classList.remove('theme-switching')
-      })
-      return
+      try {
+        const transition = document.startViewTransition(switchTheme)
+        transition.finished.finally(() => {
+          root.classList.remove('theme-switching')
+        })
+        return
+      } catch (e) {
+        /* fallback below */
+      }
     }
 
     switchTheme()
     window.setTimeout(() => {
       root.classList.remove('theme-switching')
-    }, 900)
+    }, 800)
   }, true)
 })()

@@ -6,20 +6,29 @@ import https from 'https'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { UID } from './netease-config.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const uid = process.argv[2] || '3988339491'
+const uid = process.argv[2] || UID
 const outPath = path.join(__dirname, 'netease-events.json')
 const rawPath = path.join(__dirname, 'netease-events-raw.json')
 
 function get (url, attempt = 0) {
   return new Promise((resolve, reject) => {
     const u = new URL(url)
+    const retry = (err) => {
+      if (attempt < 2) {
+        setTimeout(() => get(url, attempt + 1).then(resolve, reject), 800 * (attempt + 1))
+        return
+      }
+      reject(err)
+    }
     const req = https.request(
       {
         hostname: u.hostname,
         path: u.pathname + u.search,
         method: 'GET',
+        timeout: 20000,
         headers: {
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -28,35 +37,26 @@ function get (url, attempt = 0) {
         }
       },
       (res) => {
+        if (res.statusCode !== 200) {
+          res.resume()
+          retry(new Error('HTTP ' + res.statusCode + ' ' + url))
+          return
+        }
         let d = ''
         res.on('data', (c) => (d += c))
         res.on('end', () => {
-          const fail = (err) => {
-            if (attempt < 2) {
-              setTimeout(() => get(url, attempt + 1).then(resolve, reject), 800 * (attempt + 1))
-              return
-            }
-            reject(err)
-          }
-          if (res.statusCode !== 200) {
-            fail(new Error('HTTP ' + res.statusCode + ' ' + url))
-            return
-          }
           try {
             resolve(JSON.parse(d))
           } catch {
-            fail(new Error('JSON parse fail: ' + d.slice(0, 200)))
+            retry(new Error('JSON parse fail: ' + d.slice(0, 200)))
           }
         })
       }
     )
-    req.on('error', (err) => {
-      if (attempt < 2) {
-        setTimeout(() => get(url, attempt + 1).then(resolve, reject), 800 * (attempt + 1))
-        return
-      }
-      reject(err)
+    req.on('timeout', () => {
+      req.destroy(new Error('timeout ' + url))
     })
+    req.on('error', retry)
     req.end()
   })
 }

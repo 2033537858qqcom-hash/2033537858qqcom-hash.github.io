@@ -17,6 +17,7 @@ import https from 'https'
 import http from 'http'
 import { fileURLToPath } from 'url'
 import { createRequire } from 'module'
+import { DENY_IDS, isGrandmaHold, fixEncoding } from './netease-config.mjs'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -32,19 +33,8 @@ const noImages = args.has('--no-images')
 const forceImages = args.has('--force-images')
 
 /**
- * 明确不发布的动态 ID。
- * 攻击 6 条、活动模板 11 条、与博客雨夜随笔重复的 1 条。
- * 37956681393 为 10/1 姥姥相关动态，明确不发布（连同其下评论）。
- * 2026-10-01 且正文写到姥姥的动态由 isGrandmaHold 拦截（当时尚未进入这份归档）。
+ * DENY_IDS / isGrandmaHold 统一维护在 tools/netease-config.json & netease-config.mjs
  */
-const DENY_IDS = new Set([
-  30566223206, 30360088008, 24833936828, 24799678762, 24799654752, 24788275255,
-  37677442659, 37659617772, 30590773110, 30522558536, 30451293552,
-  30326740319, 30226227155, 30218964535, 30153228260, 24900907186, 24530486663,
-  37694195909,
-  37956681393
-])
-
 const HIDDEN_TAGS = new Set(['随笔', '配乐', '配图'])
 
 let sharp = null
@@ -83,15 +73,7 @@ function cleanMsg (msg) {
   t = t.replace(/\n?(?:#[^\n#]+#\s*)+$/g, '').trim()
   t = t.replace(/[ \t]+\n/g, '\n')
   t = t.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200F\u2028\u2029\uFEFF]/g, '')
-  const fixups = [
-    [/\uFFFD+途一片迷茫/g, '前途一片迷茫'],
-    [/结\uFFFD+了/g, '结束了'],
-    [/才\uFFFD+年/g, '才两年'],
-    [/大\uFFFD+姐/g, '大小姐'],
-    [/不得\uFFFD+/g, '不得已']
-  ]
-  for (const [re, to] of fixups) t = t.replace(re, to)
-  t = t.replace(/\uFFFD+/g, '…')
+  t = fixEncoding(t)
   t = t.replace(/\u2011|\u2012|\u2013|\u2014|\u2015|﹣/g, '—')
   return t.trim()
 }
@@ -121,10 +103,6 @@ function isWorthKeeping (msg) {
     if (!poetic) return false
   }
   return true
-}
-
-function isGrandmaHold (msg, date) {
-  return String(date || '').startsWith('2026-10-01') && /姥姥|外婆/.test(msg || '')
 }
 
 function visibleTags (tags) {

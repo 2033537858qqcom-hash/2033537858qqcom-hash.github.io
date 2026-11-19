@@ -2,10 +2,11 @@
  * 访客与站长的山海距离
  * - 不申请浏览器 GPS，仅用 IP 粗定位
  * - 立刻渲染卡片（不依赖接口），定位成功后再更新数字
- * - 侧栏完整卡片 + 首页英雄区一行诗意提示（更易看见）
+ * - 侧栏完整卡片 + 首页英雄区一行诗意提示
+ * - 稳定单次抽取诗句，避免定时器重绘导致文本闪烁与 aria-live 重复播报
  */
 (function () {
-  // 站长锚点：杭州（与随笔/实习叙事一致）
+  // 站长锚点：杭州
   const HOST = {
     lat: 30.2741,
     lng: 120.1551,
@@ -13,9 +14,9 @@
     label: '一座临水的城'
   }
 
-  // v5：锚点改为杭州，旧缓存距离失效
   const CACHE_KEY = 'user_distance_cache_v5'
   const CACHE_TTL = 24 * 60 * 60 * 1000
+  const FAIL_CACHE_TTL = 10 * 60 * 1000
   const ASIDE_ID = 'card-user-distance'
   const HERO_ID = 'hero-user-distance'
 
@@ -130,21 +131,15 @@
     }
   }
 
-  /**
-   * 仅用 2 个定位源，减少 IP 外传面：
-   * - geojs（轻量、无需 key）
-   * - ipwho.is（失败回退）
-   * 串行：第一个成功即停，不并行打满第三方
-   */
   function resolveVisitorGeo () {
     var tasks = [
       function () {
-        return fetchJson('https://get.geojs.io/v1/ip/geo.json', 4000).then(function (data) {
+        return fetchJson('https://get.geojs.io/v1/ip/geo.json', 3000).then(function (data) {
           return normalizeGeo(data.latitude, data.longitude, data.city, data.region, data.country || data.country_code)
         })
       },
       function () {
-        return fetchJson('https://ipwho.is/', 4000).then(function (data) {
+        return fetchJson('https://ipwho.is/', 3000).then(function (data) {
           if (data && data.success === false) throw new Error('ipwho fail')
           return normalizeGeo(data.latitude, data.longitude, data.city, data.region, data.country || data.country_code)
         })
@@ -163,7 +158,9 @@
       var raw = localStorage.getItem(CACHE_KEY)
       if (!raw) return null
       var data = JSON.parse(raw)
-      if (!data || Date.now() - data.timestamp > CACHE_TTL) return null
+      if (!data) return null
+      var ttl = data.unknown ? FAIL_CACHE_TTL : CACHE_TTL
+      if (Date.now() - data.timestamp > ttl) return null
       return data
     } catch (e) {
       return null
@@ -208,7 +205,6 @@
   }
 
   function ensureHeroWidget () {
-    // 仅首页全屏头图：与「最新」共用底部堆叠，避免移动端与标题重叠
     var header = document.getElementById('page-header')
     if (!header || !header.classList.contains('full_page')) return null
 
@@ -227,16 +223,29 @@
     return widget
   }
 
-  function renderState (state) {
+  function stateSignature (state, isMobile) {
+    return [
+      state.loading ? '1' : '0',
+      state.distance == null ? 'null' : String(state.distance),
+      state.city || '',
+      state.country || '',
+      state.poem || '',
+      isMobile ? 'm' : 'd'
+    ].join('|')
+  }
+
+  function renderState (state, force) {
     var distance = state.distance
     var city = state.city || ''
     var country = state.country || ''
     var loading = !!state.loading
-
     var hasDistance = typeof distance === 'number' && !isNaN(distance)
+    var isMobile = window.matchMedia('(max-width: 768px)').matches
+    var sig = stateSignature(state, isMobile)
+
     var poem = loading
       ? '正在测量风与云的距离…'
-      : buildPoem(hasDistance ? distance : null, city)
+      : (state.poem || buildPoem(hasDistance ? distance : null, city))
 
     var placeBits = [city, country].filter(Boolean)
     var placeLine = placeBits.length ? placeBits.map(escapeHtml).join(' · ') : (loading ? '定位中' : '远方')
@@ -256,8 +265,13 @@
         '<p class="distance-metric__caption">' + (loading ? '正在估算与你的距离' : '坐标未明，心意可感') + '</p>'
       )
 
+    var retryBtn = (!loading && !hasDistance)
+      ? '<button type="button" class="distance-retry" data-distance-retry>重试定位</button>'
+      : ''
+
     var aside = ensureAsideWidget()
-    if (aside) {
+    if (aside && (force || aside.dataset.renderedSig !== sig)) {
+      aside.dataset.renderedSig = sig
       aside.innerHTML =
         '<div class="item-headline">' +
           '<span>山海距离</span>' +
@@ -268,13 +282,14 @@
           '<p class="distance-text">' + poem + '</p>' +
           '<div class="distance-footer">' +
             '<span class="distance-tag">IP 粗定位 · 非 GPS · 仅作诗意点缀</span>' +
+            retryBtn +
           '</div>' +
         '</div>'
     }
 
     var hero = ensureHeroWidget()
-    if (hero) {
-      var isMobile = window.matchMedia('(max-width: 768px)').matches
+    if (hero && (force || hero.dataset.renderedSig !== sig)) {
+      hero.dataset.renderedSig = sig
       var heroMain
       if (hasDistance) {
         if (isMobile) {
@@ -295,6 +310,19 @@
           '<span class="hero-distance__text">' + heroMain + '</span>' +
         '</div>'
     }
+  }
+
+  var lastState = null
+  var geoStarted = false
+  var mountTimer = null
+
+  function paint (state) {
+    if (!state.loading && !state.poem) {
+      var hasDistance = typeof state.distance === 'number' && !isNaN(state.distance)
+      state.poem = buildPoem(hasDistance ? state.distance : null, state.city || '')
+    }
+    lastState = state
+    renderState(state, false)
   }
 
   function applyGeo (geo) {
@@ -321,16 +349,8 @@
     paint(payload)
   }
 
-  var lastState = null
-  var geoStarted = false
-
-  function paint (state) {
-    lastState = state
-    renderState(state)
-  }
-
-  function startGeoOnce () {
-    if (geoStarted) return
+  function startGeoOnce (forceRefresh) {
+    if (geoStarted && !forceRefresh) return
     geoStarted = true
     resolveVisitorGeo().then(function (geo) {
       applyGeo(geo)
@@ -340,6 +360,13 @@
   function mountAndLoad () {
     var cached = readCache()
     if (cached) {
+      var sameCache = lastState && !lastState.loading &&
+        lastState.distance === (cached.unknown ? null : cached.distance) &&
+        (lastState.city || '') === (cached.city || '')
+      if (sameCache) {
+        renderState(lastState, false)
+        return
+      }
       paint({
         distance: cached.unknown ? null : cached.distance,
         city: cached.city || '',
@@ -350,27 +377,50 @@
     }
 
     if (lastState) {
-      paint(lastState)
+      renderState(lastState, false)
     } else {
       paint({ distance: null, city: '', country: '', loading: true })
     }
-    startGeoOnce()
+    startGeoOnce(false)
+  }
+
+  function containersReady () {
+    var header = document.getElementById('page-header')
+    var needHero = header && header.classList.contains('full_page')
+    var hasHero = !needHero || Boolean(document.getElementById(HERO_ID))
+    var aside = document.getElementById('aside-content')
+    var hasAside = !aside || Boolean(document.getElementById(ASIDE_ID))
+    return hasHero && hasAside && (Boolean(aside) || Boolean(header))
   }
 
   function initUserDistance () {
-    // Pjax 只重挂 DOM，不丢定位结果、不重打接口
+    if (mountTimer) {
+      window.clearInterval(mountTimer)
+      mountTimer = null
+    }
+
     mountAndLoad()
+    if (containersReady()) return
 
     var tries = 0
-    var timer = window.setInterval(function () {
+    mountTimer = window.setInterval(function () {
       tries += 1
-      if (document.getElementById('aside-content') || document.getElementById('page-header')) {
-        if (lastState) renderState(lastState)
-        else mountAndLoad()
+      if (lastState) renderState(lastState, false)
+      else mountAndLoad()
+      if (containersReady() || tries >= 8) {
+        window.clearInterval(mountTimer)
+        mountTimer = null
       }
-      if (tries >= 8) window.clearInterval(timer)
-    }, 400)
+    }, 300)
   }
+
+  document.addEventListener('click', function (event) {
+    var btn = event.target && event.target.closest && event.target.closest('[data-distance-retry]')
+    if (!btn) return
+    try { localStorage.removeItem(CACHE_KEY) } catch (e) {}
+    paint({ distance: null, city: '', country: '', loading: true })
+    startGeoOnce(true)
+  })
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initUserDistance)
@@ -380,10 +430,10 @@
 
   document.addEventListener('pjax:complete', initUserDistance)
 
-  window.addEventListener('load', function () {
-    window.setTimeout(function () {
-      if (lastState) renderState(lastState)
-      else mountAndLoad()
-    }, 200)
+  window.addEventListener('resize', function () {
+    window.clearTimeout(window.__userDistanceResizeTimer)
+    window.__userDistanceResizeTimer = window.setTimeout(function () {
+      if (lastState) renderState(lastState, false)
+    }, 150)
   })
 })()

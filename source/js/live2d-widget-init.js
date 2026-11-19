@@ -106,7 +106,7 @@
         position: 'right',
         width: 150,
         height: 300,
-        hOffset: 24,
+        hOffset: 56,
         vOffset: -12
       },
       mobile: { show: false },

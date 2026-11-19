@@ -92,17 +92,15 @@ pagination_dir: page
 ## include:/exclude: options only apply to the 'source/' folder
 include:
 exclude:
+  - 'img/photography/*.jpg'
+  - 'img/photography/*.jpeg'
+  - 'img/post/*'
 ignore:
 
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: butterfly
-
-# Butterfly fullpage preloader CSS is compiled from site config.
-preloader:
-  enable: true
-  source: 1
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
@@ -112,7 +110,7 @@ deploy:
 
 search:
   path: search.xml
-  field: post
+  field: all
   content: true
   format: html
 
@@ -130,7 +128,7 @@ feed:
   limit: 20
   hub:
   content: true
-  content_limit: 140
-  content_limit_delim: ' '
+  content_limit: 200
+  content_limit_delim:
   order_by: -date
 

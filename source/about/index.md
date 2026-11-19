@@ -15,12 +15,13 @@ top_img: /img/optimized/banner-day-bg.webp
 
 <p class="about-paths">
   <a href="/moments/">随笔</a>
+  <a href="/timeline/">时间轴</a>
   <a href="/photography/">摄影</a>
   <a href="/anime/">番剧</a>
   <a href="/music/">音乐</a>
 </p>
 
-随笔最短，也最接近当下。摄影是顺手留下的光。番剧和音乐只记印象，不写影评。
+随笔最短，也最接近当下。时间轴把随笔、照片与文章按年份串联起来。摄影是顺手留下的光。番剧和音乐只记印象，不写影评。
 
 ## 若你想联系
 

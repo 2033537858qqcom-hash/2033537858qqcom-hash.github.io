@@ -1,8 +1,8 @@
 /**
- * 微信社交图标：点击复制微信号，并弹出轻提示
+ * 微信社交图标 & 留言板微信按钮：点击复制微信号，并弹出可访问轻提示
  */
 (function () {
-  const WECHAT_ID = 'ljh18736134699'
+  const WECHAT_ID = ['ljh', '187', '3613', '4699'].join('')
 
   const writeClipboard = text => {
     if (navigator.clipboard && window.isSecureContext) {
@@ -32,6 +32,8 @@
       toast = document.createElement('div')
       toast.id = 'wechat-copy-toast'
       toast.className = 'wechat-copy-toast'
+      toast.setAttribute('role', 'status')
+      toast.setAttribute('aria-live', 'polite')
       document.body.appendChild(toast)
     }
     toast.textContent = message
@@ -42,20 +44,31 @@
     }, 2200)
   }
 
-  const isWechatLink = link => {
-    if (!link) return false
-    if (link.closest && link.closest('.social-share, .post-share, .social-share-icon')) return false
-    const href = (link.getAttribute('href') || '').trim()
+  const isWechatTrigger = el => {
+    if (!el) return false
+    if (el.hasAttribute('data-wechat-copy')) return true
+    if (el.tagName !== 'A') return false
+    if (el.closest && el.closest('.social-share, .post-share, .social-share-icon')) return false
+    const href = (el.getAttribute('href') || '').trim()
     if (href === '#wechat' || href.endsWith('#wechat')) return true
-    if (link.closest && link.closest('.card-info-social-icons, #site_social_icons')) {
-      if (link.querySelector && link.querySelector('.fa-weixin, .fab.fa-weixin')) return true
+    if (el.closest && el.closest('.card-info-social-icons, #site_social_icons')) {
+      if (el.querySelector && el.querySelector('.fa-weixin, .fab.fa-weixin')) return true
     }
     return false
   }
 
+  const enhanceLabels = () => {
+    document.querySelectorAll('.card-info-social-icons a, #site_social_icons a').forEach(link => {
+      if (isWechatTrigger(link)) {
+        link.setAttribute('aria-label', '点击复制微信号')
+        link.setAttribute('title', '点击复制微信号')
+      }
+    })
+  }
+
   const onClick = event => {
-    const link = event.target.closest && event.target.closest('a')
-    if (!isWechatLink(link)) return
+    const trigger = event.target.closest && event.target.closest('a, [data-wechat-copy]')
+    if (!isWechatTrigger(trigger)) return
 
     event.preventDefault()
     event.stopPropagation()
@@ -71,7 +84,11 @@
   }
 
   document.addEventListener('click', onClick, true)
-  document.addEventListener('pjax:complete', () => {
-    // 重新绑定不需要：用的是 document 委托
-  })
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', enhanceLabels, { once: true })
+  } else {
+    enhanceLabels()
+  }
+  document.addEventListener('pjax:complete', enhanceLabels)
 })()

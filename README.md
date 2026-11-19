@@ -10,6 +10,7 @@
 | 类型 | 路径 | 建议 |
 |------|------|------|
 | 随笔（高频） | `source/_data/shuoshuo.yml` | 短句即可；可从网易云公开动态迁移（见下） |
+| 时间轴 | `source/_data/timeline.yml` | 按年份串联随笔、摄影、文章与配乐（`/timeline/`） |
 | 文章 | `source/_posts/*.md` | 写好 `description`；`pnpm exec hexo new post "标题"` |
 | 建站手记 | 同 posts + `series: 建站手记` | `hidden: true`：不进首页/侧栏/RSS/搜索/sitemap；归档与直链仍可访问 |
 | 番剧 | `source/_data/anime.yml` | 一条作品一段短评 |
@@ -68,8 +69,8 @@ pnpm run server
 
 ## 缓存与版本
 
-自定义 CSS/JS 的 `?v=` 由 `scripts/site-polish.js` 统一写成 **`package.json` 的 `version`**。  
-改前端后请同步 bump 版本号（当前 `1.5.11`），否则用户可能一直用旧脚本。
+自定义 CSS/JS 的 `?v=` 由 `scripts/site-polish.js` 按文件内容自动生成 8 位 SHA-256 哈希，改前端文件会自动刷新缓存。
+`package.json` 的 `version`（当前 `1.5.12`）作为兜底版本使用。
 
 ## 部署
 

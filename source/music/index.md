@@ -9,7 +9,7 @@ top_img: false
   <header class="music-page__header">
     <p class="music-page__eyebrow">Playlist</p>
     <h2>网易云歌单</h2>
-    <p>常听的歌放在这里。左下角音符可打开全站迷你播放器（不自动播放）；下面是同一份歌单的完整展示。</p>
+    <p>常听的歌放在这里。下面是歌单的完整展示；切到其他页面逛时，点左下角音符可开启站内迷你播放器。</p>
     <p class="music-page__actions">
       <a class="music-page__link" href="https://music.163.com/playlist?id=5355255169" target="_blank" rel="noopener noreferrer">在网易云打开歌单</a>
     </p>

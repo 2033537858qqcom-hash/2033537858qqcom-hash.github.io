@@ -1,13 +1,21 @@
 /**
  * 随笔按年、再按月成章：只展开最近一个月，更早的月份折起。
- * 不改主题分页脚本，等它写完后再用同一份数据重排。
+ * - 先在离屏 fragment 中注入 lazy/decoding 属性再挂载，避免未展开月份的 100 张图片首屏并发加载
+ * - 支持 #m-<id> 锚点直达并自动展开对应年份与月份
  */
 (function () {
-  const isMoments = () => /\/moments\/?$/.test(window.location.pathname)
+  const isMoments = () => /\/moments\/?(?:index\.html)?$/.test(window.location.pathname)
   const AVATAR = '/img/avatar.jpg'
   const AUTHOR = 'Rogue_l'
   const HIDDEN_TAGS = new Set(['随笔', '配乐', '配图'])
   let cachedData = null
+
+  const normalizeDate = raw => {
+    if (!raw) return ''
+    const s = String(raw).trim()
+    const iso = s.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})(?:\.\d+)?Z$/)
+    return iso ? `${iso[1]} ${iso[2]}` : s
+  }
 
   const readData = () => {
     if (cachedData) return cachedData
@@ -15,7 +23,9 @@
     if (!dataEl) return null
     try {
       const parsed = JSON.parse(dataEl.textContent || '[]')
-      cachedData = Array.isArray(parsed) ? parsed : []
+      cachedData = Array.isArray(parsed)
+        ? parsed.map(item => item ? Object.assign({}, item, { date: normalizeDate(item.date) }) : item)
+        : []
     } catch (e) {
       cachedData = []
     }
@@ -47,6 +57,13 @@
     return match[1] + ' 年 ' + Number(match[2]) + ' 月 ' + Number(match[3]) + ' 日' + clock
   }
 
+  const toDatetimeAttr = dateStr => {
+    const s = normalizeDate(dateStr)
+    const m = s.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\d{2})$/)
+    if (m) return `${m[1]}T${m[2]}+08:00`
+    return s.replace(' ', 'T')
+  }
+
   const visibleTags = item => (Array.isArray(item.tags) ? item.tags : []).filter(tag => !HIDDEN_TAGS.has(tag))
 
   const nl2br = value => escapeHtml(value).replace(/\n/g, '<br>')
@@ -57,7 +74,6 @@
     return match[1] + '.' + Number(match[2]) + '.' + Number(match[3]) + (match[4] ? ' ' + match[4] + ':' + match[5] : '')
   }
 
-  // 李 自己的评论：同一条动态的评论合并成一组，按时间排列，默认展开；超过 5 条先显示前 3 条
   const OWN_PREVIEW = 3
   const OWN_LIMIT = 5
   const renderOwnItem = (c, withKind) => {
@@ -66,20 +82,22 @@
         (c.kind === 'continue' ? '接着写' : '后来补的') + '</span>'
       : ''
     return '<li class="shuoshuo-own__item" data-cid="' + escapeHtml(c.cid) + '">' +
-      '<div class="shuoshuo-own__meta"><time datetime="' + escapeHtml(String(c.date).replace(' ', 'T')) + '">' +
+      '<div class="shuoshuo-own__meta"><time datetime="' + escapeHtml(toDatetimeAttr(c.date)) + '">' +
       escapeHtml(shortTime(c.date)) + '</time>' + kindTag +
       (c.reply_to ? '<span class="shuoshuo-own__to">回 ' + escapeHtml(c.reply_to) + '</span>' : '') + '</div>' +
       '<div class="shuoshuo-own__text">' + nl2br(c.content) + '</div></li>'
   }
 
   const renderOwnList = (list, withKind) => {
-    const sorted = list.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    const sorted = list.slice().sort((a, b) => normalizeDate(a.date).localeCompare(normalizeDate(b.date)))
     if (sorted.length <= OWN_LIMIT) {
       return '<ol class="shuoshuo-own__list">' + sorted.map(c => renderOwnItem(c, withKind)).join('') + '</ol>'
     }
     const rest = sorted.slice(OWN_PREVIEW)
+    const collapsedLabel = '展开全部（还有 ' + rest.length + ' 条）'
     return '<ol class="shuoshuo-own__list">' + sorted.slice(0, OWN_PREVIEW).map(c => renderOwnItem(c, withKind)).join('') + '</ol>' +
-      '<details class="shuoshuo-own__more"><summary>展开全部（还有 ' + rest.length + ' 条）</summary>' +
+      '<details class="shuoshuo-own__more" data-collapsed-label="' + escapeHtml(collapsedLabel) + '">' +
+      '<summary>' + escapeHtml(collapsedLabel) + '</summary>' +
       '<ol class="shuoshuo-own__list" start="' + (OWN_PREVIEW + 1) + '">' + rest.map(c => renderOwnItem(c, withKind)).join('') + '</ol></details>'
   }
 
@@ -96,16 +114,15 @@
     return chars.length > max ? chars.slice(0, max).join('') + '…' : chars.join('')
   }
 
-  // 父动态不在随笔里：同一条父动态的评论合并成一条，头部写明评论的是什么
   const renderStandalone = item => {
     const list = Array.isArray(item.comments) ? item.comments : []
-    const datetime = escapeHtml(String(item.date || '').replace(' ', 'T'))
+    const datetime = escapeHtml(toDatetimeAttr(item.date))
     const title = item.parent_title ? '《' + escapeHtml(item.parent_title) + '》' : ''
     const excerpt = item.parent_excerpt ? escapeHtml(trimText(item.parent_excerpt, 60)) : ''
     const subject = excerpt
       ? '“' + excerpt + '”' + (title ? '<span class="shuoshuo-group__song">配乐 ' + title + '</span>' : '')
-      : (title ? '分享单曲 ' + title : '一条动态')
-    return '<article class="shuoshuo-item shuoshuo-item--comment-group" data-tags="" data-event="' + escapeHtml(item.event || '') + '">' +
+      : (title ? '分享单曲 ' + title : '一条无文字动态（原动态仅含图片或已调整）')
+    return '<article class="shuoshuo-item shuoshuo-item--comment-group" id="m-event-' + escapeHtml(item.event || '') + '" data-tags="" data-event="' + escapeHtml(item.event || '') + '">' +
       '<div class="container">' +
         '<header class="shuoshuo-group__head">' +
           '<p class="shuoshuo-group__label">评论 · ' + list.length + ' 条，评论的是我的这条动态' +
@@ -131,17 +148,19 @@
       ? tags.map(tag => '<span class="shuoshuo-tag">' + escapeHtml(tag) + '</span>').join('')
       : ''
     const commentButton = item.key
-      ? '<div class="shuoshuo-comment-btn" onclick="addCommentToShuoshuo(event)"><i class="fa-solid fa-comments"></i></div>'
+      ? '<button type="button" class="shuoshuo-comment-btn" aria-label="展开或收起评论" onclick="addCommentToShuoshuo(event)"><i class="fa-solid fa-comments" aria-hidden="true"></i></button>'
       : ''
     const commentBox = item.key
       ? '<div class="shuoshuo-comment no-comment" data-key="' + escapeHtml(item.key) + '"></div>'
       : ''
-    const datetime = escapeHtml(String(item.date || '').replace(' ', 'T'))
+    const datetime = escapeHtml(toDatetimeAttr(item.date))
+    const dateSlug = normalizeDate(item.date).slice(0, 10).replace(/-/g, '')
+    const anchorId = 'm-' + escapeHtml(item.id || dateSlug || 'item')
 
-    return '<article class="shuoshuo-item" data-tags="' + escapeHtml(tags.join('|')) + '">' +
+    return '<article class="shuoshuo-item" id="' + anchorId + '" data-tags="' + escapeHtml(tags.join('|')) + '">' +
       '<div class="container">' +
         '<div class="shuoshuo-item-header">' +
-          '<div class="shuoshuo-avatar"><img class="no-lightbox" src="' + escapeHtml(item.avatar || AVATAR) + '" alt=""></div>' +
+          '<div class="shuoshuo-avatar"><img class="no-lightbox" src="' + escapeHtml(item.avatar || AVATAR) + '" alt="" width="48" height="48"></div>' +
           '<div class="shuoshuo-info">' +
             '<div class="shuoshuo-author">' + escapeHtml(item.author || AUTHOR) + '</div>' +
             '<time class="shuoshuo-date" datetime="' + datetime + '">' + escapeHtml(formatDate(item.date)) + '</time>' +
@@ -191,7 +210,7 @@
       if (b === '未标注') return -1
       return Number(b) - Number(a)
     })
-    const newest = data.find(i => !i.standalone) || data[0] || {}
+    const newest = data[0] || {}
     const newestYear = yearOf(newest)
     const newestMonth = monthOf(newest)
 
@@ -202,7 +221,7 @@
     const tagButtons = [...tagCounts.entries()]
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh'))
       .map(([tag, count]) =>
-        '<button type="button" data-moment-tag="' + escapeHtml(tag) + '">' +
+        '<button type="button" aria-pressed="false" data-moment-tag="' + escapeHtml(tag) + '">' +
           escapeHtml(tag) + '<span>' + count + '</span></button>'
       ).join('')
 
@@ -210,15 +229,15 @@
       '<p class="content-lead__eyebrow">Moments</p>' +
       '<p>短句、雨天、一时兴起。最近一个月摊开，更早的收在月份里。</p>' +
       '<div class="moment-filters" role="group" aria-label="按标签筛选">' +
-        '<button type="button" class="is-active" data-moment-tag="">全部<span>' + data.filter(i => !i.standalone).length + '</span></button>' +
+        '<button type="button" class="is-active" aria-pressed="true" data-moment-tag="">全部<span>' + data.filter(i => !i.standalone).length + '</span></button>' +
         tagButtons +
       '</div>' +
       '<p class="content-lead__links">' +
         '<a href="/">返回首页看文章</a>' +
         '<span aria-hidden="true">·</span>' +
-        '<a href="/archives/">全部归档</a>' +
+        '<a href="/timeline/">人生长廊</a>' +
         '<span aria-hidden="true">·</span>' +
-        '<a href="/categories/%E5%BB%BA%E7%AB%99%E6%89%8B%E8%AE%B0/">建站手记（可选）</a>' +
+        '<a href="/archives/">全部归档</a>' +
       '</p>' +
     '</div>'
 
@@ -245,6 +264,10 @@
     root.querySelectorAll('.shuoshuo-content').forEach(block => {
       const sample = (block.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 28) || '这一则随笔'
       block.querySelectorAll('img').forEach((img, index, list) => {
+        if (!img.classList.contains('no-lightbox')) {
+          img.setAttribute('loading', 'lazy')
+          img.setAttribute('decoding', 'async')
+        }
         if (!img.getAttribute('alt') || /^配图/.test(img.alt)) {
           img.alt = list.length > 1 ? sample + ' ' + (index + 1) : sample
         }
@@ -302,16 +325,33 @@
     const empty = container.querySelector('.moment-empty')
     if (empty) empty.hidden = items.some(item => !item.hidden)
     container.querySelectorAll('[data-moment-tag]').forEach(button => {
-      button.classList.toggle('is-active', (button.dataset.momentTag || '') === tag)
+      const active = (button.dataset.momentTag || '') === tag
+      button.classList.toggle('is-active', active)
+      button.setAttribute('aria-pressed', active ? 'true' : 'false')
+    })
+  }
+
+  const openHashTarget = container => {
+    const hash = window.location.hash ? window.location.hash.slice(1) : ''
+    if (!hash) return
+    const target = document.getElementById(decodeURIComponent(hash))
+    if (!target || !container.contains(target)) return
+    let parent = target.parentElement
+    while (parent && parent !== container) {
+      if (parent.tagName === 'DETAILS') parent.open = true
+      parent = parent.parentElement
+    }
+    window.requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
   }
 
   const finish = container => {
-    decorateContent(container)
     if (window.lazyLoadInstance) window.lazyLoadInstance.update()
     if (window.btf && typeof window.btf.loadLightbox === 'function') {
       window.btf.loadLightbox(container.querySelectorAll('img:not(.no-lightbox)'))
     }
+    openHashTarget(container)
   }
 
   const apply = () => {
@@ -321,10 +361,14 @@
     if (!container || !source || !source.length) return false
     if (container.querySelector('.moment-year')) return true
 
-    let data = source
+    const data = source.slice().sort((a, b) => normalizeDate(b.date).localeCompare(normalizeDate(a.date)))
 
-    data = data.slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
-    container.innerHTML = render(data)
+    // 在离屏 template 中完成 DOM 修饰与 loading="lazy" 注入，再一次性插入页面
+    const tpl = document.createElement('template')
+    tpl.innerHTML = render(data)
+    decorateContent(tpl.content)
+
+    container.replaceChildren(tpl.content)
     container.dataset.momentTag = ''
 
     const nav = container.nextElementSibling
@@ -340,6 +384,15 @@
         container.dataset.momentTag = tag
         applyFilter(container, tag)
       })
+      container.addEventListener('toggle', event => {
+        const details = event.target
+        if (!details || !details.classList || !details.classList.contains('shuoshuo-own__more')) return
+        const summary = details.querySelector('summary')
+        if (!summary) return
+        summary.textContent = details.open
+          ? '收起'
+          : (details.dataset.collapsedLabel || '展开全部')
+      }, true)
     }
 
     finish(container)
@@ -348,14 +401,21 @@
 
   const watch = () => {
     if (!isMoments()) return
-    apply()
+    const ok = apply()
     const container = document.getElementById('article-container')
     if (!container || container.__momentsYearsWatch) return
     container.__momentsYearsWatch = true
     const observer = new MutationObserver(() => {
+      if (!document.body.contains(container)) {
+        observer.disconnect()
+        return
+      }
       if (!container.querySelector('.moment-year')) apply()
     })
     observer.observe(container, { childList: true })
+    if (ok && !document.querySelector('.shuoshuo-navigation')) {
+      window.setTimeout(() => observer.disconnect(), 1500)
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -366,6 +426,10 @@
   window.addEventListener('load', () => {
     window.setTimeout(apply, 0)
     window.setTimeout(apply, 300)
+  })
+  window.addEventListener('hashchange', () => {
+    const container = document.getElementById('article-container')
+    if (container && isMoments()) openHashTarget(container)
   })
   document.addEventListener('pjax:complete', () => window.setTimeout(watch, 0))
 })()

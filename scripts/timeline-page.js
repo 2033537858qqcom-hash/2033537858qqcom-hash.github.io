@@ -2,11 +2,6 @@
 
 /**
  * 「人生长廊 · 时间轴」：把 source/_data/timeline.yml 渲染进 source/timeline/index.md。
- * 数据来源（都只读，不改）：
- *   - source/_data/shuoshuo.yml / shuoshuo-comments.yml  随笔节选 + 作者评论
- *   - source/img/photography/                            摄影（已是 webp，直接引用）
- *   - source/_posts                                      重要文章（标题/链接自动取）
- * 节选句子会和原文逐行比对，对不上就在构建时告警，避免写出原文里没有的话。
  */
 
 const fs = require('fs')
@@ -14,6 +9,16 @@ const path = require('path')
 
 const root = path.resolve(__dirname, '..')
 const photoDir = path.join(root, 'source', 'img', 'photography')
+
+function loadDenyIds () {
+  try {
+    const cfg = JSON.parse(fs.readFileSync(path.join(root, 'tools', 'netease-config.json'), 'utf8'))
+    if (Array.isArray(cfg.denyIds)) return new Set(cfg.denyIds.map(String))
+  } catch (e) {
+    /* fallback */
+  }
+  return new Set(['37956681393'])
+}
 
 const esc = value => String(value == null ? '' : value)
   .replace(/&/g, '&amp;')
@@ -25,6 +30,9 @@ const esc = value => String(value == null ? '' : value)
 const pad = n => String(n).padStart(2, '0')
 
 function ymd (value) {
+  if (value && typeof value.format === 'function') {
+    return value.format('YYYY-MM-DD')
+  }
   if (value instanceof Date) {
     return `${value.getUTCFullYear()}-${pad(value.getUTCMonth() + 1)}-${pad(value.getUTCDate())}`
   }
@@ -83,11 +91,11 @@ function renderExcerpt (ex, ctx) {
     checkLines(ex.comment.lines, joined, `随笔 ${ex.id} 的作者评论`, ctx.warn)
     commentHtml = `<p class="tl-quote__more"><b>接着写</b>${ex.comment.lines.map(esc).join('<br>')}</p>`
   }
-  return `<blockquote class="tl-quote">
-    <p class="tl-quote__text">${lines.map(esc).join('<br>')}</p>
-    ${commentHtml}
-    <footer>${ex.label ? `<span>${esc(ex.label)}</span>` : ''}<a href="/moments/" title="去随笔页读全文">${esc(cnDate(date))} · 随笔</a></footer>
-  </blockquote>`
+  return `<blockquote class="tl-quote">` +
+    `<p class="tl-quote__text">${lines.map(esc).join('<br>')}</p>` +
+    commentHtml +
+    `<footer>${ex.label ? `<span>${esc(ex.label)}</span>` : ''}<a href="/moments/#m-${esc(ex.id)}" title="去随笔页读全文">${esc(cnDate(date))} · 随笔</a></footer>` +
+    `</blockquote>`
 }
 
 function renderPosts (posts, ctx) {
@@ -98,18 +106,18 @@ function renderPosts (posts, ctx) {
       return ''
     }
     const desc = post.description || ''
-    return `<li><a href="${esc(ctx.root + post.path)}"><strong>${esc(post.title)}</strong>${desc ? `<span>${esc(desc)}</span>` : ''}<time>${esc(ymd(post.date.toDate ? post.date.toDate() : post.date))}</time></a></li>`
+    return `<li><a href="${esc(ctx.root + post.path)}"><strong>${esc(post.title)}</strong>${desc ? `<span>${esc(desc)}</span>` : ''}<time>${esc(ymd(post.date))}</time></a></li>`
   }).join('')
-  return list ? `<div class="tl-block"><h4>重要文章</h4><ul class="tl-posts">${list}</ul></div>` : ''
+  return list ? `<div class="tl-block"><h3>重要文章</h3><ul class="tl-posts">${list}</ul></div>` : ''
 }
 
 function renderSong (song) {
   if (!song) return ''
-  return `<a class="tl-song" href="${esc(song.url)}" target="_blank" rel="noopener noreferrer">
-    <span class="tl-song__disc" aria-hidden="true"><i class="fas fa-music"></i></span>
-    <span class="tl-song__body"><small>这一年的歌</small><strong>${esc(song.title)}</strong><em>${esc(song.artist)}</em></span>
-    <span class="tl-song__go">网易云 <i class="fas fa-arrow-up-right-from-square"></i></span>
-  </a>`
+  return `<a class="tl-song" href="${esc(song.url)}" target="_blank" rel="noopener noreferrer">` +
+    `<span class="tl-song__disc" aria-hidden="true"><i class="fas fa-music"></i></span>` +
+    `<span class="tl-song__body"><small>这一年的歌</small><strong>${esc(song.title)}</strong><em>${esc(song.artist)}</em></span>` +
+    `<span class="tl-song__go">网易云 <i class="fas fa-arrow-up-right-from-square"></i></span>` +
+    `</a>`
 }
 
 function renderYear (y, ctx) {
@@ -117,27 +125,26 @@ function renderYear (y, ctx) {
   const photos = renderPhotos(y.year, y.photos || [], ctx.warn)
   const quotes = (y.excerpts || []).map(ex => renderExcerpt(ex, c)).join('')
   const stat = ctx.stats[y.year] || { essays: 0, photos: 0 }
-  return `<section class="tl-year" id="y${esc(y.year)}">
-    <div class="tl-year__node" aria-hidden="true"></div>
-    <header class="tl-year__head">
-      <span class="tl-year__num">${esc(y.year)}</span>
-      <h3>${esc(y.theme)}</h3>
-      <p class="tl-year__stat">${stat.essays} 条随笔 · ${stat.photos} 张照片</p>
-    </header>
-    <div class="tl-year__body">
-      <p class="tl-year__summary">${esc(y.summary)}</p>
-      ${y.data_note ? `<p class="tl-year__note">${esc(y.data_note)}</p>` : ''}
-      ${photos}
-      ${quotes ? `<div class="tl-quotes">${quotes}</div>` : ''}
-      ${renderPosts(y.posts, c)}
-      ${renderSong(y.song)}
-    </div>
-  </section>`
+  return `<section class="tl-year" id="y${esc(y.year)}">` +
+    `<div class="tl-year__node" aria-hidden="true"></div>` +
+    `<header class="tl-year__head">` +
+    `<span class="tl-year__num">${esc(y.year)}</span>` +
+    `<h2>${esc(y.theme)}</h2>` +
+    `<p class="tl-year__stat">${stat.essays} 条随笔 · ${stat.photos} 张照片</p>` +
+    `</header>` +
+    `<div class="tl-year__body">` +
+    `<p class="tl-year__summary">${esc(y.summary)}</p>` +
+    (y.data_note ? `<p class="tl-year__note">${esc(y.data_note)}</p>` : '') +
+    photos +
+    (quotes ? `<div class="tl-quotes">${quotes}</div>` : '') +
+    renderPosts(y.posts, c) +
+    renderSong(y.song) +
+    `</div></section>`
 }
 
-function buildHtml (hexo) {
-  const warn = msg => hexo.log.warn(`[timeline] ${msg}`)
-  const data = hexo.locals.get('data') || {}
+function buildHtml (hexoInstance) {
+  const warn = msg => hexoInstance.log.warn(`[timeline] ${msg}`)
+  const data = hexoInstance.locals.get('data') || {}
   const cfg = data.timeline
   if (!cfg || !Array.isArray(cfg.years)) {
     warn('缺少 source/_data/timeline.yml')
@@ -152,7 +159,6 @@ function buildHtml (hexo) {
     comments.get(k).push(String(c.content || ''))
   }
 
-  // 统计：每年随笔条数 / 摄影张数
   const stats = {}
   const bump = (year, key) => {
     stats[year] = stats[year] || { essays: 0, photos: 0 }
@@ -170,8 +176,7 @@ function buildHtml (hexo) {
     }
   } catch (e) { warn(`读取摄影目录失败: ${e.message}`) }
 
-  // 回避名单：姥姥相关动态
-  const denyIds = new Set(['37956681393'])
+  const denyIds = loadDenyIds()
 
   const ctx = {
     warn,
@@ -179,29 +184,28 @@ function buildHtml (hexo) {
     comments,
     stats,
     denyIds,
-    root: hexo.config.root || '/',
-    posts: hexo.locals.get('posts').toArray()
+    root: (hexoInstance.config.root || '/').replace(/\/$/, ''),
+    posts: hexoInstance.locals.get('posts').toArray()
   }
-  ctx.root = ctx.root.replace(/\/$/, '')
 
   const years = cfg.years.slice().sort((a, b) => Number(a.year) - Number(b.year))
   const nav = years.map(y => `<a href="#y${esc(y.year)}"><b>${esc(y.year)}</b><span>${esc(y.theme)}</span></a>`).join('')
 
-  return `<div class="timeline-page">
-    <header class="tl-hero">
-      <p class="tl-hero__eyebrow">Life Corridor</p>
-      <p class="tl-hero__intro">${esc(cfg.intro)}</p>
-      <p class="tl-hero__tagline">${esc(cfg.tagline)}</p>
-      <nav class="tl-hero__nav" aria-label="按年份跳转">${nav}</nav>
-    </header>
-    <div class="tl-line">${years.map(y => renderYear(y, ctx)).join('')}</div>
-    <p class="tl-end">下一年，也会留下痕迹。<span><a href="/moments/">随笔</a> · <a href="/photography/">摄影</a> · <a href="/archives/">文章</a></span></p>
-  </div>`
+  return `<div class="timeline-page">` +
+    `<header class="tl-hero">` +
+    `<p class="tl-hero__eyebrow">Life Corridor</p>` +
+    `<p class="tl-hero__intro">${esc(cfg.intro)}</p>` +
+    `<p class="tl-hero__tagline">${esc(cfg.tagline)}</p>` +
+    `<nav class="tl-hero__nav" aria-label="按年份跳转">${nav}</nav>` +
+    `</header>` +
+    `<div class="tl-line">${years.map(y => renderYear(y, ctx)).join('')}</div>` +
+    `<p class="tl-end">下一年，也会留下痕迹。<span><a href="/moments/">随笔</a> · <a href="/photography/">摄影</a> · <a href="/archives/">文章</a></span></p>` +
+    `</div>`
 }
 
 hexo.extend.filter.register('before_post_render', data => {
   if (data.source !== 'timeline/index.md') return data
-  const html = buildHtml(hexo).replace(/\s*\n\s*/g, '')
+  const html = buildHtml(hexo).replace(/>\s*\n\s*</g, '><').replace(/\s*\n\s*/g, ' ')
   data.content = data.content.replace('<!-- timeline -->', html)
   return data
 })

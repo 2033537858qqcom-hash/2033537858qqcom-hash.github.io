@@ -9,9 +9,10 @@ import https from 'https'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { UID } from './netease-config.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const uid = Number(process.argv[2] || '3988339491')
+const uid = Number(process.argv[2] || UID)
 const rawPath = path.join(__dirname, 'netease-events-raw.json')
 const outPath = path.join(__dirname, 'netease-comments.json')
 const DELAY = 150
@@ -28,19 +29,24 @@ function get (url, attempt = 0) {
       hostname: u.hostname,
       path: u.pathname + u.search,
       method: 'GET',
+      timeout: 20000,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         Referer: 'https://music.163.com/',
         Accept: '*/*'
       }
     }, res => {
+      if (res.statusCode !== 200) {
+        res.resume()
+        return retry(new Error('HTTP ' + res.statusCode))
+      }
       let d = ''
       res.on('data', c => (d += c))
       res.on('end', () => {
-        if (res.statusCode !== 200) return retry(new Error('HTTP ' + res.statusCode))
         try { resolve(JSON.parse(d)) } catch { retry(new Error('JSON parse fail')) }
       })
     })
+    req.on('timeout', () => req.destroy(new Error('timeout ' + url)))
     req.on('error', retry)
     req.end()
   })

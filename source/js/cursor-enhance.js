@@ -1,10 +1,9 @@
 /**
  * 桌面端「仅光圈」光标：
- * - 隐藏系统箭头，只显示一个跟随细环（中心点用 ::after，避免双元素漂移）
- * - 悬停可点放大，点击轻缩
- * - 移动端 / 触控 / 减少动效自动关闭
- * - Alt+C 开关（localStorage: blog-cursor-ring）
- * - Pjax 导航时清理残留节点，避免叠出多个光圈
+ * - 外层负责定位（translate3d），内层 .cursor-ring__shape 仅用 transform: scale(...) 过渡，不触发布局重算
+ * - 鼠标静止时自动停止 rAF 空转，移动时恢复
+ * - 悬停跨域 iframe 时自动隐退并恢复原生光标，避免卡在边框
+ * - Alt+C 或右键菜单可随时开关（localStorage: blog-cursor-ring）
  */
 (function () {
   const STORAGE_KEY = 'blog-cursor-ring'
@@ -28,6 +27,7 @@
   let enabled = false
   let hovering = false
   let hasMoved = false
+  let overIframe = false
   const mouse = { x: 0, y: 0 }
   const pos = { x: 0, y: 0 }
 
@@ -35,12 +35,9 @@
     if (el && el.parentNode) el.parentNode.removeChild(el)
   }
 
-  /** 清掉 body 上所有历史光标节点（含 Pjax 残留） */
   const purgeOrphans = () => {
     try {
-      document.querySelectorAll('#cursor-ring, #cursor-dot, .cursor-ring, .cursor-dot').forEach(el => {
-        removeEl(el)
-      })
+      document.querySelectorAll('#cursor-ring, #cursor-dot, .cursor-ring, .cursor-dot').forEach(removeEl)
     } catch (e) {
       /* ignore */
     }
@@ -51,14 +48,17 @@
 
   const ensureNodes = () => {
     if (inDom(ring)) return
-
-    // 引用丢失或节点被 Pjax 换掉时，先清孤儿再重建
     purgeOrphans()
 
     ring = document.createElement('div')
     ring.id = 'cursor-ring'
     ring.className = 'cursor-ring'
     ring.setAttribute('aria-hidden', 'true')
+
+    const shape = document.createElement('span')
+    shape.className = 'cursor-ring__shape'
+    ring.appendChild(shape)
+
     document.body.appendChild(ring)
   }
 
@@ -69,20 +69,36 @@
     }
   }
 
+  const startLoop = () => {
+    if (!raf && enabled && hasMoved && !overIframe) {
+      raf = requestAnimationFrame(tick)
+    }
+  }
+
   const hideVisual = () => {
     if (ring) ring.classList.remove('is-visible', 'is-hover', 'is-click')
   }
 
   const tick = () => {
-    if (!enabled || !ring) {
+    if (!enabled || !ring || overIframe) {
       raf = 0
       return
     }
 
-    // 轻微惯性，单节点跟随，不会出现双圈
-    pos.x += (mouse.x - pos.x) * 0.32
-    pos.y += (mouse.y - pos.y) * 0.32
+    const dx = mouse.x - pos.x
+    const dy = mouse.y - pos.y
 
+    if (Math.abs(dx) < 0.15 && Math.abs(dy) < 0.15) {
+      pos.x = mouse.x
+      pos.y = mouse.y
+      ring.style.transform =
+        'translate3d(' + pos.x + 'px,' + pos.y + 'px,0) translate(-50%,-50%)'
+      raf = 0
+      return
+    }
+
+    pos.x += dx * 0.35
+    pos.y += dy * 0.35
     ring.style.transform =
       'translate3d(' + pos.x + 'px,' + pos.y + 'px,0) translate(-50%,-50%)'
 
@@ -94,6 +110,7 @@
     document.documentElement.classList.toggle('cursor-enhance', enabled)
     document.documentElement.classList.remove('cursor-hover-interactive')
     hovering = false
+    overIframe = false
 
     if (!enabled) {
       hideVisual()
@@ -104,12 +121,25 @@
 
     ensureNodes()
     if (hasMoved) {
+      ring.style.transform =
+        'translate3d(' + pos.x + 'px,' + pos.y + 'px,0) translate(-50%,-50%)'
       ring.classList.add('is-visible')
+      startLoop()
     } else {
       hideVisual()
     }
-    if (!raf) raf = requestAnimationFrame(tick)
   }
+
+  const toggleEnabled = () => {
+    const next = localStorage.getItem(STORAGE_KEY) === 'off' ? 'on' : 'off'
+    try {
+      localStorage.setItem(STORAGE_KEY, next)
+    } catch (e) {}
+    setEnabled(next !== 'off' && canEnhance())
+    return next !== 'off'
+  }
+
+  window.__toggleCursorRing = toggleEnabled
 
   const onMove = e => {
     mouse.x = e.clientX
@@ -121,15 +151,34 @@
       pos.y = mouse.y
     }
 
-    if (enabled) {
+    if (enabled && !overIframe) {
       ensureNodes()
       ring.classList.add('is-visible')
+      startLoop()
     }
   }
 
   const onOver = e => {
     if (!enabled) return
-    const el = e.target && e.target.closest && e.target.closest(INTERACTIVE)
+    const target = e.target
+    const inIframe = Boolean(target && target.tagName === 'IFRAME')
+    if (inIframe !== overIframe) {
+      overIframe = inIframe
+      if (overIframe) {
+        hideVisual()
+        stopLoop()
+        document.documentElement.classList.remove('cursor-enhance')
+      } else {
+        document.documentElement.classList.add('cursor-enhance')
+        if (hasMoved && ring) {
+          ring.classList.add('is-visible')
+          startLoop()
+        }
+      }
+    }
+    if (overIframe) return
+
+    const el = target && target.closest && target.closest(INTERACTIVE)
     const next = Boolean(el)
     if (next === hovering) return
     hovering = next
@@ -138,7 +187,7 @@
   }
 
   const onDown = () => {
-    if (!enabled || !ring) return
+    if (!enabled || !ring || overIframe) return
     ring.classList.add('is-click')
   }
 
@@ -148,6 +197,7 @@
 
   const onLeave = () => {
     hideVisual()
+    stopLoop()
     hovering = false
     document.documentElement.classList.remove('cursor-hover-interactive')
   }
@@ -159,18 +209,15 @@
   const onKey = e => {
     if (!(e.altKey && (e.key === 'c' || e.key === 'C'))) return
     e.preventDefault()
-    const next = localStorage.getItem(STORAGE_KEY) === 'off' ? 'on' : 'off'
-    localStorage.setItem(STORAGE_KEY, next)
-    hasMoved = false
-    setEnabled(next !== 'off' && canEnhance())
+    toggleEnabled()
   }
 
   const onPjax = () => {
     stopLoop()
     purgeOrphans()
     hovering = false
+    overIframe = false
     document.documentElement.classList.remove('cursor-hover-interactive')
-    // 保留 hasMoved / mouse，导航后立刻能显示
     boot()
   }
 
@@ -190,7 +237,7 @@
 
   document.addEventListener('pjax:complete', onPjax)
   document.addEventListener('pjax:send', () => {
-    // 切页瞬间先藏起，避免旧环留在原地
     hideVisual()
+    stopLoop()
   })
 })()

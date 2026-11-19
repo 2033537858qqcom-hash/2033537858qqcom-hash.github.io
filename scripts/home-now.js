@@ -9,6 +9,14 @@ const escapeHtml = value => String(value || '')
   .replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;')
 
+function dateKey (value) {
+  if (value instanceof Date) {
+    const p = n => String(n).padStart(2, '0')
+    return `${value.getUTCFullYear()}-${p(value.getUTCMonth() + 1)}-${p(value.getUTCDate())} ${p(value.getUTCHours())}:${p(value.getUTCMinutes())}:${p(value.getUTCSeconds())}`
+  }
+  return String(value || '').replace('T', ' ').replace(/\.\d+Z$/, '')
+}
+
 function excerptFromMoment (item) {
   const text = String((item && item.content) || '')
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
@@ -38,7 +46,8 @@ function featuredPhoto () {
 
 function renderHomeNow () {
   const data = hexo.locals.get('data') || {}
-  const moments = Array.isArray(data.shuoshuo) ? data.shuoshuo : []
+  const moments = Array.isArray(data.shuoshuo) ? data.shuoshuo.slice() : []
+  moments.sort((a, b) => dateKey(b && b.date).localeCompare(dateKey(a && a.date)))
   const excerpt = excerptFromMoment(moments[0])
   const photo = featuredPhoto()
 

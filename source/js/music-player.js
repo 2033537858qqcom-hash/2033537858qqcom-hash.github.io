@@ -2,21 +2,19 @@
  * 全站迷你播放器
  * 优先：网易云歌单（MetingJS）
  * 回退：本地曲目
- * 按需加载：用户点击左下角按钮后再拉依赖
+ * 按需加载：用户点击左下角按钮后再拉依赖；在 /music/ 页不主动叠开第二套播放器
  */
 (function () {
   const NETEASE_PLAYLIST_ID = '5355255169'
   const NETEASE_PLAYLIST_URL =
     'https://music.163.com/playlist?id=' + NETEASE_PLAYLIST_ID
 
-  // 一律 https；bootcdn 国内较稳，失败则回退本地曲目
   const APLAYER_CSS = 'https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.css'
   const APLAYER_JS = 'https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js'
   const METING_JS_CANDIDATES = [
     'https://unpkg.com/meting@2.0.1/dist/Meting.min.js',
     'https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js'
   ]
-  // 第三方歌单代理（仅点击播放器后请求；失败 6s 回退本地）
   const METING_API =
     'https://api.injahow.cn/meting/?server=:server&type=:type&id=:id&auth=:auth&r=:r'
 
@@ -42,6 +40,14 @@
   ]
 
   let loading = false
+
+  const isSaveData = () => {
+    try {
+      return Boolean(navigator.connection && navigator.connection.saveData)
+    } catch (e) {
+      return false
+    }
+  }
 
   const loadCss = href => new Promise(resolve => {
     if (document.querySelector('link[data-blog-music="' + href + '"]')) return resolve()
@@ -97,7 +103,7 @@
     btn.type = 'button'
     btn.className = 'blog-music-launcher'
     btn.setAttribute('aria-label', '打开音乐播放器')
-    btn.title = '音乐'
+    btn.title = '打开迷你播放器'
     const icon = document.createElement('i')
     icon.className = 'fas fa-music'
     icon.setAttribute('aria-hidden', 'true')
@@ -112,6 +118,7 @@
       launcher.classList.remove('is-loading')
       launcher.classList.add('is-hidden')
     }
+    document.documentElement.classList.add('has-aplayer-mounted')
   }
 
   const initLocalFallback = () => {
@@ -163,17 +170,28 @@
 
     window.__blogMusicPlayer = true
     window.__blogMusicSource = 'netease'
-    hideLauncher()
 
-    // Meting 异步拉歌单，超时则回退本地
-    window.setTimeout(function () {
-      const hasAplayer = document.querySelector('.aplayer')
-      if (!hasAplayer) {
+    // 等待 .aplayer 真正挂载且非空列表再隐去 launcher；超时则清理回退本地
+    let elapsed = 0
+    const poll = window.setInterval(function () {
+      elapsed += 300
+      const aplayerEl = document.querySelector('.aplayer')
+      const hasTrack = aplayerEl && aplayerEl.querySelector('.aplayer-list li')
+      if (aplayerEl && hasTrack) {
+        window.clearInterval(poll)
+        hideLauncher()
+        return
+      }
+      if (elapsed >= 5000) {
+        window.clearInterval(poll)
         try { meting.remove() } catch (e) {}
+        if (aplayerEl) {
+          try { aplayerEl.remove() } catch (e) {}
+        }
         window.__blogMusicPlayer = null
         initLocalFallback()
       }
-    }, 6000)
+    }, 300)
 
     return true
   }
@@ -188,8 +206,10 @@
       .then(function () { return loadScript(APLAYER_JS) })
       .then(function () { return loadScriptWithFallback(METING_JS_CANDIDATES) })
       .then(function () {
-        if (!initNeteaseMeting()) initLocalFallback()
-        launcher.classList.remove('is-loading')
+        if (!initNeteaseMeting()) {
+          initLocalFallback()
+          launcher.classList.remove('is-loading')
+        }
         if (!window.__blogMusicPlayer) loading = false
       })
       .catch(function () {
@@ -207,35 +227,21 @@
     }
   }
 
-  onReady(function () {
-    if (window.matchMedia('(prefers-reduced-data: reduce)').matches) return
-
+  const setup = () => {
+    if (isSaveData()) return
     const launcher = ensureLauncher()
     if (!launcher.dataset.bound) {
       launcher.dataset.bound = '1'
       launcher.addEventListener('click', boot)
     }
-
-    if (/\/music\/?$/.test(location.pathname)) {
-      window.setTimeout(boot, 400)
-    }
-
     window.__blogNeteasePlaylist = {
       id: NETEASE_PLAYLIST_ID,
       url: NETEASE_PLAYLIST_URL
     }
-  })
+  }
 
+  onReady(setup)
   document.addEventListener('pjax:complete', function () {
-    onReady(function () {
-      const launcher = ensureLauncher()
-      if (!launcher.dataset.bound) {
-        launcher.dataset.bound = '1'
-        launcher.addEventListener('click', boot)
-      }
-      if (/\/music\/?$/.test(location.pathname) && !window.__blogMusicPlayer) {
-        window.setTimeout(boot, 400)
-      }
-    })
+    onReady(setup)
   })
 })()
