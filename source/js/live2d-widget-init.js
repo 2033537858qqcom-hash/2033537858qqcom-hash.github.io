@@ -233,6 +233,14 @@
       }
     })
 
+    window.addEventListener('blog:anime-pick', event => {
+      const title = event && event.detail && event.detail.title
+      showBubble(
+        title ? '今天抽到的是《' + title + '》呀，要不要再看两集？' : '抽到一部好故事啦～',
+        3600
+      )
+    })
+
     new MutationObserver(mutations => {
       if (mutations.some(m => m.attributeName === 'data-theme')) {
         const dark = document.documentElement.getAttribute('data-theme') === 'dark'

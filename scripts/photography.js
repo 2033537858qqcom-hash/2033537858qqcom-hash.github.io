@@ -161,7 +161,9 @@ function renderAlbum (images) {
     return `<section class="photo-year" id="photo-year-${escapeAttr(yearSlug(year))}"><header class="photo-year__head"><h3>${escapeAttr(title)}</h3><p>${files.length} 张</p></header><div class="photo-grid">${cards}</div></section>`
   }).join('')
 
-  return `<nav class="photo-nav" aria-label="按年份跳转">${navPills}</nav>${sections}`
+  const orderBtn = '<button type="button" class="photo-nav__order" id="photo-order-toggle" data-order="desc" aria-label="切换年份排列顺序"><i class="fas fa-sort" aria-hidden="true"></i> <span>倒序 · 近照优先</span></button>'
+
+  return `<nav class="photo-nav" aria-label="按年份跳转">${navPills}${orderBtn}</nav><div class="photo-years" id="photo-years">${sections}</div>`
 }
 
 function injectAlbum (html) {
