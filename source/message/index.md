@@ -7,8 +7,7 @@ top_img: /img/optimized/banner-day-bg.webp
 ---
 
 <div class="content-lead">
-  <p class="content-lead__eyebrow">Message</p>
-  <p>欢迎留下足迹、想法、建议或友链申请。技术交流也可以，路过打个招呼也行。</p>
+  <p>路过打个招呼也好，聊聊技术、番剧、照片或者交换友链都可以。</p>
 </div>
 
 ## 怎么留言

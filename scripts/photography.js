@@ -149,9 +149,8 @@ function renderAlbum (images) {
   const yearSlug = year => (year === '未标注' ? 'unknown' : String(year))
 
   const navPills = years.map(year => {
-    const files = groups.get(year)
     const label = year === '未标注' ? '未标注' : `${year}`
-    return `<a class="photo-nav__pill" href="#photo-year-${escapeAttr(yearSlug(year))}"><strong>${escapeAttr(label)}</strong><span>${files.length}</span></a>`
+    return `<a class="photo-nav__link" href="#photo-year-${escapeAttr(yearSlug(year))}">${escapeAttr(label)}</a>`
   }).join('')
 
   const sections = years.map(year => {
@@ -161,9 +160,7 @@ function renderAlbum (images) {
     return `<section class="photo-year" id="photo-year-${escapeAttr(yearSlug(year))}"><header class="photo-year__head"><h3>${escapeAttr(title)}</h3><p>${files.length} 张</p></header><div class="photo-grid">${cards}</div></section>`
   }).join('')
 
-  const orderBtn = '<button type="button" class="photo-nav__order" id="photo-order-toggle" data-order="desc" aria-label="切换年份排列顺序"><i class="fas fa-sort" aria-hidden="true"></i> <span>倒序 · 近照优先</span></button>'
-
-  return `<nav class="photo-nav" aria-label="按年份跳转">${navPills}${orderBtn}</nav><div class="photo-years" id="photo-years">${sections}</div>`
+  return `<nav class="photo-nav" aria-label="年份索引">${navPills}</nav>${sections}`
 }
 
 function injectAlbum (html) {

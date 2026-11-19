@@ -8,8 +8,6 @@ permalink: /photography/
 
 <section class="photography-page">
   <header class="photography-header">
-    <p class="photography-eyebrow">镜头里的日常与风景</p>
-    <h2>摄影展示</h2>
     <p>按年份慢慢翻。点开一张，可以用左右键看下一张。</p>
   </header>
 

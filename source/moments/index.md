@@ -6,13 +6,10 @@ top_img: false
 ---
 
 <div class="content-lead">
-  <p class="content-lead__eyebrow">Moments</p>
   <p>短句、雨天、一时兴起。最近一个月摊开，更早的收在月份里。</p>
   <p class="content-lead__links">
-    <a href="/">返回首页看文章</a>
+    <a href="/">回到首页</a>
     <span aria-hidden="true">·</span>
-    <a href="/archives/">全部归档</a>
-    <span aria-hidden="true">·</span>
-    <a href="/categories/%E5%BB%BA%E7%AB%99%E6%89%8B%E8%AE%B0/">建站手记（可选）</a>
+    <a href="/timeline/">人生长廊</a>
   </p>
 </div>

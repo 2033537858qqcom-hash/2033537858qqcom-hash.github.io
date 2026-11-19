@@ -200,7 +200,6 @@
     window.__blogLive2DBound = true
 
     let lastMusicBubbleAt = 0
-    let serendipityCount = 0
 
     document.addEventListener('click', event => {
       if (event.target && event.target.closest && event.target.closest('#live2d-widget, #live2dcanvas')) {
@@ -223,21 +222,6 @@
       showBubble(
         title ? '开始放歌啦：《' + title + '》，慢慢逛吧～' : '配乐响起来啦，祝你逛得开心～',
         3800
-      )
-    })
-
-    window.addEventListener('blog:serendipity', () => {
-      serendipityCount += 1
-      if (serendipityCount === 1 || serendipityCount % 4 === 0) {
-        showBubble('任意门翻到一页新切片啦，点进去看看故事吧～', 3400)
-      }
-    })
-
-    window.addEventListener('blog:anime-pick', event => {
-      const title = event && event.detail && event.detail.title
-      showBubble(
-        title ? '今天抽到的是《' + title + '》呀，要不要再看两集？' : '抽到一部好故事啦～',
-        3600
       )
     })
 

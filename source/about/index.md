@@ -6,8 +6,7 @@ top_img: /img/optimized/banner-day-bg.webp
 ---
 
 <div class="content-lead">
-  <p class="content-lead__eyebrow">About</p>
-  <p>我是 Rogue_l。这个站不是作品集，也不是教程合集——更像一个可以回看的角落。</p>
+  <p>我是 Rogue_l。这里不是作品集，也不是教程合集——更像一个可以回看的角落。</p>
   <p>代码、雨天、番剧和几段说不清的心情，都放在同一片日夜里。写得出就写，写不出就先活着。</p>
 </div>
 

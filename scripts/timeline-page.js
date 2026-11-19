@@ -189,15 +189,13 @@ function buildHtml (hexoInstance) {
   }
 
   const years = cfg.years.slice().sort((a, b) => Number(a.year) - Number(b.year))
-  const nav = years.map(y => `<a href="#y${esc(y.year)}"><b>${esc(y.year)}</b><span>${esc(y.theme)}</span></a>`).join('')
-  const orderBtn = `<button type="button" class="tl-hero__order" id="tl-order-toggle" data-order="asc" aria-label="切换时间轴年份顺序"><i class="fas fa-sort" aria-hidden="true"></i> <span>2023 → 2026</span></button>`
+  const nav = years.map(y => `<a href="#y${esc(y.year)}"><b>${esc(y.year)}</b> <span>${esc(y.theme)}</span></a>`).join('')
 
   return `<div class="timeline-page">` +
     `<header class="tl-hero">` +
-    `<p class="tl-hero__eyebrow">Life Corridor</p>` +
     `<p class="tl-hero__intro">${esc(cfg.intro)}</p>` +
     `<p class="tl-hero__tagline">${esc(cfg.tagline)}</p>` +
-    `<nav class="tl-hero__nav" aria-label="按年份跳转">${nav}${orderBtn}</nav>` +
+    `<nav class="tl-hero__nav" aria-label="按年份跳转">${nav}</nav>` +
     `</header>` +
     `<div class="tl-line">${years.map(y => renderYear(y, ctx)).join('')}</div>` +
     `<p class="tl-end">下一年，也会留下痕迹。<span><a href="/moments/">随笔</a> · <a href="/photography/">摄影</a> · <a href="/archives/">文章</a></span></p>` +

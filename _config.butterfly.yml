@@ -1090,7 +1090,6 @@ inject:
     - <script src="/js/theme-transition.js?v=1.5.12" defer></script>
     - <script src="/js/hero-subtitle.js?v=1.5.12" defer></script>
     - <script src="/js/hero-latest.js?v=1.5.12" defer></script>
-    - <script src="/js/home-serendipity.js?v=1.5.12" defer></script>
     - <script src="/js/theme-particles.js?v=1.5.12" defer></script>
     - <script src="/js/music-player.js?v=1.5.12" defer></script>
     - <script src="/js/live2d-widget-init.js?v=1.5.12" defer></script>
@@ -1099,7 +1098,6 @@ inject:
     - <script src="/js/cursor-enhance.js?v=1.5.12" defer></script>
     - <script src="/js/click-values.js?v=1.5.12" defer></script>
     - <script src="/js/moments-years.js?v=1.5.12" defer></script>
-    - <script src="/js/page-enhance.js?v=1.5.12" defer></script>
 
 # CDN Settings
 # Don't modify the following settings unless you know how they work
