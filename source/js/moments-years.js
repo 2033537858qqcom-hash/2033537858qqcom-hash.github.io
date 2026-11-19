@@ -228,6 +228,18 @@
     const lead = '<div class="content-lead">' +
       '<p class="content-lead__eyebrow">Moments</p>' +
       '<p>短句、雨天、一时兴起。最近一个月摊开，更早的收在月份里。</p>' +
+      '<div class="moment-toolbar">' +
+        '<label class="moment-search-wrap">' +
+          '<i class="fas fa-search" aria-hidden="true"></i>' +
+          '<input type="search" class="moment-search" placeholder="搜一句记忆、歌名或关键词…" aria-label="搜索随笔">' +
+        '</label>' +
+        '<div class="moment-flags" role="group" aria-label="按内容类型筛选">' +
+          '<button type="button" class="moment-flag" aria-pressed="false" data-moment-flag="photo"><i class="fas fa-image" aria-hidden="true"></i>有配图<span>0</span></button>' +
+          '<button type="button" class="moment-flag" aria-pressed="false" data-moment-flag="song"><i class="fas fa-music" aria-hidden="true"></i>有配乐<span>0</span></button>' +
+          '<button type="button" class="moment-reset" hidden>清空</button>' +
+        '</div>' +
+        '<span class="moment-match-count" aria-live="polite" hidden></span>' +
+      '</div>' +
       '<div class="moment-filters" role="group" aria-label="按标签筛选">' +
         '<button type="button" class="is-active" aria-pressed="true" data-moment-tag="">全部<span>' + data.filter(i => !i.standalone).length + '</span></button>' +
         tagButtons +
@@ -257,13 +269,19 @@
       '</details>'
     }).join('')
 
-    return lead + chapters + '<p class="moment-empty" hidden>这个标签下还没有随笔。</p>'
+    return lead + chapters + '<p class="moment-empty" hidden>没有找到匹配的随笔，试试换个关键词或清空筛选。</p>'
   }
 
   const decorateContent = root => {
-    root.querySelectorAll('.shuoshuo-content').forEach(block => {
+    let photoTotal = 0
+    let songTotal = 0
+
+    root.querySelectorAll('.shuoshuo-item').forEach(item => {
+      const block = item.querySelector('.shuoshuo-content')
+      if (!block) return
       const sample = (block.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 28) || '这一则随笔'
-      block.querySelectorAll('img').forEach((img, index, list) => {
+      const imgs = block.querySelectorAll('img')
+      imgs.forEach((img, index, list) => {
         if (!img.classList.contains('no-lightbox')) {
           img.setAttribute('loading', 'lazy')
           img.setAttribute('decoding', 'async')
@@ -272,9 +290,11 @@
           img.alt = list.length > 1 ? sample + ' ' + (index + 1) : sample
         }
       })
+      let hasSong = false
       block.querySelectorAll('p').forEach(paragraph => {
         const text = paragraph.textContent.replace(/\s+/g, ' ').trim()
         if (text.startsWith('——') && text.includes('配乐')) {
+          hasSong = true
           paragraph.classList.add('shuoshuo-track')
           paragraph.querySelectorAll('a[href*="music.163.com/song"]').forEach(link => {
             link.target = '_blank'
@@ -283,9 +303,23 @@
         }
       })
 
+      const hasPhoto = imgs.length > 0
+      item.dataset.hasPhoto = hasPhoto ? '1' : '0'
+      item.dataset.hasSong = hasSong ? '1' : '0'
+      if (hasPhoto) photoTotal += 1
+      if (hasSong) songTotal += 1
+
+      const timeEl = item.querySelector('time')
+      const searchParts = [
+        item.textContent || '',
+        item.dataset.tags || '',
+        timeEl ? timeEl.textContent : ''
+      ]
+      item.dataset.search = searchParts.join(' ').replace(/\s+/g, ' ').toLowerCase()
+
       const imageNodes = node => {
-        const imgs = node.tagName === 'IMG' ? [node] : [...node.querySelectorAll('img')]
-        return imgs.map(img => (img.parentElement && img.parentElement.tagName === 'A' ? img.parentElement : img))
+        const list = node.tagName === 'IMG' ? [node] : [...node.querySelectorAll('img')]
+        return list.map(img => (img.parentElement && img.parentElement.tagName === 'A' ? img.parentElement : img))
       }
       const children = [...block.children]
       let group = []
@@ -301,34 +335,75 @@
         group = []
       }
       children.forEach(node => {
-        const imgs = node.tagName === 'IMG' ? [node] : [...node.querySelectorAll('img')]
-        const onlyImages = imgs.length > 0 && node.textContent.trim() === ''
+        const nodeImgs = node.tagName === 'IMG' ? [node] : [...node.querySelectorAll('img')]
+        const onlyImages = nodeImgs.length > 0 && node.textContent.trim() === ''
         if (onlyImages) group.push(node)
         else flush()
       })
       flush()
     })
+
+    const photoSpan = root.querySelector('[data-moment-flag="photo"] span')
+    const songSpan = root.querySelector('[data-moment-flag="song"] span')
+    if (photoSpan) photoSpan.textContent = String(photoTotal)
+    if (songSpan) songSpan.textContent = String(songTotal)
   }
 
-  const applyFilter = (container, tag) => {
+  const applyFilter = container => {
+    const tag = container.dataset.momentTag || ''
+    const query = (container.dataset.momentQuery || '').trim().toLowerCase()
+    const onlyPhoto = container.dataset.momentPhoto === '1'
+    const onlySong = container.dataset.momentSong === '1'
+    const active = Boolean(tag || query || onlyPhoto || onlySong)
+
     const items = [...container.querySelectorAll('.shuoshuo-item')]
+    let matched = 0
     items.forEach(item => {
       const tags = (item.dataset.tags || '').split('|').filter(Boolean)
-      item.hidden = Boolean(tag) && !tags.includes(tag)
+      const okTag = !tag || tags.includes(tag)
+      const okPhoto = !onlyPhoto || item.dataset.hasPhoto === '1'
+      const okSong = !onlySong || item.dataset.hasSong === '1'
+      const okQuery = !query || (item.dataset.search || '').includes(query)
+      const show = okTag && okPhoto && okSong && okQuery
+      item.hidden = !show
+      if (show) matched += 1
     })
+
     container.querySelectorAll('.moment-month, .moment-year').forEach(details => {
       const visible = details.querySelector('.shuoshuo-item:not([hidden])')
       details.hidden = !visible
-      if (tag) details.open = Boolean(visible)
+      if (active) details.open = Boolean(visible)
       else details.open = details.dataset.openDefault === '1'
     })
+
     const empty = container.querySelector('.moment-empty')
-    if (empty) empty.hidden = items.some(item => !item.hidden)
+    if (empty) empty.hidden = matched > 0
+
+    const countEl = container.querySelector('.moment-match-count')
+    if (countEl) {
+      countEl.hidden = !active
+      countEl.textContent = active ? '找到 ' + matched + ' 条记录' : ''
+    }
+
+    const resetBtn = container.querySelector('.moment-reset')
+    if (resetBtn) resetBtn.hidden = !active
+
     container.querySelectorAll('[data-moment-tag]').forEach(button => {
-      const active = (button.dataset.momentTag || '') === tag
-      button.classList.toggle('is-active', active)
-      button.setAttribute('aria-pressed', active ? 'true' : 'false')
+      const isTagActive = (button.dataset.momentTag || '') === tag
+      button.classList.toggle('is-active', isTagActive)
+      button.setAttribute('aria-pressed', isTagActive ? 'true' : 'false')
     })
+
+    const photoBtn = container.querySelector('[data-moment-flag="photo"]')
+    if (photoBtn) {
+      photoBtn.classList.toggle('is-active', onlyPhoto)
+      photoBtn.setAttribute('aria-pressed', onlyPhoto ? 'true' : 'false')
+    }
+    const songBtn = container.querySelector('[data-moment-flag="song"]')
+    if (songBtn) {
+      songBtn.classList.toggle('is-active', onlySong)
+      songBtn.setAttribute('aria-pressed', onlySong ? 'true' : 'false')
+    }
   }
 
   const openHashTarget = container => {
@@ -370,6 +445,9 @@
 
     container.replaceChildren(tpl.content)
     container.dataset.momentTag = ''
+    container.dataset.momentQuery = ''
+    container.dataset.momentPhoto = '0'
+    container.dataset.momentSong = '0'
 
     const nav = container.nextElementSibling
     if (nav && nav.classList.contains('shuoshuo-navigation')) nav.remove()
@@ -377,12 +455,44 @@
 
     if (!container.__momentFilter) {
       container.__momentFilter = true
+      let searchTimer = 0
+      container.addEventListener('input', event => {
+        const input = event.target
+        if (!input || !input.classList || !input.classList.contains('moment-search')) return
+        window.clearTimeout(searchTimer)
+        searchTimer = window.setTimeout(() => {
+          container.dataset.momentQuery = input.value || ''
+          applyFilter(container)
+        }, 120)
+      })
       container.addEventListener('click', event => {
-        const button = event.target.closest('[data-moment-tag]')
-        if (!button || !container.contains(button)) return
-        const tag = button.dataset.momentTag || ''
-        container.dataset.momentTag = tag
-        applyFilter(container, tag)
+        const tagBtn = event.target.closest && event.target.closest('[data-moment-tag]')
+        if (tagBtn && container.contains(tagBtn)) {
+          container.dataset.momentTag = tagBtn.dataset.momentTag || ''
+          applyFilter(container)
+          return
+        }
+        const flagBtn = event.target.closest && event.target.closest('[data-moment-flag]')
+        if (flagBtn && container.contains(flagBtn)) {
+          const kind = flagBtn.dataset.momentFlag
+          if (kind === 'photo') {
+            container.dataset.momentPhoto = container.dataset.momentPhoto === '1' ? '0' : '1'
+          } else if (kind === 'song') {
+            container.dataset.momentSong = container.dataset.momentSong === '1' ? '0' : '1'
+          }
+          applyFilter(container)
+          return
+        }
+        const resetBtn = event.target.closest && event.target.closest('.moment-reset')
+        if (resetBtn && container.contains(resetBtn)) {
+          container.dataset.momentTag = ''
+          container.dataset.momentQuery = ''
+          container.dataset.momentPhoto = '0'
+          container.dataset.momentSong = '0'
+          const searchInput = container.querySelector('.moment-search')
+          if (searchInput) searchInput.value = ''
+          applyFilter(container)
+        }
       })
       container.addEventListener('toggle', event => {
         const details = event.target

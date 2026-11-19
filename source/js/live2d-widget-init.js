@@ -115,10 +115,24 @@
     return ''
   }
 
+  const timeGreeting = () => {
+    const now = new Date()
+    const hour = now.getHours()
+    const day = now.getDay()
+    if (hour >= 23 || hour < 5) return '夜已经很深啦，逛完这一页记得早点休息哦～'
+    if (hour >= 5 && hour < 9) return '早安！晨光刚落到樱花上，今天也要元气出发～'
+    if (hour >= 11 && hour < 14) return '中午好呀，记得好好吃饭、稍微眯一会儿～'
+    if (hour >= 17 && hour < 19) return '傍晚的风往往最温柔，看看窗外有没有晚霞吧～'
+    if (day === 0 || day === 6) return '周末啦～最适合慢下来听歌、翻随笔或重温老番！'
+    return ''
+  }
+
   const greetForContext = () => {
     const k = pageKey()
     if (k && LINES.pages[k]) return LINES.pages[k]
     const dark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const timed = timeGreeting()
+    if (timed && (new Date().getHours() >= 23 || Math.random() < 0.5)) return timed
     return pickLine(dark ? LINES.dark : LINES.light)
   }
 
@@ -185,6 +199,9 @@
     if (window.__blogLive2DBound) return
     window.__blogLive2DBound = true
 
+    let lastMusicBubbleAt = 0
+    let serendipityCount = 0
+
     document.addEventListener('click', event => {
       if (event.target && event.target.closest && event.target.closest('#live2d-widget, #live2dcanvas')) {
         showBubble(pickLine(LINES.clicks), 3800)
@@ -197,6 +214,24 @@
       const overRightside = Boolean(event.target && event.target.closest && event.target.closest('#rightside'))
       widget.classList.toggle('is-yielding', overRightside)
     }, { passive: true })
+
+    window.addEventListener('blog:music-play', event => {
+      const now = Date.now()
+      if (now - lastMusicBubbleAt < 15000) return
+      lastMusicBubbleAt = now
+      const title = event && event.detail && event.detail.title
+      showBubble(
+        title ? '开始放歌啦：《' + title + '》，慢慢逛吧～' : '配乐响起来啦，祝你逛得开心～',
+        3800
+      )
+    })
+
+    window.addEventListener('blog:serendipity', () => {
+      serendipityCount += 1
+      if (serendipityCount === 1 || serendipityCount % 4 === 0) {
+        showBubble('任意门翻到一页新切片啦，点进去看看故事吧～', 3400)
+      }
+    })
 
     new MutationObserver(mutations => {
       if (mutations.some(m => m.attributeName === 'data-theme')) {

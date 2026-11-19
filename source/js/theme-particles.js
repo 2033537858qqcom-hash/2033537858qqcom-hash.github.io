@@ -7,6 +7,7 @@
 (function () {
   const root = document.documentElement
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)')
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d', { alpha: true })
   const particles = []
@@ -21,6 +22,11 @@
   let windTarget = 0.12
   let windPhase = 0
   let resizeTimer = 0
+  let pointerX = -9999
+  let pointerY = -9999
+  let breezeVx = 0
+  let breezeVy = 0
+  let musicActive = false
 
   const themes = {
     light: {
@@ -297,6 +303,18 @@
     if (p.y > height * 0.85) p.y = rand(0, height * 0.5)
   }
 
+  const pointerPush = (p, scale) => {
+    if (pointerX < 0 || !finePointer.matches) return
+    const dx = p.x - pointerX
+    const dy = p.y - pointerY
+    const distSq = dx * dx + dy * dy
+    if (distSq > 24000) return
+    const influence = Math.exp(-distSq / 12000)
+    const dist = Math.sqrt(distSq) + 24
+    p.x += (breezeVx * 0.2 + (dx / dist) * 0.45) * influence * scale
+    p.y += (breezeVy * 0.14 - Math.abs(breezeVx) * 0.08 + (dy / dist) * 0.25) * influence * scale
+  }
+
   const drawPetal = p => {
     p.phase += p.swayFreq * p.flutter
     p.roll += p.rollSpeed
@@ -311,6 +329,7 @@
     const face = Math.abs(Math.cos(p.roll))
     const drag = 0.72 + face * 0.38
     p.y += p.vy * drag * (1 + Math.sin(p.phase * 1.1) * 0.06)
+    pointerPush(p, 0.55 + p.depth * 0.65)
     recyclePetal(p)
 
     let scaleX = Math.cos(p.roll) * p.asymmetry
@@ -344,9 +363,10 @@
   }
 
   const drawStar = p => {
-    p.phase += p.twinkle
+    p.phase += p.twinkle * (musicActive ? 1.28 : 1)
     p.x += p.vx
     p.y += p.vy
+    pointerPush(p, p.type === 'firefly' ? 0.52 : 0.22)
     recycleStar(p)
 
     const pulse = 1 - p.twinkleDepth + Math.sin(p.phase) * p.twinkleDepth
@@ -357,7 +377,9 @@
 
   const updateWind = () => {
     windPhase += 0.004
-    if (Math.random() < 0.0035) windTarget = rand(-0.28, 0.48)
+    if (Math.random() < 0.0035) {
+      windTarget = musicActive ? rand(0.14, 0.54) : rand(-0.28, 0.48)
+    }
     wind += (windTarget + Math.sin(windPhase) * 0.08 - wind) * 0.012
   }
 
@@ -379,6 +401,10 @@
       else drawStar(p)
     }
     ctx.globalAlpha = 1
+    breezeVx *= 0.9
+    breezeVy *= 0.9
+    if (Math.abs(breezeVx) < 0.01) breezeVx = 0
+    if (Math.abs(breezeVy) < 0.01) breezeVy = 0
 
     animationFrame = window.requestAnimationFrame(tick)
   }
@@ -462,6 +488,32 @@
       syncParticles(false)
     }
   }
+
+  window.addEventListener('pointermove', event => {
+    if (!animationFrame || !finePointer.matches || event.pointerType !== 'mouse') return
+    if (pointerX >= 0) {
+      const dx = event.clientX - pointerX
+      const dy = event.clientY - pointerY
+      breezeVx = Math.max(-14, Math.min(14, breezeVx * 0.5 + dx * 0.28))
+      breezeVy = Math.max(-10, Math.min(10, breezeVy * 0.5 + dy * 0.22))
+    }
+    pointerX = event.clientX
+    pointerY = event.clientY
+  }, { passive: true })
+
+  window.addEventListener('pointerleave', () => {
+    pointerX = -9999
+    pointerY = -9999
+  })
+
+  window.addEventListener('blog:music-play', () => {
+    musicActive = true
+    windTarget = Math.max(windTarget, 0.34)
+  })
+
+  window.addEventListener('blog:music-pause', () => {
+    musicActive = false
+  })
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot, { once: true })

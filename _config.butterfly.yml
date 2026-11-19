@@ -1090,6 +1090,7 @@ inject:
     - <script src="/js/theme-transition.js?v=1.5.12" defer></script>
     - <script src="/js/hero-subtitle.js?v=1.5.12" defer></script>
     - <script src="/js/hero-latest.js?v=1.5.12" defer></script>
+    - <script src="/js/home-serendipity.js?v=1.5.12" defer></script>
     - <script src="/js/theme-particles.js?v=1.5.12" defer></script>
     - <script src="/js/music-player.js?v=1.5.12" defer></script>
     - <script src="/js/live2d-widget-init.js?v=1.5.12" defer></script>

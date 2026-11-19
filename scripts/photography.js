@@ -146,12 +146,22 @@ function renderAlbum (images) {
     return Number(b) - Number(a)
   })
 
-  return years.map(year => {
+  const yearSlug = year => (year === '未标注' ? 'unknown' : String(year))
+
+  const navPills = years.map(year => {
+    const files = groups.get(year)
+    const label = year === '未标注' ? '未标注' : `${year}`
+    return `<a class="photo-nav__pill" href="#photo-year-${escapeAttr(yearSlug(year))}"><strong>${escapeAttr(label)}</strong><span>${files.length}</span></a>`
+  }).join('')
+
+  const sections = years.map(year => {
     const files = groups.get(year)
     const title = year === '未标注' ? '未标注日期' : `${year}`
     const cards = files.map((file, idx) => getPhotoCard(file, idx)).join('')
-    return `<section class="photo-year"><header class="photo-year__head"><h3>${escapeAttr(title)}</h3><p>${files.length} 张</p></header><div class="photo-grid">${cards}</div></section>`
+    return `<section class="photo-year" id="photo-year-${escapeAttr(yearSlug(year))}"><header class="photo-year__head"><h3>${escapeAttr(title)}</h3><p>${files.length} 张</p></header><div class="photo-grid">${cards}</div></section>`
   }).join('')
+
+  return `<nav class="photo-nav" aria-label="按年份跳转">${navPills}</nav>${sections}`
 }
 
 function injectAlbum (html) {

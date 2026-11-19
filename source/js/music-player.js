@@ -121,6 +121,35 @@
     document.documentElement.classList.add('has-aplayer-mounted')
   }
 
+  const emitPlayback = (playing, title) => {
+    document.documentElement.classList.toggle('has-music-playing', Boolean(playing))
+    const launcher = document.getElementById('blog-music-launcher')
+    if (launcher) launcher.classList.toggle('is-playing', Boolean(playing))
+    try {
+      window.dispatchEvent(new CustomEvent(playing ? 'blog:music-play' : 'blog:music-pause', {
+        detail: { title: title || '' }
+      }))
+    } catch (e) { /* ignore */ }
+  }
+
+  const bindPlaybackState = ap => {
+    if (!ap || typeof ap.on !== 'function' || ap.__blogStateBound) return
+    ap.__blogStateBound = true
+    const currentTitle = () => {
+      try {
+        const list = ap.list
+        const idx = list && typeof list.index === 'number' ? list.index : 0
+        const item = list && Array.isArray(list.audios) ? list.audios[idx] : null
+        return item && (item.name || item.title) ? String(item.name || item.title) : ''
+      } catch (e) {
+        return ''
+      }
+    }
+    ap.on('play', () => emitPlayback(true, currentTitle()))
+    ap.on('pause', () => emitPlayback(false))
+    ap.on('ended', () => emitPlayback(false))
+  }
+
   const initLocalFallback = () => {
     if (window.__blogMusicPlayer || !window.APlayer) return false
 
@@ -140,6 +169,7 @@
       mutex: true,
       audio: LOCAL_FALLBACK
     })
+    bindPlaybackState(window.__blogMusicPlayer)
     window.__blogMusicSource = 'local'
     hideLauncher()
     return true
@@ -179,6 +209,7 @@
       const hasTrack = aplayerEl && aplayerEl.querySelector('.aplayer-list li')
       if (aplayerEl && hasTrack) {
         window.clearInterval(poll)
+        bindPlaybackState(meting.aplayer || aplayerEl.aplayer)
         hideLauncher()
         return
       }
