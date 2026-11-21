@@ -1062,6 +1062,17 @@ main.layout > #page {
   color: #07c160 !important;
 }
 
+#site_social_icons .social-icon i.fa-github,
+#site_social_icons a[title*='Github'] i,
+#site_social_icons a[title*='GitHub'] i {
+  color: rgba(255, 255, 255, 0.94) !important;
+}
+
+[data-theme='dark'] .card-info-social-icons a[title*='Github'] i,
+[data-theme='dark'] .card-info-social-icons a[title*='GitHub'] i {
+  color: #eef3ff !important;
+}
+
 #aside-content .card-info #card-info-btn {
   background: linear-gradient(135deg, rgba(77, 142, 219, 0.92), rgba(238, 154, 185, 0.86));
   box-shadow: 0 10px 22px rgba(77, 142, 219, 0.16);
@@ -1201,6 +1212,11 @@ blockquote {
 
 #rightside {
   z-index: 100001;
+}
+
+body:not(:has(#post-comment)) #rightside a[href='#post-comment'],
+body:not(:has(#post-comment)) #rightside #go-to-comment {
+  display: none !important;
 }
 
 #live2d-widget {
@@ -2128,9 +2144,18 @@ body #page:has(.shuoshuo-item) h1.page-title {
 
 .shuoshuo-footer {
   display: flex !important;
+  flex-wrap: wrap !important;
   align-items: center !important;
+  gap: 8px !important;
   padding-top: 10px !important;
   border-top: 1px dashed rgba(127, 127, 127, 0.2) !important;
+}
+
+.shuoshuo-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 
 #article-container .shuoshuo-tag,
@@ -3455,13 +3480,14 @@ body #page:has(.shuoshuo-item) h1.page-title {
   }
 
   #page-header.full_page {
-    height: 92svh !important;
-    min-height: 540px !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 560px !important;
     max-height: none !important;
   }
 
   #page-header.full_page #site-info {
-    top: 28% !important;
+    top: 26% !important;
     bottom: auto !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -3470,11 +3496,11 @@ body #page:has(.shuoshuo-item) h1.page-title {
   }
 
   #page-header.full_page #scroll-down {
-    bottom: 10px !important;
+    bottom: max(54px, env(safe-area-inset-bottom, 0px) + 50px) !important;
   }
 
   .hero-bottom-stack {
-    bottom: max(48px, env(safe-area-inset-bottom, 0px) + 40px);
+    bottom: max(84px, env(safe-area-inset-bottom, 0px) + 78px);
     gap: 6px;
     width: calc(100% - 28px);
     max-width: calc(100% - 28px);
@@ -3509,10 +3535,10 @@ body #page:has(.shuoshuo-item) h1.page-title {
   }
 
   .layout {
-    width: 100%;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     margin-top: 14px;
-    padding: 0 12px;
+    padding: 0 12px !important;
     gap: 12px;
     overflow-x: clip;
     box-sizing: border-box;
@@ -3598,7 +3624,7 @@ body #page:has(.shuoshuo-item) h1.page-title {
   }
 
   #page {
-    padding: 20px 16px !important;
+    padding: 18px 14px !important;
   }
 
   #page .page-title,
@@ -3719,8 +3745,34 @@ body #page:has(.shuoshuo-item) h1.page-title {
   }
 
   #rightside {
-    right: max(8px, env(safe-area-inset-right, 0px)) !important;
-    bottom: max(16px, env(safe-area-inset-bottom, 0px) + 8px) !important;
+    right: calc(-48px + env(safe-area-inset-right, 0px)) !important;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px) + 8px) !important;
+  }
+
+  #sidebar #sidebar-menus {
+    right: 0 !important;
+    width: min(300px, 82vw) !important;
+    transform: translate3d(100%, 0, 0) !important;
+  }
+
+  #sidebar #sidebar-menus.open {
+    right: 0 !important;
+    transform: translate3d(0, 0, 0) !important;
+  }
+
+  #sidebar #sidebar-menus .menus_items .site-page {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px;
+  }
+
+  body:has(#sidebar-menus.open) #sanctuary-dock,
+  body:has(#sidebar-menus.open) #sanctuary-music,
+  body:has(#sidebar-menus.open) #rightside {
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   #live2dcanvas,
@@ -4174,6 +4226,10 @@ html.is-sanctuary-rest body {
   overflow: hidden !important;
 }
 
+html.is-sanctuary-rest #theme-sanctuary-webgl {
+  touch-action: none;
+}
+
 html.is-sanctuary-rest #content-inner,
 html.is-sanctuary-rest #footer,
 html.is-sanctuary-rest #page-header #site-info,
@@ -4186,6 +4242,7 @@ html.is-sanctuary-rest #sanctuary-music,
 html.is-sanctuary-rest #live2d-widget,
 html.is-sanctuary-rest #live2d-bubble {
   opacity: 0 !important;
+  visibility: hidden !important;
   pointer-events: none !important;
   transform: translateY(10px);
 }
@@ -5269,6 +5326,11 @@ html.is-reading-depth .sanctuary-music:not(:hover):not(:focus-within):not(.is-op
 
 .shuoshuo-discuss-link {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  white-space: nowrap;
+  flex-shrink: 0;
   font-size: 0.78rem;
   color: var(--lijiahao-muted) !important;
   text-decoration: none !important;
@@ -5307,25 +5369,81 @@ html.is-reading-depth .sanctuary-music:not(:hover):not(:focus-within):not(.is-op
 }
 
 @media (max-width: 768px) {
-  .sanctuary-dock {
-    left: 12px;
-    bottom: 12px;
-    max-width: calc(100vw - 24px);
-  }
-
+  /* Single-row slim mobile bottom sanctuary bar: compact disc pill + weather/rest dock */
   .sanctuary-music {
-    left: 12px;
-    bottom: 56px;
-    max-width: calc(100vw - 24px);
+    left: max(12px, env(safe-area-inset-left, 0px));
+    bottom: max(12px, env(safe-area-inset-bottom, 0px) + 8px);
+    max-width: none;
+    z-index: 97;
   }
 
-  .sanctuary-music__drawer {
-    width: min(312px, calc(100vw - 24px));
+  .sanctuary-music__pill {
+    height: 38px;
+    padding: 4px 7px 4px 4px;
+    gap: 2px;
+    box-sizing: border-box;
   }
 
+  .sanctuary-music__playbtn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .sanctuary-music__info {
+    padding: 4px 3px 4px 2px;
+    max-width: none;
+  }
+
+  .sanctuary-music__title,
+  .sanctuary-music__pill .sanctuary-music__eq {
+    display: none !important;
+  }
+
+  .sanctuary-dock {
+    left: calc(max(12px, env(safe-area-inset-left, 0px)) + 64px);
+    bottom: max(12px, env(safe-area-inset-bottom, 0px) + 8px);
+    max-width: calc(100vw - 134px);
+    z-index: 96;
+  }
+
+  .sanctuary-dock__pills {
+    height: 38px;
+    padding: 3px 5px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .sanctuary-dock__weather,
+  .sanctuary-dock__rest {
+    min-height: 30px;
+    padding: 4px 8px;
+    font-size: 0.74rem;
+  }
+
+  #sanctuary-weather-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 124px;
+  }
+
+  /* Centered fixed bottom-sheet drawers on mobile (never off-screen or cramped) */
+  .sanctuary-music__drawer,
   .sanctuary-popover {
-    left: 0;
-    width: min(300px, calc(100vw - 24px));
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: max(58px, env(safe-area-inset-bottom, 0px) + 54px);
+    width: auto;
+    max-width: none;
+    max-height: 68dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    transform-origin: bottom center;
+  }
+
+  #footer {
+    padding-bottom: max(72px, env(safe-area-inset-bottom, 0px) + 64px) !important;
   }
 
   .sm-studio__stage {
@@ -5342,13 +5460,86 @@ html.is-reading-depth .sanctuary-music:not(:hover):not(:focus-within):not(.is-op
     max-width: 100%;
   }
 
+  /* Comfortable mobile touch targets */
+  .comment-action-btn,
+  .moment-filters button,
+  .sm-studio__ambient button,
+  .sm-drawer__tabs button,
+  .shuoshuo-discuss-link {
+    min-height: 36px;
+  }
+
+  .shuoshuo-discuss-link {
+    padding: 4px 11px;
+  }
+
+  .sm-drawer__track,
+  .sm-track {
+    min-height: 44px;
+  }
+
+  /* Clean 2-row Mobile Rest Mode Bar (swipeable 1-row scenes + compact sounds/music/exit row) */
   .sanctuary-rest {
-    padding: 8vh 14px 24px;
+    padding: max(8vh, env(safe-area-inset-top, 0px) + 28px) 12px max(18px, env(safe-area-inset-bottom, 0px) + 14px);
+  }
+
+  .sanctuary-rest__center {
+    padding: 12px 16px;
   }
 
   .sanctuary-rest__bar {
-    border-radius: 24px;
-    padding: 10px 12px;
-    gap: 8px;
+    width: min(100%, 400px);
+    border-radius: 22px;
+    padding: 10px 10px;
+    gap: 8px 6px;
+    box-sizing: border-box;
+  }
+
+  .sanctuary-rest__divider {
+    display: none !important;
+  }
+
+  .sanctuary-rest__scenes {
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  }
+
+  .sanctuary-rest__scenes::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sanctuary-rest__scenes button {
+    flex: 0 0 auto;
+    padding: 6px 8px;
+    min-height: 36px;
+    font-size: 0.76rem;
+    white-space: nowrap;
+  }
+
+  .sanctuary-rest__sounds,
+  .sanctuary-rest__music {
+    flex-wrap: nowrap;
+    gap: 3px;
+  }
+
+  .sanctuary-rest__sounds button,
+  .sanctuary-rest__music button,
+  .sanctuary-rest__exit {
+    min-height: 36px;
+    padding: 6px 8px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  #sanctuary-rest-music {
+    max-width: 96px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }

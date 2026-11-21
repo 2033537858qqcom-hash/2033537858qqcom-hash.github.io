@@ -12,6 +12,15 @@
   const root = document.documentElement
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)')
+  const coarsePointer = window.matchMedia('(pointer: coarse)')
+  const isMobileViewport = () => (width || window.innerWidth || 0) <= 768 || coarsePointer.matches
+  const getPortraitFactor = () => {
+    const w = width || window.innerWidth || 1
+    const h = height || window.innerHeight || 1
+    const aspect = w / Math.max(1, h)
+    return Math.max(0, Math.min(1, (1.05 - aspect) / 0.60))
+  }
+  const getResponsiveFov = () => 45 + getPortraitFactor() * 23
 
   const THREE_CDNS = [
     'https://registry.npmmirror.com/three/0.160.0/files/build/three.min.js',
@@ -1893,10 +1902,10 @@
     return geom
   }
 
-  const buildWaterGeometry = THREE => {
-    const geom = new THREE.PlaneGeometry(380, 240, 120, 85)
+  const buildWaterGeometry = (THREE, mobile) => {
+    const geom = new THREE.PlaneGeometry(380, 270, mobile ? 84 : 120, mobile ? 68 : 92)
     geom.rotateX(-Math.PI / 2)
-    geom.translate(0, 0, -72)
+    geom.translate(0, 0, -58)
     const pos = geom.attributes.position
     const depths = new Float32Array(pos.count)
     for (let i = 0; i < pos.count; i += 1) {
@@ -2354,20 +2363,23 @@
       renderer.autoClear = true
 
       const scene = new THREE.Scene()
+      const mobile = isMobileViewport()
       const aspect = (width || 1) / Math.max(1, height || 1)
-      const camera = new THREE.PerspectiveCamera(45, aspect, 0.5, 720)
+      const fov = getResponsiveFov()
+      const camera = new THREE.PerspectiveCamera(fov, aspect, 0.5, 720)
       camera.position.set(0, 5.4, 34.0)
       camera.lookAt(0, 4.6, -75.0)
 
-      reflectionCamera = new THREE.PerspectiveCamera(45, aspect, 0.5, 720)
+      reflectionCamera = new THREE.PerspectiveCamera(fov, aspect, 0.5, 720)
       const isWebGL2 = Boolean(renderer.capabilities && renderer.capabilities.isWebGL2)
-      // 768x768 4x MSAA planar reflection: crisp mirrored landscape while restoring locked 60 FPS in Rain & Night!
-      reflectionRT = new THREE.WebGLRenderTarget(768, 768, {
+      // Desktop: 768x768 4x MSAA planar reflection; Mobile: 512x512 single-sample for cool battery & locked 60 FPS!
+      const rtSize = mobile ? 512 : 768
+      reflectionRT = new THREE.WebGLRenderTarget(rtSize, rtSize, {
         minFilter: THREE.LinearFilter,
         magFilter: THREE.LinearFilter,
         format: THREE.RGBAFormat,
         depthBuffer: true,
-        samples: isWebGL2 ? 4 : 0
+        samples: (!mobile && isWebGL2) ? 4 : 0
       })
 
       raycaster = new THREE.Raycaster()
@@ -2434,8 +2446,9 @@
       skyDome.renderOrder = 0
       scene.add(skyDome)
 
-      // 2. 3,200 3D Celestial Stars with Dense Diagonal Milky Way Concentration!
-      const starCount = 3200
+      // 2. 3D Celestial Stars with Dense Diagonal Milky Way Concentration!
+      const starCount = mobile ? 1800 : 3200
+      const bandStarCount = mobile ? 940 : 1650
       const sPos = new Float32Array(starCount * 3)
       const sSize = new Float32Array(starCount)
       const sPhase = new Float32Array(starCount)
@@ -2443,7 +2456,7 @@
       const sTints = [[0.76, 0.88, 1.0], [1.0, 0.98, 0.94], [0.68, 0.82, 1.0], [1.0, 0.88, 0.72]]
       for (let i = 0; i < starCount; i += 1) {
         let dirX, dirY, dirZ
-        if (i < 1650) {
+        if (i < bandStarCount) {
           // Concentrate 52% of stars naturally along the tilted Milky Way galactic band across the northern sky!
           const bandT = (seededRand() - 0.5) * 2.1
           const scatter = (seededRand() + seededRand() - 1.0) * 0.24
@@ -2660,10 +2673,10 @@
         [43.0, -39.0, 1.92, 0.88]
       ]
 
-      populateForest(buildOrganicPineGeometry(THREE), 900, 0, 0.88, 22.5, -118, 22, null)
-      populateForest(buildOrganicBroadleafGeometry(THREE), 700, 1, 0.72, 14.5, -104, 23, heroBroadleafSpots)
-      // 220 low shoreline mossy/flowering shrubs bridging wet shoreline banks, boulders & tree trunks
-      populateForest(buildOrganicShrubGeometry(THREE), 220, 1, 0.35, 3.2, -92, 23, null, [0.75, 0.75])
+      populateForest(buildOrganicPineGeometry(THREE), mobile ? 520 : 900, 0, 0.88, 22.5, -118, 22, null)
+      populateForest(buildOrganicBroadleafGeometry(THREE), mobile ? 420 : 700, 1, 0.72, 14.5, -104, 23, heroBroadleafSpots)
+      // Low shoreline mossy/flowering shrubs bridging wet shoreline banks, boulders & tree trunks
+      populateForest(buildOrganicShrubGeometry(THREE), mobile ? 120 : 220, 1, 0.35, 3.2, -92, 23, null, [0.75, 0.75])
 
       // 6. Instanced Angular Shoreline Boulders (curated foreground spit rocks + scattered natural wet shore boulders!)
       const rockGeom = new THREE.DodecahedronGeometry(0.9, 0)
@@ -2712,13 +2725,14 @@
         scene.add(rockMesh)
       }
 
-      // 7. Graceful Curved Multi-Blade Shoreline Reeds & Meadow Grass Tufts (680 tufts = 3,400 arched blades!)
+      // 7. Graceful Curved Multi-Blade Shoreline Reeds & Meadow Grass Tufts
       const bladeGeom = buildCurvedGrassTuftGeometry(THREE)
       const grassMatrices = []
       const grassPhases = []
       const grassTones = []
       const gDummy = new THREE.Object3D()
-      for (let i = 0; i < 3400 && grassMatrices.length < 680; i += 1) {
+      const maxGrassTufts = mobile ? 320 : 680
+      for (let i = 0; i < 3400 && grassMatrices.length < maxGrassTufts; i += 1) {
         const x = (seededRand() - 0.5) * 135
         const z = -72.0 + seededRand() * 98.0
         if (z > 14 && Math.abs(x) < 14) continue
@@ -2778,7 +2792,7 @@
       })
 
       waterMesh = new THREE.Mesh(
-        buildWaterGeometry(THREE),
+        buildWaterGeometry(THREE, mobile),
         new THREE.ShaderMaterial({
           vertexShader: WATER_VERT,
           fragmentShader: WATER_FRAG,
@@ -2933,11 +2947,12 @@
         )
       }
 
+      const portraitT = getPortraitFactor()
       const camXPos = totalYaw * 14.0
-      const camYPos = clamp(5.4 - camZoom * 1.4 + totalPitch * 3.5, 2.6, 8.8)
-      const camZPos = 34.0 - camZoom * 11.5
-      const lookX = totalYaw * -28.0
-      const lookY = 4.6 + totalPitch * 22.0
+      const camYPos = clamp(5.4 + portraitT * 0.9 - camZoom * 1.4 + totalPitch * 3.5, 2.6, 9.6)
+      const camZPos = 34.0 + portraitT * 9.0 - camZoom * 11.5
+      const lookX = totalYaw * -28.0 - portraitT * 2.8
+      const lookY = 4.6 + portraitT * 0.5 + totalPitch * 22.0
       const lookZ = -75.0
 
       threeCamera.position.set(camXPos, camYPos, camZPos)
@@ -3561,8 +3576,9 @@
   const resize = () => {
     width = window.innerWidth
     height = window.innerHeight
-    dpr = Math.min(window.devicePixelRatio || 1, 1.5)
-    bgDpr = Math.min(window.devicePixelRatio || 1, 1.5)
+    const mobile = isMobileViewport()
+    dpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.35 : 1.5)
+    bgDpr = Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.5)
 
     bgCanvas.width = Math.floor(width * bgDpr)
     bgCanvas.height = Math.floor(height * bgDpr)
@@ -3572,6 +3588,7 @@
     if (threeRenderer && threeCamera) {
       threeRenderer.setPixelRatio(bgDpr)
       threeRenderer.setSize(width, height, false)
+      threeCamera.fov = getResponsiveFov()
       threeCamera.aspect = width / Math.max(1, height)
       threeCamera.updateProjectionMatrix()
     }
@@ -3666,7 +3683,7 @@
     if (!(target instanceof Element)) return false
     return Boolean(
       target.closest(
-        'a, button, input, textarea, select, summary, label, [role="button"], .recent-post-item, .card-widget, .home-now__cloud, .home-now__card, .home-now__photo, #nav, #sanctuary-dock, #sanctuary-music, #sanctuary-music-drawer, #sanctuary-music-studio, .sanctuary-rest__bar, .aplayer, .blog-music-launcher, #live2d-widget, #post, #page, #archive, #post-comment'
+        'a, button, input, textarea, select, summary, label, [role="button"], .recent-post-item, .card-widget, .home-now__cloud, .home-now__card, .home-now__photo, #nav, #sidebar, #sidebar-menus, #rightside, #sanctuary-dock, #sanctuary-popover, #sanctuary-music, #sanctuary-music-drawer, #sanctuary-music-studio, .sanctuary-rest__bar, .aplayer, .blog-music-launcher, #live2d-widget, #post, #page, #archive, #post-comment'
       )
     )
   }
@@ -3674,6 +3691,15 @@
   window.addEventListener('pointerdown', event => {
     if (event.button !== 0) return
     if (isInteractiveUiTarget(event.target)) return
+
+    const isTouch = event.pointerType === 'touch'
+    const isRest = root.classList.contains('is-sanctuary-rest')
+
+    // On touch devices outside Rest Mode, never hijack native page scroll — still allow gentle tap-to-ripple on water!
+    if (isTouch && !isRest) {
+      spawnWaterRippleAtScreen(event.clientX, event.clientY, 1.25)
+      return
+    }
 
     if (isPointerNearCelestial(event.clientX, event.clientY)) {
       isDraggingSun = true
