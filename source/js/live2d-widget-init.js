@@ -124,11 +124,14 @@
   const timeGreeting = () => {
     const now = new Date()
     const hour = now.getHours()
+    const minutes = hour * 60 + now.getMinutes()
     const day = now.getDay()
     if (hour >= 23 || hour < 5) return '夜已经很深啦，逛完这一页记得早点休息哦～'
     if (hour >= 5 && hour < 9) return '早安！晨光刚落到樱花上，今天也要元气出发～'
     if (hour >= 11 && hour < 14) return '中午好呀，记得好好吃饭、稍微眯一会儿～'
-    if (hour >= 17 && hour < 19) return '傍晚的风往往最温柔，看看窗外有没有晚霞吧～'
+    if (minutes >= 16 * 60 + 45 && minutes <= 19 * 60 + 30) {
+      return '天空染上橘粉晚霞啦，伴着傍晚的微风慢慢逛吧～'
+    }
     if (day === 0 || day === 6) return '周末啦～最适合慢下来听歌、翻随笔或重温老番！'
     return ''
   }

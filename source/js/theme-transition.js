@@ -2,6 +2,44 @@
   const root = document.documentElement
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 
+  const detectTimeMood = () => {
+    const now = new Date()
+    const minutes = now.getHours() * 60 + now.getMinutes()
+    // 16:45 - 19:30 傍晚橘粉晚霞
+    if (minutes >= 16 * 60 + 45 && minutes <= 19 * 60 + 30) return 'dusk'
+    // 05:30 - 08:30 清晨朝霞
+    if (minutes >= 5 * 60 + 30 && minutes < 8 * 60 + 30) return 'dawn'
+    // 08:30 - 16:45 晴昼春风
+    if (minutes >= 8 * 60 + 30 && minutes < 16 * 60 + 45) return 'day'
+    return 'night'
+  }
+
+  const syncTimeMood = () => {
+    const mood = detectTimeMood()
+    if (root.getAttribute('data-time-mood') !== mood) {
+      root.setAttribute('data-time-mood', mood)
+    }
+  }
+
+  const syncScrollDepth = () => {
+    const header = document.getElementById('page-header')
+    const isFull = Boolean(header && header.classList.contains('full_page'))
+    const threshold = isFull ? 240 : 40
+    root.classList.toggle('is-reading-depth', (window.scrollY || 0) > threshold)
+  }
+
+  syncTimeMood()
+  window.setInterval(syncTimeMood, 60000)
+  window.addEventListener('scroll', syncScrollDepth, { passive: true })
+  document.addEventListener('DOMContentLoaded', () => {
+    syncTimeMood()
+    syncScrollDepth()
+  })
+  document.addEventListener('pjax:complete', () => {
+    syncTimeMood()
+    syncScrollDepth()
+  })
+
   const runThemeHooks = mode => {
     const themeChange = (window.globalFn && window.globalFn.themeChange) || {}
     Object.keys(themeChange).forEach(key => {
