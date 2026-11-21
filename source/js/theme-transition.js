@@ -1,34 +1,21 @@
 /**
- * Three.js 实时天时控制器（时间 × 季节 × 实时天气 × 气温 + 自然白噪音 + 放空小憩模式）
- * - 完全不依赖静态背景图片，所有参数实时驱动 Three.js 3D 天空、体积云、远山、湖水反射与四季物象
- * - 默认自动同步：真实本地时间（太阳/月亮高度角）、二十四节气、季节、以及 Open-Meteo 实时天气/气温/风速
- * - 自由漫游：支持随时手动切换「春 / 夏 / 秋 / 冬 / 雨 / 夜」或拖动 24 小时时间滑块看日出日落星河
- * - 内置 Web Audio API 0KB 自然白噪音（窗前细雨 / 林间微风 / 暖炉篝火）与一键「🎐 小憩」放空模式
+ * 3D 山水天时与环境光照中枢 (Real-Time Time × Season × Weather × Temperature + Page Ambient Lighting + Acoustic Synthesizer)
+ * - 实时同步：本地真实时间（太阳/月亮高度角）、二十四节气、四季、Open-Meteo 实时天气/气温/风速。
+ * - 环境光协调引擎 (syncPageLightingToWorld)：将 3D 天空的实时天顶色、地平线散射光、色温反向投射至页面所有毛玻璃卡片与顶部导航，
+ *   消除“卡片与 3D 世界割裂”的不协调感。
+ * - 极简建筑感天时罗盘 (Architectural Horizon HUD)：告别廉价 Emoji 与霓虹渐变，支持在 3D 天空中直接拖拽日月或通过天际弧线拨动时间。
  */
 (function () {
   const root = document.documentElement
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
   const WEATHER_CACHE_KEY = 'blog_weather_cache_v2'
   const OVERRIDE_KEY = 'blog_scene_override_v2'
-  const DEFAULT_HOST = { lat: 30.2741, lng: 120.1551, city: '杭州' }
 
-  const SCENE_META = {
-    spring: { id: 'spring', icon: '🌸', label: '春樱晴野', season: 'spring', weather: 'clear', particle: 'petal' },
-    summer: { id: 'summer', icon: '🌊', label: '夏海碧空', season: 'summer', weather: 'clear', particle: 'summer' },
-    autumn: { id: 'autumn', icon: '🍂', label: '金秋原野', season: 'autumn', weather: 'clear', particle: 'ginkgo' },
-    winter: { id: 'winter', icon: '❄️', label: '冬日晴雪', season: 'winter', weather: 'snow', particle: 'snow' },
-    rain: { id: 'rain', icon: '🌧️', label: '烟雨湖山', season: 'spring', weather: 'rain', particle: 'rain' },
-    night: { id: 'night', icon: '🌌', label: '星河静夜', season: 'autumn', weather: 'clear', particle: 'star' }
+  const DEFAULT_HOST = {
+    city: '杭州',
+    lat: 30.2741,
+    lng: 120.1551
   }
-
-  const REST_QUOTES = [
-    '写得出就写，写不出就先吹会儿风。',
-    '把喧嚣暂时关在窗外，这里的时间走得很慢。',
-    '看远处的云慢慢飘过去，发呆也是正经事。',
-    '在代码、风景与日常之间，留一点空白给自己。',
-    '不用急着赶路，先听一会儿风声或雨声吧。',
-    '那些安静停下来的时刻，后来想起来都在发光。'
-  ]
 
   const SOLAR_TERMS = [
     [1, 5, '小寒'], [1, 20, '大寒'],
@@ -45,19 +32,63 @@
     [12, 7, '大雪'], [12, 21, '冬至']
   ]
 
-  let restQuoteIdx = 0
+  const SCENE_META = {
+    spring: { label: '春分', desc: '山樱初绽', season: 'spring', weather: 'clear' },
+    summer: { label: '夏至', desc: '碧湖晴岚', season: 'summer', weather: 'clear' },
+    autumn: { label: '秋分', desc: '层林尽染', season: 'autumn', weather: 'clear' },
+    winter: { label: '冬至', desc: '远峰霁雪', season: 'winter', weather: 'snow' },
+    rain:   { label: '听雨', desc: '烟雨空濛', season: 'spring', weather: 'rain' },
+    night:  { label: '星夜', desc: '银河静谷', season: 'autumn', weather: 'clear' }
+  }
+
+  const REST_QUOTES = [
+    '山中无甲子，寒尽不知年。可直接按住天空中的日月拨动晨昏，或轻触湖面看涟漪扩散。',
+    '风吹过山谷的时候，云影和湖水都在呼吸。滚动鼠标滚轮，可向湖心缓缓推进。',
+    '在空白处按住鼠标左右拖拽，可以环视整座 3D 山谷与远方雪峰。',
+    '不必追赶时间，听一会儿松风或细雨，让视线停在远山与流云之间。'
+  ]
+
+  const state = {
+    override: 'auto',
+    manualHour: null,
+    manualTemp: null,
+    hourFloat: 15.5,
+    timeMood: 'day',
+    season: 'autumn',
+    solarTerm: '小雪',
+    city: DEFAULT_HOST.city,
+    tempC: 15,
+    liveTempC: null,
+    tempMood: 'mild',
+    weatherKind: 'clear',
+    weatherText: '晴',
+    cloudCover: 0.28,
+    windKmh: 9,
+    activeScene: 'autumn',
+    restMode: false,
+    sound: ''
+  }
+
+  let restQuoteIndex = 0
   let restClockTimer = 0
   let restQuoteTimer = 0
+
+  try {
+    const savedOverride = sessionStorage.getItem(OVERRIDE_KEY)
+    if (savedOverride && (savedOverride === 'auto' || SCENE_META[savedOverride])) {
+      state.override = savedOverride
+    }
+  } catch (e) {}
 
   const getSolarTerm = date => {
     const m = date.getMonth() + 1
     const d = date.getDate()
-    let term = '冬至'
+    let latest = '冬至'
     for (let i = 0; i < SOLAR_TERMS.length; i += 1) {
       const [tm, td, name] = SOLAR_TERMS[i]
-      if (m > tm || (m === tm && d >= td)) term = name
+      if (m > tm || (m === tm && d >= td)) latest = name
     }
-    return term
+    return latest
   }
 
   const detectSeason = date => {
@@ -69,55 +100,27 @@
   }
 
   const detectTimeMood = hourFloat => {
-    if (hourFloat >= 16.75 && hourFloat <= 19.5) return 'dusk'
-    if (hourFloat >= 5.5 && hourFloat < 8.5) return 'dawn'
-    if (hourFloat >= 8.5 && hourFloat < 16.75) return 'day'
+    if (hourFloat >= 5.5 && hourFloat < 8.2) return 'dawn'
+    if (hourFloat >= 8.2 && hourFloat < 16.6) return 'day'
+    if (hourFloat >= 16.6 && hourFloat < 19.3) return 'dusk'
     return 'night'
   }
 
   const mapWeatherCode = code => {
-    const c = Number(code)
-    if (isNaN(c)) return { kind: 'clear', text: '晴', cloud: 0.22 }
-    if (c === 0) return { kind: 'clear', text: '晴朗', cloud: 0.16 }
-    if (c === 1) return { kind: 'clear', text: '晴间多云', cloud: 0.32 }
-    if (c === 2 || c === 3) return { kind: 'cloudy', text: '云卷云舒', cloud: 0.62 }
-    if (c === 45 || c === 48) return { kind: 'fog', text: '薄雾', cloud: 0.72 }
-    if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82) || (c >= 95 && c <= 99)) {
-      return { kind: 'rain', text: c >= 61 ? '落雨' : '细雨', cloud: 0.85 }
+    const n = Number(code)
+    if (isNaN(n)) return { kind: 'clear', text: '晴', cloud: 0.24 }
+    if (n === 0) return { kind: 'clear', text: '晴朗', cloud: 0.16 }
+    if (n === 1 || n === 2) return { kind: 'clear', text: '少云', cloud: 0.34 }
+    if (n === 3) return { kind: 'cloudy', text: '云层', cloud: 0.68 }
+    if (n >= 45 && n <= 48) return { kind: 'fog', text: '山雾', cloud: 0.78 }
+    if ((n >= 51 && n <= 67) || (n >= 80 && n <= 82) || (n >= 95 && n <= 99)) {
+      return { kind: 'rain', text: '细雨', cloud: 0.88 }
     }
-    if ((c >= 71 && c <= 77) || c === 85 || c === 86) {
-      return { kind: 'snow', text: '飞雪', cloud: 0.78 }
+    if ((n >= 71 && n <= 77) || (n >= 85 && n <= 86)) {
+      return { kind: 'snow', text: '落雪', cloud: 0.82 }
     }
-    return { kind: 'clear', text: '微风', cloud: 0.25 }
+    return { kind: 'clear', text: '晴', cloud: 0.25 }
   }
-
-  const state = {
-    override: 'auto',
-    manualHour: null, // null = follow real clock
-    manualTemp: null, // null = follow real weather
-    hourFloat: 14,
-    timeMood: 'day',
-    season: 'autumn',
-    solarTerm: '小雪',
-    city: DEFAULT_HOST.city,
-    tempC: 15,
-    liveTempC: null,
-    tempMood: 'mild',
-    weatherKind: 'clear',
-    weatherText: '晴风',
-    cloudCover: 0.25,
-    windKmh: 9,
-    activeScene: 'autumn',
-    restMode: false,
-    sound: ''
-  }
-
-  try {
-    const savedOverride = sessionStorage.getItem(OVERRIDE_KEY)
-    if (savedOverride && (savedOverride === 'auto' || SCENE_META[savedOverride])) {
-      state.override = savedOverride
-    }
-  } catch (e) {}
 
   const resolveActiveScene = () => {
     if (state.override && state.override !== 'auto' && SCENE_META[state.override]) {
@@ -125,8 +128,61 @@
     }
     if (root.getAttribute('data-theme') === 'dark' || state.timeMood === 'night') return 'night'
     if (state.weatherKind === 'rain') return 'rain'
-    if (state.weatherKind === 'snow' || state.tempC <= 3) return 'winter'
+    if (state.weatherKind === 'snow' || state.tempC <= 2) return 'winter'
     return state.season
+  }
+
+  /* ==========================================================================
+     环境光协调引擎：将 3D 世界的太阳高度角、季节色温、阴雨雾气投射到页面 UI
+     ========================================================================== */
+  const syncPageLightingToWorld = effectiveWeather => {
+    const isDark = root.getAttribute('data-theme') === 'dark' || state.timeMood === 'night'
+    const dayAngle = ((state.hourFloat - 5.75) / 12.5) * Math.PI
+    const sunElev = Math.sin(dayAngle)
+    const twilight = Math.max(0, Math.min(1, 1 - Math.abs(sunElev - 0.08) * 3.2))
+    const isRain = effectiveWeather === 'rain'
+    const tempShift = Math.max(-1, Math.min(1, (state.tempC - 15) / 18))
+
+    if (isDark) {
+      root.style.setProperty('--world-card-bg', 'rgba(13, 20, 34, 0.72)')
+      root.style.setProperty('--world-card-border', 'rgba(148, 176, 218, 0.14)')
+      root.style.setProperty('--world-card-shadow', '0 20px 50px rgba(2, 6, 15, 0.52)')
+      root.style.setProperty('--world-nav-bg', 'linear-gradient(180deg, rgba(10, 16, 28, 0.76) 0%, rgba(10, 16, 28, 0.34) 100%)')
+      root.style.setProperty('--world-accent', '#8ab4f8')
+      return
+    }
+
+    // Compute subtle physical tint for daylight / twilight / rain / seasonal warmth
+    let r = 250 + Math.round(twilight * 5 + tempShift * 3 - (isRain ? 10 : 0))
+    let g = 251 - Math.round(twilight * 5 - (isRain ? 3 : 0))
+    let b = 253 - Math.round(twilight * 14 + tempShift * 5)
+    r = Math.max(232, Math.min(255, r))
+    g = Math.max(236, Math.min(255, g))
+    b = Math.max(230, Math.min(255, b))
+
+    const borderR = Math.min(255, r + 4)
+    const borderG = Math.min(255, g + 2)
+    const borderB = Math.min(255, b)
+
+    const shadowAlpha = isRain ? 0.11 : (0.13 + twilight * 0.04)
+    const navTopAlpha = isRain ? 0.74 : 0.68
+    const navBotAlpha = isRain ? 0.36 : 0.28
+
+    let accent = '#3b6e8c'
+    if (state.season === 'spring') accent = '#8c586c'
+    else if (state.season === 'summer') accent = '#2d6e7e'
+    else if (state.season === 'autumn') accent = '#8f5d38'
+    else if (state.season === 'winter') accent = '#456789'
+    if (isRain) accent = '#3f6a6e'
+
+    root.style.setProperty('--world-card-bg', `rgba(${r}, ${g}, ${b}, 0.72)`)
+    root.style.setProperty('--world-card-border', `rgba(${borderR}, ${borderG}, ${borderB}, 0.62)`)
+    root.style.setProperty('--world-card-shadow', `0 18px 44px rgba(18, 28, 42, ${shadowAlpha.toFixed(2)})`)
+    root.style.setProperty(
+      '--world-nav-bg',
+      `linear-gradient(180deg, rgba(${r}, ${g}, ${b}, ${navTopAlpha}) 0%, rgba(${r}, ${g}, ${b}, ${navBotAlpha}) 100%)`
+    )
+    root.style.setProperty('--world-accent', accent)
   }
 
   const applyAtmosphere = () => {
@@ -149,7 +205,7 @@
         state.hourFloat = 22.5
         state.timeMood = 'night'
       } else if (state.override !== 'night' && state.timeMood === 'night' && typeof state.manualHour !== 'number') {
-        state.hourFloat = state.override === 'autumn' ? 17.2 : 10.5
+        state.hourFloat = state.override === 'autumn' ? 16.8 : 10.2
         state.timeMood = detectTimeMood(state.hourFloat)
       }
     } else {
@@ -158,7 +214,7 @@
 
     const nextScene = resolveActiveScene()
     state.activeScene = nextScene
-    const meta = SCENE_META[nextScene] || SCENE_META.spring
+    const meta = SCENE_META[nextScene] || SCENE_META.autumn
 
     const effectiveWeather = state.override === 'rain'
       ? 'rain'
@@ -170,9 +226,22 @@
     root.setAttribute('data-temp-mood', state.tempMood)
     root.setAttribute('data-weather', effectiveWeather)
 
+    syncPageLightingToWorld(effectiveWeather)
+
     window.__blogAtmosphere = Object.assign({}, state, {
       effectiveWeather,
-      sceneMeta: meta
+      sceneMeta: meta,
+      setManualHour: h => {
+        const clamped = Math.max(0, Math.min(23.98, Number(h) || 0))
+        state.manualHour = clamped
+        const nightNow = clamped < 5.5 || clamped > 19.4
+        if (nightNow && root.getAttribute('data-theme') !== 'dark') {
+          root.setAttribute('data-theme', 'dark')
+        } else if (!nightNow && root.getAttribute('data-theme') === 'dark') {
+          root.setAttribute('data-theme', 'light')
+        }
+        applyAtmosphere()
+      }
     })
 
     updateSanctuaryUI()
@@ -237,7 +306,7 @@
   }
 
   /* ==========================================================================
-     Web Audio API 0KB 自然环境白噪音合成器（细雨 / 微风 / 暖炉）
+     Web Audio API 0KB 自然环境白噪音合成器（细雨 / 松风 / 炉火）
      ========================================================================== */
   let audioCtx = null
   let activeSoundNode = null
@@ -255,102 +324,105 @@
     const nodeToStop = activeSoundNode
     activeSoundNode = null
     activeGain = null
+    state.sound = ''
     window.setTimeout(() => {
       if (nodeToStop) {
         try { nodeToStop.stop() } catch (e) {}
         try { nodeToStop.disconnect() } catch (e) {}
       }
-    }, 350)
+    }, 280)
+    updateSanctuaryUI()
   }
 
   const startAmbientSound = kind => {
-    stopAmbientSound()
-    if (!kind) {
-      state.sound = ''
-      updateSanctuaryUI()
+    if (!kind || state.sound === kind) {
+      stopAmbientSound()
       return
     }
+    stopAmbientSound()
+
     const AudioContextClass = window.AudioContext || window.webkitAudioContext
     if (!AudioContextClass) return
     if (!audioCtx) audioCtx = new AudioContextClass()
     if (audioCtx.state === 'suspended') audioCtx.resume()
 
     const sampleRate = audioCtx.sampleRate
-    const seconds = 4
-    const buffer = audioCtx.createBuffer(1, sampleRate * seconds, sampleRate)
-    const channel = buffer.getChannelData(0)
+    const bufferSize = sampleRate * 3
+    const buffer = audioCtx.createBuffer(1, bufferSize, sampleRate)
+    const data = buffer.getChannelData(0)
 
-    let b0 = 0
-    let b1 = 0
-    let b2 = 0
-    for (let i = 0; i < channel.length; i += 1) {
+    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0
+    for (let i = 0; i < bufferSize; i += 1) {
       const white = Math.random() * 2 - 1
-      b0 = 0.997 * b0 + white * 0.029
-      b1 = 0.985 * b1 + white * 0.032
-      b2 = 0.95 * b2 + white * 0.048
-      let sample = (b0 + b1 + b2) * 0.35
-      if (kind === 'fire' && Math.random() < 0.0018) {
-        sample += (Math.random() * 2 - 1) * 0.65
-      }
-      channel[i] = Math.max(-0.95, Math.min(0.95, sample))
+      b0 = 0.99886 * b0 + white * 0.0555179
+      b1 = 0.99332 * b1 + white * 0.0750759
+      b2 = 0.96900 * b2 + white * 0.1538520
+      b3 = 0.86650 * b3 + white * 0.3104856
+      b4 = 0.55000 * b4 + white * 0.5329522
+      b5 = -0.7616 * b5 - white * 0.0168980
+      data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.035
+      b6 = white * 0.115926
     }
 
-    const source = audioCtx.createBufferSource()
-    source.buffer = buffer
-    source.loop = true
+    const src = audioCtx.createBufferSource()
+    src.buffer = buffer
+    src.loop = true
 
     const filter = audioCtx.createBiquadFilter()
+    const masterGain = audioCtx.createGain()
+    masterGain.gain.setValueAtTime(0.001, audioCtx.currentTime)
+
     if (kind === 'rain') {
       filter.type = 'bandpass'
-      filter.frequency.value = 920
-      filter.Q.value = 0.7
+      filter.frequency.value = 1080
+      filter.Q.value = 0.65
+      masterGain.gain.setTargetAtTime(0.18, audioCtx.currentTime, 0.5)
     } else if (kind === 'breeze') {
       filter.type = 'lowpass'
-      filter.frequency.value = 340
-      filter.Q.value = 1.8
-    } else {
+      filter.frequency.value = 390
+      filter.Q.value = 1.6
+      masterGain.gain.setTargetAtTime(0.14, audioCtx.currentTime, 0.6)
+      let phase = 0
+      activeTimer = window.setInterval(() => {
+        if (!audioCtx || state.sound !== 'breeze') return
+        phase += 0.35
+        const freq = 270 + Math.sin(phase) * 140 + Math.cos(phase * 0.6) * 70
+        filter.frequency.setTargetAtTime(Math.max(150, freq), audioCtx.currentTime, 0.4)
+      }, 420)
+    } else if (kind === 'fire') {
       filter.type = 'lowpass'
-      filter.frequency.value = 240
-      filter.Q.value = 0.9
+      filter.frequency.value = 250
+      masterGain.gain.setTargetAtTime(0.2, audioCtx.currentTime, 0.5)
+      activeTimer = window.setInterval(() => {
+        if (!audioCtx || state.sound !== 'fire') return
+        if (Math.random() < 0.6) {
+          const popOsc = audioCtx.createOscillator()
+          const popGain = audioCtx.createGain()
+          popOsc.type = 'triangle'
+          popOsc.frequency.setValueAtTime(1100 + Math.random() * 1600, audioCtx.currentTime)
+          popGain.gain.setValueAtTime(0.016 * Math.random(), audioCtx.currentTime)
+          popGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.035)
+          popOsc.connect(popGain)
+          popGain.connect(audioCtx.destination)
+          popOsc.start()
+          popOsc.stop(audioCtx.currentTime + 0.04)
+        }
+      }, 360)
     }
 
-    const gain = audioCtx.createGain()
-    gain.gain.value = 0.001
-    const targetVol = kind === 'rain' ? 0.16 : (kind === 'breeze' ? 0.14 : 0.18)
-    gain.gain.setTargetAtTime(targetVol, audioCtx.currentTime, 0.6)
+    src.connect(filter)
+    filter.connect(masterGain)
+    masterGain.connect(audioCtx.destination)
+    src.start()
 
-    source.connect(filter)
-    filter.connect(gain)
-    gain.connect(audioCtx.destination)
-    source.start(0)
-
-    activeSoundNode = source
-    activeGain = gain
+    activeSoundNode = src
+    activeGain = masterGain
     state.sound = kind
-
-    let phase = 0
-    activeTimer = window.setInterval(() => {
-      if (!audioCtx || state.sound !== kind) return
-      phase += 0.25
-      if (kind === 'breeze') {
-        const freq = 250 + Math.sin(phase * 0.6) * 110 + Math.cos(phase * 0.25) * 60
-        filter.frequency.setTargetAtTime(Math.max(140, freq), audioCtx.currentTime, 0.3)
-      } else if (kind === 'rain') {
-        const freq = 860 + Math.sin(phase * 0.35) * 90
-        filter.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.4)
-      }
-    }, 350)
-
     updateSanctuaryUI()
   }
 
-  const toggleSound = kind => {
-    if (state.sound === kind) startAmbientSound('')
-    else startAmbientSound(kind)
-  }
-
   /* ==========================================================================
-     天时漫游胶囊（含 24h 时间滑块 & 气温滑块） & 放空小憩模式 UI
+     极简建筑感天时罗盘 (Architectural Horizon HUD) & 静观模式 UI
      ========================================================================== */
   const formatHour = h => {
     const totalMin = Math.round(((h % 24) + 24) % 24 * 60)
@@ -360,12 +432,12 @@
   }
 
   const formatSummaryText = () => {
-    const meta = SCENE_META[state.activeScene] || SCENE_META.spring
-    const tempStr = ' ' + state.tempC + '°C'
+    const meta = SCENE_META[state.activeScene] || SCENE_META.autumn
+    const tempStr = state.tempC + '°C'
     if (state.override !== 'auto' || typeof state.manualHour === 'number') {
-      return meta.icon + ' ' + meta.label + ' · ' + formatHour(state.hourFloat) + tempStr
+      return meta.label + ' · ' + formatHour(state.hourFloat) + ' · ' + tempStr
     }
-    return meta.icon + ' ' + state.city + ' · ' + state.solarTerm + tempStr + ' · ' + state.weatherText
+    return state.city + ' · ' + state.solarTerm + ' · ' + state.weatherText + ' ' + tempStr
   }
 
   const setSceneOverride = next => {
@@ -405,13 +477,14 @@
     const metaEl = document.getElementById('sanctuary-rest-meta')
     if (!clockEl || !metaEl) return
     clockEl.textContent = formatHour(state.hourFloat)
+    const meta = SCENE_META[state.activeScene] || SCENE_META.autumn
     metaEl.textContent = [
       state.city,
       state.solarTerm,
-      (SCENE_META[state.activeScene] || SCENE_META.spring).label,
+      meta.label + ' · ' + meta.desc,
       state.tempC + '°C',
-      state.windKmh ? '微风 ' + state.windKmh + ' km/h' : ''
-    ].filter(Boolean).join(' · ')
+      state.windKmh ? '风速 ' + state.windKmh + ' km/h' : ''
+    ].filter(Boolean).join('  /  ')
   }
 
   const ensureRestOverlay = () => {
@@ -420,7 +493,7 @@
     overlay = document.createElement('aside')
     overlay.id = 'sanctuary-rest-overlay'
     overlay.className = 'sanctuary-rest'
-    overlay.setAttribute('aria-label', '放空小憩画面')
+    overlay.setAttribute('aria-label', '静观山水模式')
     overlay.innerHTML =
       '<div class="sanctuary-rest__center">' +
         '<div class="sanctuary-rest__clock" id="sanctuary-rest-clock">17:30</div>' +
@@ -428,21 +501,23 @@
         '<p class="sanctuary-rest__quote" id="sanctuary-rest-quote">' + REST_QUOTES[0] + '</p>' +
       '</div>' +
       '<div class="sanctuary-rest__bar">' +
-        '<div class="sanctuary-rest__scenes" role="group" aria-label="切换 3D 天时世界">' +
-          '<button type="button" data-scene-pick="auto">🌤️ 真实天时</button>' +
-          '<button type="button" data-scene-pick="spring">🌸 春樱</button>' +
-          '<button type="button" data-scene-pick="summer">🌊 夏海</button>' +
-          '<button type="button" data-scene-pick="autumn">🍂 金秋</button>' +
-          '<button type="button" data-scene-pick="winter">❄️ 冬雪</button>' +
-          '<button type="button" data-scene-pick="rain">🌧️ 听雨</button>' +
-          '<button type="button" data-scene-pick="night">🌌 星夜</button>' +
+        '<div class="sanctuary-rest__scenes" role="group" aria-label="切换天时">' +
+          '<button type="button" data-scene-pick="auto">实况</button>' +
+          '<button type="button" data-scene-pick="spring">春分</button>' +
+          '<button type="button" data-scene-pick="summer">夏至</button>' +
+          '<button type="button" data-scene-pick="autumn">秋分</button>' +
+          '<button type="button" data-scene-pick="winter">冬至</button>' +
+          '<button type="button" data-scene-pick="rain">听雨</button>' +
+          '<button type="button" data-scene-pick="night">星夜</button>' +
         '</div>' +
-        '<div class="sanctuary-rest__sounds" role="group" aria-label="自然环境音">' +
-          '<button type="button" data-sound-pick="rain">🌧️ 雨声</button>' +
-          '<button type="button" data-sound-pick="breeze">🍃 微风</button>' +
-          '<button type="button" data-sound-pick="fire">🔥 暖炉</button>' +
+        '<span class="sanctuary-rest__divider"></span>' +
+        '<div class="sanctuary-rest__sounds" role="group" aria-label="环境白噪音">' +
+          '<button type="button" data-sound-pick="rain">细雨</button>' +
+          '<button type="button" data-sound-pick="breeze">松风</button>' +
+          '<button type="button" data-sound-pick="fire">炉火</button>' +
         '</div>' +
-        '<button type="button" class="sanctuary-rest__exit" data-rest-exit>回到阅读 ×</button>' +
+        '<span class="sanctuary-rest__divider"></span>' +
+        '<button type="button" class="sanctuary-rest__exit" data-rest-exit>返回阅读</button>' +
       '</div>'
 
     document.body.appendChild(overlay)
@@ -455,13 +530,13 @@
       if (!state.restMode) return
       const qEl = document.getElementById('sanctuary-rest-quote')
       if (!qEl) return
-      qEl.classList.add('is-fading')
+      restQuoteIndex = (restQuoteIndex + 1) % REST_QUOTES.length
+      qEl.style.opacity = '0'
       window.setTimeout(() => {
-        restQuoteIdx = (restQuoteIdx + 1) % REST_QUOTES.length
-        qEl.textContent = REST_QUOTES[restQuoteIdx]
-        qEl.classList.remove('is-fading')
-      }, 420)
-    }, 15000)
+        qEl.textContent = REST_QUOTES[restQuoteIndex]
+        qEl.style.opacity = '1'
+      }, 320)
+    }, 14000)
 
     return overlay
   }
@@ -475,47 +550,62 @@
       dock.className = 'sanctuary-dock'
       dock.innerHTML =
         '<div class="sanctuary-dock__pills">' +
-          '<button type="button" class="sanctuary-dock__weather" id="sanctuary-weather-btn" aria-expanded="false" title="自由调节 3D 天时、季节、天气、气温与白噪音">' +
-            '<span id="sanctuary-weather-text">🍂 杭州 · 小雪</span>' +
+          '<button type="button" class="sanctuary-dock__weather" id="sanctuary-weather-btn" aria-expanded="false" title="调节 3D 山水天时、节气、日轨、气温与环境声">' +
+            '<svg class="sanctuary-dock__icon" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4">' +
+              '<circle cx="8" cy="8" r="3.2"></circle>' +
+              '<path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4"></path>' +
+            '</svg>' +
+            '<span id="sanctuary-weather-text">杭州 · 小雪 · 15°C</span>' +
+            '<span class="sanctuary-dock__sound-dot" id="sanctuary-sound-dot"></span>' +
           '</button>' +
-          '<button type="button" class="sanctuary-dock__rest" id="sanctuary-rest-btn" title="隐去文字卡片，放空看 3D 风景听风 (Alt+R)">' +
-            '🎐 小憩' +
+          '<span class="sanctuary-dock__vsep"></span>' +
+          '<button type="button" class="sanctuary-dock__rest" id="sanctuary-rest-btn" title="隐去页面卡片，沉浸环视 3D 山水 (Alt+R)">' +
+            '静观' +
           '</button>' +
         '</div>' +
         '<div class="sanctuary-popover" id="sanctuary-popover" hidden>' +
           '<div class="sanctuary-popover__sec">' +
-            '<div class="sanctuary-popover__title">3D 季节与天气意境</div>' +
+            '<div class="sanctuary-popover__title">' +
+              '<span>天时与四时节候</span>' +
+              '<span class="sanctuary-popover__sub" id="sanctuary-scene-desc">实时天象</span>' +
+            '</div>' +
             '<div class="sanctuary-popover__grid">' +
-              '<button type="button" data-scene-pick="auto">🌤️ 真实天时</button>' +
-              '<button type="button" data-scene-pick="spring">🌸 春樱晴野</button>' +
-              '<button type="button" data-scene-pick="summer">🌊 夏海碧空</button>' +
-              '<button type="button" data-scene-pick="autumn">🍂 金秋原野</button>' +
-              '<button type="button" data-scene-pick="winter">❄️ 冬日晴雪</button>' +
-              '<button type="button" data-scene-pick="rain">🌧️ 烟雨湖山</button>' +
-              '<button type="button" data-scene-pick="night">🌌 星河静夜</button>' +
+              '<button type="button" data-scene-pick="auto">实况同步</button>' +
+              '<button type="button" data-scene-pick="spring">春分 · 山樱</button>' +
+              '<button type="button" data-scene-pick="summer">夏至 · 碧岚</button>' +
+              '<button type="button" data-scene-pick="autumn">秋分 · 枫林</button>' +
+              '<button type="button" data-scene-pick="winter">冬至 · 霁雪</button>' +
+              '<button type="button" data-scene-pick="rain">烟雨 · 听湖</button>' +
+              '<button type="button" data-scene-pick="night">星夜 · 银河</button>' +
             '</div>' +
           '</div>' +
           '<div class="sanctuary-popover__sec">' +
             '<div class="sanctuary-popover__title">' +
-              '<span>🌅 太阳/天色时间漫游</span>' +
-              '<strong id="sanctuary-hour-val">跟随此刻</strong>' +
+              '<span>日晷天体轨迹 (00:00 — 24:00)</span>' +
+              '<strong id="sanctuary-hour-val">15:30</strong>' +
             '</div>' +
-            '<input type="range" class="sanctuary-slider" id="sanctuary-hour-slider" min="0" max="24" step="0.25" value="14" aria-label="调节一天中的时间">' +
+            '<input type="range" class="sanctuary-slider" id="sanctuary-hour-slider" min="0" max="23.9" step="0.1" value="15.5" aria-label="调节太阳与月亮时刻">' +
           '</div>' +
           '<div class="sanctuary-popover__sec">' +
             '<div class="sanctuary-popover__title">' +
-              '<span>🌡️ 气温冷暖氛围</span>' +
+              '<span>海拔气温与雪线 (-5°C — 35°C)</span>' +
               '<strong id="sanctuary-temp-val">15°C</strong>' +
             '</div>' +
-            '<input type="range" class="sanctuary-slider" id="sanctuary-temp-slider" min="-5" max="35" step="1" value="15" aria-label="调节气温氛围">' +
+            '<input type="range" class="sanctuary-slider" id="sanctuary-temp-slider" min="-5" max="35" step="1" value="15" aria-label="调节气温与雪线">' +
           '</div>' +
           '<div class="sanctuary-popover__sec">' +
-            '<div class="sanctuary-popover__title">自然白噪音（实时合成 · 0流量）</div>' +
-            '<div class="sanctuary-popover__sounds">' +
-              '<button type="button" data-sound-pick="rain">🌧️ 窗前细雨</button>' +
-              '<button type="button" data-sound-pick="breeze">🍃 林间微风</button>' +
-              '<button type="button" data-sound-pick="fire">🔥 暖炉篝火</button>' +
+            '<div class="sanctuary-popover__title">' +
+              '<span>合成自然声景</span>' +
+              '<span class="sanctuary-popover__sub">Web Audio 实时生成</span>' +
             '</div>' +
+            '<div class="sanctuary-popover__sounds">' +
+              '<button type="button" data-sound-pick="rain">细雨</button>' +
+              '<button type="button" data-sound-pick="breeze">松风</button>' +
+              '<button type="button" data-sound-pick="fire">炉火</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="sanctuary-popover__hint">' +
+            '可直接按住天空中的日月拖动时间 · 划过湖面激起三维涟漪' +
           '</div>' +
         '</div>'
       document.body.appendChild(dock)
@@ -524,15 +614,8 @@
       if (hourSlider) {
         hourSlider.addEventListener('input', e => {
           const val = parseFloat(e.target.value)
-          if (!isNaN(val)) {
-            state.manualHour = val
-            const nightNow = val < 5.5 || val > 19.6
-            if (nightNow && root.getAttribute('data-theme') !== 'dark') {
-              root.setAttribute('data-theme', 'dark')
-            } else if (!nightNow && root.getAttribute('data-theme') === 'dark') {
-              root.setAttribute('data-theme', 'light')
-            }
-            applyAtmosphere()
+          if (!isNaN(val) && window.__blogAtmosphere && window.__blogAtmosphere.setManualHour) {
+            window.__blogAtmosphere.setManualHour(val)
           }
         })
       }
@@ -557,21 +640,33 @@
     const textEl = document.getElementById('sanctuary-weather-text')
     if (textEl) textEl.textContent = formatSummaryText()
 
+    const descEl = document.getElementById('sanctuary-scene-desc')
+    if (descEl) {
+      const meta = SCENE_META[state.activeScene] || SCENE_META.autumn
+      descEl.textContent = state.override === 'auto' ? ('实况 · ' + meta.desc) : meta.desc
+    }
+
+    const soundDot = document.getElementById('sanctuary-sound-dot')
+    if (soundDot) {
+      soundDot.classList.toggle('is-playing', Boolean(state.sound))
+    }
+
     const hourVal = document.getElementById('sanctuary-hour-val')
     const hourSlider = document.getElementById('sanctuary-hour-slider')
     if (hourVal) {
       hourVal.textContent = typeof state.manualHour === 'number'
         ? formatHour(state.manualHour)
-        : '实时 ' + formatHour(state.hourFloat)
+        : '实况 ' + formatHour(state.hourFloat)
     }
     if (hourSlider && document.activeElement !== hourSlider) {
-      hourSlider.value = String(Math.round(state.hourFloat * 4) / 4)
+      hourSlider.value = String(Math.round(state.hourFloat * 10) / 10)
     }
 
     const tempVal = document.getElementById('sanctuary-temp-val')
     const tempSlider = document.getElementById('sanctuary-temp-slider')
     if (tempVal) {
-      tempVal.textContent = state.tempC + '°C · ' + (state.tempMood === 'cold' ? '寒凉' : (state.tempMood === 'warm' ? '晴暖' : '温润'))
+      const snowNote = state.tempC <= 3 ? ' · 远峰积雪' : (state.tempC >= 26 ? ' · 晴暖' : ' · 温润')
+      tempVal.textContent = state.tempC + '°C' + snowNote
     }
     if (tempSlider && document.activeElement !== tempSlider) {
       tempSlider.value = String(state.tempC)
@@ -579,7 +674,7 @@
 
     const restBtn = document.getElementById('sanctuary-rest-btn')
     if (restBtn) {
-      restBtn.textContent = state.restMode ? '📖 回到阅读' : '🎐 小憩'
+      restBtn.textContent = state.restMode ? '返回' : '静观'
       restBtn.classList.toggle('is-active', state.restMode)
     }
 
@@ -712,7 +807,7 @@
     const soundBtn = target.closest('[data-sound-pick]')
     if (soundBtn) {
       event.stopPropagation()
-      toggleSound(soundBtn.getAttribute('data-sound-pick') || '')
+      startAmbientSound(soundBtn.getAttribute('data-sound-pick') || '')
       return
     }
 

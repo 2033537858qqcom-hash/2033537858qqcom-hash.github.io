@@ -3807,18 +3807,46 @@ body #page:has(.shuoshuo-item) h1.page-title {
 
 
 /* ==========================================================================
-   Three.js 3D Sanctuary World, Living Weather Capsule & Healing Rest Mode
+   Three.js 3D Sanctuary World, Ambient Page Lighting & Architectural Horizon HUD
    ========================================================================== */
 
-html[data-time-mood='dusk']:not([data-theme='dark']) #page-header.nav-fixed #nav,
-html[data-time-mood='dawn']:not([data-theme='dark']) #page-header.nav-fixed #nav {
-  background: linear-gradient(180deg, rgba(255, 252, 249, 0.72) 0%, rgba(255, 250, 246, 0.36) 100%) !important;
+:root {
+  --world-card-bg: rgba(251, 252, 254, 0.72);
+  --world-card-border: rgba(255, 255, 255, 0.62);
+  --world-card-shadow: 0 18px 44px rgba(18, 28, 42, 0.13);
+  --world-nav-bg: linear-gradient(180deg, rgba(251, 252, 254, 0.68) 0%, rgba(251, 252, 254, 0.28) 100%);
+  --world-accent: #3b6e8c;
 }
 
+/* Bind page cards & top navigation bar to real-time 3D atmospheric lighting */
+#page-header.nav-fixed #nav,
+html[data-time-mood='dusk']:not([data-theme='dark']) #page-header.nav-fixed #nav,
+html[data-time-mood='dawn']:not([data-theme='dark']) #page-header.nav-fixed #nav {
+  background: var(--world-nav-bg) !important;
+  transition: background 0.65s ease, backdrop-filter 0.45s ease;
+}
+
+#recent-posts > .recent-post-item,
+.home-now__card,
+#aside-content .card-widget,
+#post,
+#archive,
+.moments-page .moment-card {
+  background: var(--world-card-bg) !important;
+  box-shadow:
+    var(--world-card-shadow),
+    inset 0 1px 0 var(--world-card-border) !important;
+  transition:
+    background 0.65s ease,
+    box-shadow 0.55s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Architectural Horizon HUD */
 .sanctuary-dock {
   position: fixed;
-  left: 22px;
-  bottom: 22px;
+  left: 24px;
+  bottom: 24px;
   z-index: 96;
   font-family: var(--global-font-family, 'Noto Sans SC', sans-serif);
   user-select: none;
@@ -3827,30 +3855,46 @@ html[data-time-mood='dawn']:not([data-theme='dark']) #page-header.nav-fixed #nav
 .sanctuary-dock__pills {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px;
+  gap: 2px;
+  padding: 4px 6px;
   border-radius: 999px;
-  background: rgba(255, 253, 250, 0.68);
-  backdrop-filter: blur(18px) saturate(145%);
-  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  background: var(--world-card-bg, rgba(250, 251, 253, 0.72));
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
   box-shadow:
-    0 12px 32px rgba(24, 34, 50, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.35s ease, box-shadow 0.35s ease;
+    0 12px 32px rgba(15, 23, 38, 0.14),
+    inset 0 1px 0 var(--world-card-border, rgba(255, 255, 255, 0.68));
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.45s ease, box-shadow 0.45s ease;
 }
 
 .sanctuary-dock__pills:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow:
-    0 16px 38px rgba(24, 34, 50, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    0 16px 38px rgba(15, 23, 38, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
 [data-theme='dark'] .sanctuary-dock__pills {
-  background: rgba(15, 22, 36, 0.68);
+  background: rgba(13, 20, 34, 0.74);
   box-shadow:
-    0 14px 36px rgba(2, 6, 16, 0.46),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    0 14px 36px rgba(2, 6, 16, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.sanctuary-dock__vsep {
+  width: 1px;
+  height: 14px;
+  background: rgba(100, 116, 139, 0.24);
+  margin: 0 2px;
+}
+
+[data-theme='dark'] .sanctuary-dock__vsep {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.sanctuary-dock__icon {
+  opacity: 0.72;
+  flex-shrink: 0;
 }
 
 .sanctuary-dock__weather,
@@ -3861,89 +3905,72 @@ html[data-time-mood='dawn']:not([data-theme='dark']) #page-header.nav-fixed #nav
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 14px;
+  gap: 7px;
+  padding: 6px 13px;
   border-radius: 999px;
-  font-size: 0.84rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #2d3848;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: #1e293b;
   background: transparent;
-  transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease;
+  transition: background 0.22s ease, color 0.22s ease;
 }
 
 [data-theme='dark'] .sanctuary-dock__weather,
 [data-theme='dark'] .sanctuary-dock__rest {
-  color: rgba(240, 245, 255, 0.92);
+  color: rgba(236, 242, 252, 0.9);
 }
 
 .sanctuary-dock__weather:hover,
-.sanctuary-dock__weather[aria-expanded='true'] {
-  background: rgba(255, 255, 255, 0.72);
-  color: #1c2636;
+.sanctuary-dock__weather[aria-expanded='true'],
+.sanctuary-dock__rest:hover {
+  background: rgba(255, 255, 255, 0.66);
+  color: #0f172a;
 }
 
 [data-theme='dark'] .sanctuary-dock__weather:hover,
-[data-theme='dark'] .sanctuary-dock__weather[aria-expanded='true'] {
-  background: rgba(255, 255, 255, 0.12);
+[data-theme='dark'] .sanctuary-dock__weather[aria-expanded='true'],
+[data-theme='dark'] .sanctuary-dock__rest:hover {
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
 
-.sanctuary-dock__rest {
-  background: linear-gradient(135deg, rgba(255, 186, 208, 0.52), rgba(182, 218, 255, 0.52));
-  color: #263348;
-}
-
-.sanctuary-dock__rest:hover {
-  background: linear-gradient(135deg, rgba(255, 174, 200, 0.78), rgba(164, 208, 255, 0.78));
-  transform: scale(1.03);
-}
-
-[data-theme='dark'] .sanctuary-dock__rest {
-  background: linear-gradient(135deg, rgba(124, 156, 235, 0.34), rgba(168, 130, 224, 0.34));
-  color: #f3f7ff;
-}
-
-.sanctuary-dock__sep {
-  opacity: 0.45;
-  margin: 0 1px;
-}
-
 .sanctuary-dock__sound-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: transparent;
   transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .sanctuary-dock__sound-dot.is-playing {
-  background: #48c78e;
-  box-shadow: 0 0 8px rgba(72, 199, 142, 0.85);
-  animation: sanctuary-pulse 2s infinite ease-in-out;
+  background: var(--world-accent, #3b6e8c);
+  box-shadow: 0 0 8px rgba(59, 110, 140, 0.65);
+  animation: sanctuary-pulse 2.2s infinite ease-in-out;
 }
 
 @keyframes sanctuary-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.85; }
-  50% { transform: scale(1.32); opacity: 1; }
+  0%, 100% { transform: scale(1); opacity: 0.75; }
+  50% { transform: scale(1.28); opacity: 1; }
 }
 
 .sanctuary-popover {
   position: absolute;
   left: 0;
-  bottom: calc(100% + 12px);
-  width: 316px;
+  bottom: calc(100% + 10px);
+  width: 312px;
   padding: 16px 18px;
-  border-radius: 22px;
-  background: rgba(255, 253, 250, 0.86);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-radius: 18px;
+  background: var(--world-card-bg, rgba(251, 252, 254, 0.88));
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
   box-shadow:
-    0 22px 54px rgba(18, 28, 45, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  color: #2c3645;
+    0 24px 56px rgba(15, 23, 38, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  color: #1e293b;
   transform-origin: bottom left;
-  animation: sanctuary-pop-in 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: sanctuary-pop-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sanctuary-popover[hidden] {
@@ -3951,17 +3978,17 @@ html[data-time-mood='dawn']:not([data-theme='dark']) #page-header.nav-fixed #nav
 }
 
 [data-theme='dark'] .sanctuary-popover {
-  background: rgba(16, 23, 38, 0.86);
+  background: rgba(14, 21, 35, 0.88);
   box-shadow:
-    0 24px 58px rgba(2, 6, 16, 0.56),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14);
-  color: rgba(238, 244, 255, 0.92);
+    0 24px 58px rgba(2, 6, 16, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: rgba(236, 242, 252, 0.92);
 }
 
 @keyframes sanctuary-pop-in {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.96);
+    transform: translateY(6px) scale(0.97);
   }
   to {
     opacity: 1;
@@ -3970,24 +3997,29 @@ html[data-time-mood='dawn']:not([data-theme='dark']) #page-header.nav-fixed #nav
 }
 
 .sanctuary-popover__sec + .sanctuary-popover__sec {
-  margin-top: 14px;
+  margin-top: 13px;
   padding-top: 12px;
-  border-top: 1px solid rgba(140, 158, 184, 0.18);
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .sanctuary-popover__title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: rgba(66, 82, 108, 0.86);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(51, 65, 85, 0.82);
   margin-bottom: 8px;
 }
 
+.sanctuary-popover__sub {
+  font-weight: 400;
+  opacity: 0.78;
+}
+
 [data-theme='dark'] .sanctuary-popover__title {
-  color: rgba(196, 212, 240, 0.82);
+  color: rgba(196, 210, 232, 0.82);
 }
 
 .sanctuary-popover__grid {
@@ -4006,44 +4038,48 @@ html[data-time-mood='dawn']:not([data-theme='dark']) #page-header.nav-fixed #nav
   border: none;
   outline: none;
   cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 12px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #364356;
-  background: rgba(255, 255, 255, 0.58);
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: #334155;
+  background: rgba(255, 255, 255, 0.52);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
   transition: all 0.2s ease;
 }
 
 [data-theme='dark'] .sanctuary-popover__grid button,
 [data-theme='dark'] .sanctuary-popover__sounds button {
-  color: rgba(230, 238, 255, 0.88);
-  background: rgba(255, 255, 255, 0.07);
+  color: rgba(226, 234, 248, 0.86);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .sanctuary-popover__grid button:hover,
 .sanctuary-popover__sounds button:hover {
-  background: rgba(255, 255, 255, 0.9);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.85);
+  color: #0f172a;
 }
 
 [data-theme='dark'] .sanctuary-popover__grid button:hover,
 [data-theme='dark'] .sanctuary-popover__sounds button:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
 }
 
 .sanctuary-popover__grid button.is-active,
 .sanctuary-popover__sounds button.is-active {
-  background: linear-gradient(135deg, #ff9ab8, #7eb8ff);
-  color: #ffffff;
-  box-shadow: 0 6px 16px rgba(126, 184, 255, 0.32);
+  background: #1e293b;
+  color: #f8fafc;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
 }
 
 [data-theme='dark'] .sanctuary-popover__grid button.is-active,
 [data-theme='dark'] .sanctuary-popover__sounds button.is-active {
-  background: linear-gradient(135deg, #6288e8, #9c73e6);
-  color: #ffffff;
-  box-shadow: 0 6px 16px rgba(98, 136, 232, 0.36);
+  background: rgba(241, 245, 249, 0.92);
+  color: #0f172a;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.32);
 }
 
 .sanctuary-popover__sounds {
@@ -4052,33 +4088,57 @@ html[data-time-mood='dawn']:not([data-theme='dark']) #page-header.nav-fixed #nav
   gap: 6px;
 }
 
+.sanctuary-popover__hint {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  font-size: 0.71rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: rgba(71, 85, 105, 0.78);
+  text-align: center;
+}
+
+[data-theme='dark'] .sanctuary-popover__hint {
+  color: rgba(176, 192, 216, 0.72);
+}
+
 .sanctuary-slider {
   width: 100%;
-  height: 6px;
+  height: 4px;
   border-radius: 999px;
   appearance: none;
-  background: linear-gradient(90deg, rgba(130, 174, 238, 0.38), rgba(255, 168, 198, 0.48));
+  background: rgba(100, 116, 139, 0.24);
   outline: none;
   cursor: pointer;
 }
 
+[data-theme='dark'] .sanctuary-slider {
+  background: rgba(255, 255, 255, 0.16);
+}
+
 .sanctuary-slider::-webkit-slider-thumb {
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(24, 38, 64, 0.28);
-  border: 2px solid #7eb8ff;
+  background: #1e293b;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+  border: 2px solid #ffffff;
   transition: transform 0.18s ease;
 }
 
+[data-theme='dark'] .sanctuary-slider::-webkit-slider-thumb {
+  background: #f8fafc;
+  border-color: #1e293b;
+}
+
 .sanctuary-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
+  transform: scale(1.16);
 }
 
 /* ==========================================================================
-   Healing Rest Mode (🎐 小憩模式)
+   静观山水模式 (Immersive Contemplation Mode)
    ========================================================================== */
 
 #content-inner,
@@ -4111,7 +4171,7 @@ html.is-sanctuary-rest #sanctuary-dock {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 11vh 24px 42px;
+  padding: 10vh 24px 36px;
   pointer-events: none;
   animation: sanctuary-rest-fade 0.7s ease;
 }
@@ -4127,38 +4187,37 @@ html.is-sanctuary-rest #sanctuary-dock {
 
 .sanctuary-rest__center {
   text-align: center;
-  color: #ffffff;
-  text-shadow: 0 4px 28px rgba(12, 22, 40, 0.42);
-  pointer-events: auto;
-  max-width: 640px;
-  padding: 24px 36px;
-  border-radius: 32px;
-  background: radial-gradient(circle, rgba(16, 26, 44, 0.18) 0%, rgba(16, 26, 44, 0) 72%);
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 2px 24px rgba(10, 18, 32, 0.45);
+  pointer-events: none;
+  max-width: 660px;
+  padding: 18px 28px;
 }
 
 .sanctuary-rest__clock {
-  font-size: clamp(3.4rem, 7vw, 5.4rem);
+  font-family: 'Noto Serif SC', Georgia, serif;
+  font-size: clamp(3rem, 6.2vw, 4.8rem);
   font-weight: 300;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   line-height: 1.08;
   font-variant-numeric: tabular-nums;
 }
 
 .sanctuary-rest__meta {
   margin-top: 10px;
-  font-size: 0.98rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  opacity: 0.92;
+  font-size: 0.88rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  opacity: 0.86;
 }
 
 .sanctuary-rest__quote {
-  margin-top: 22px;
-  font-size: 1.05rem;
+  margin-top: 18px;
+  font-size: 0.94rem;
   font-weight: 400;
   letter-spacing: 0.06em;
   line-height: 1.8;
-  opacity: 0.92;
+  opacity: 0.84;
   transition: opacity 0.38s ease;
 }
 
@@ -4168,18 +4227,33 @@ html.is-sanctuary-rest #sanctuary-dock {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: 8px;
+  padding: 7px 12px;
   border-radius: 999px;
-  background: rgba(255, 253, 250, 0.66);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  box-shadow: 0 18px 46px rgba(10, 18, 34, 0.24);
+  background: var(--world-card-bg, rgba(251, 252, 254, 0.72));
+  backdrop-filter: blur(22px) saturate(145%);
+  -webkit-backdrop-filter: blur(22px) saturate(145%);
+  box-shadow:
+    0 18px 46px rgba(10, 18, 34, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 [data-theme='dark'] .sanctuary-rest__bar {
-  background: rgba(14, 21, 36, 0.72);
-  box-shadow: 0 18px 48px rgba(2, 6, 16, 0.56);
+  background: rgba(13, 20, 34, 0.76);
+  box-shadow:
+    0 18px 48px rgba(2, 6, 16, 0.56),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.sanctuary-rest__divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(100, 116, 139, 0.25);
+  margin: 0 2px;
+}
+
+[data-theme='dark'] .sanctuary-rest__divider {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .sanctuary-rest__group,
@@ -4189,7 +4263,7 @@ html.is-sanctuary-rest #sanctuary-dock {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .sanctuary-rest__group button,
@@ -4201,13 +4275,14 @@ html.is-sanctuary-rest #sanctuary-dock {
   border: none;
   outline: none;
   cursor: pointer;
-  padding: 7px 13px;
+  padding: 6px 12px;
   border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #2c384a;
-  background: rgba(255, 255, 255, 0.56);
-  transition: all 0.22s ease;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #334155;
+  background: transparent;
+  transition: all 0.2s ease;
 }
 
 [data-theme='dark'] .sanctuary-rest__group button,
@@ -4215,8 +4290,7 @@ html.is-sanctuary-rest #sanctuary-dock {
 [data-theme='dark'] .sanctuary-rest__sounds button,
 [data-theme='dark'] .sanctuary-rest__quote-btn,
 [data-theme='dark'] .sanctuary-rest__exit {
-  color: rgba(236, 243, 255, 0.92);
-  background: rgba(255, 255, 255, 0.08);
+  color: rgba(232, 240, 252, 0.88);
 }
 
 .sanctuary-rest__group button:hover,
@@ -4224,8 +4298,8 @@ html.is-sanctuary-rest #sanctuary-dock {
 .sanctuary-rest__sounds button:hover,
 .sanctuary-rest__quote-btn:hover,
 .sanctuary-rest__exit:hover {
-  background: rgba(255, 255, 255, 0.92);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.72);
+  color: #0f172a;
 }
 
 [data-theme='dark'] .sanctuary-rest__group button:hover,
@@ -4233,30 +4307,32 @@ html.is-sanctuary-rest #sanctuary-dock {
 [data-theme='dark'] .sanctuary-rest__sounds button:hover,
 [data-theme='dark'] .sanctuary-rest__quote-btn:hover,
 [data-theme='dark'] .sanctuary-rest__exit:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
 }
 
 .sanctuary-rest__group button.is-active,
 .sanctuary-rest__scenes button.is-active,
 .sanctuary-rest__sounds button.is-active {
-  background: linear-gradient(135deg, #ff9ab8, #7eb8ff);
-  color: #ffffff;
+  background: #1e293b;
+  color: #f8fafc;
 }
 
 [data-theme='dark'] .sanctuary-rest__group button.is-active,
 [data-theme='dark'] .sanctuary-rest__scenes button.is-active,
 [data-theme='dark'] .sanctuary-rest__sounds button.is-active {
-  background: linear-gradient(135deg, #6288e8, #9c73e6);
-  color: #ffffff;
+  background: rgba(241, 245, 249, 0.92);
+  color: #0f172a;
 }
 
 .sanctuary-rest__exit {
-  background: rgba(42, 56, 78, 0.85) !important;
-  color: #ffffff !important;
+  background: rgba(30, 41, 59, 0.12) !important;
+  color: #1e293b !important;
 }
 
-.sanctuary-rest__exit:hover {
-  background: rgba(28, 40, 60, 0.96) !important;
+[data-theme='dark'] .sanctuary-rest__exit {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
 }
 
 /* Seasonal click spark variants */
