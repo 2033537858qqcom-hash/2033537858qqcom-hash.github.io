@@ -686,9 +686,12 @@
     const slice = matched.slice(0, maxVisible)
     const rows = slice.map(({ track, idx }) => {
       const isCur = state.currentList === listKey && state.currentIndex === idx
+      const numContent = isCur
+        ? (state.playing ? '<span class="sanctuary-music__eq"><i></i><i></i><i></i></span>' : '▸')
+        : String(idx + 1).padStart(2, '0')
       return (
         '<button type="button" class="sm-track' + (isCur ? ' is-current' : '') + (isCur && state.playing ? ' is-playing' : '') + '" data-sm-pick-list="' + listKey + '" data-sm-pick-idx="' + idx + '">' +
-          '<span class="sm-track__num">' + (isCur ? '<span class="sanctuary-music__eq"><i></i><i></i><i></i></span>' : String(idx + 1).padStart(2, '0')) + '</span>' +
+          '<span class="sm-track__num">' + numContent + '</span>' +
           '<span class="sm-track__info">' +
             '<span class="sm-track__name">' + escapeHtml(track.name) + '</span>' +
             '<span class="sm-track__artist">' + escapeHtml(track.artist) + '</span>' +

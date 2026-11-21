@@ -136,29 +136,31 @@
      环境光协调引擎：将 3D 世界的太阳高度角、季节色温、阴雨雾气投射到页面 UI
      ========================================================================== */
   const syncPageLightingToWorld = effectiveWeather => {
-    const isDark = root.getAttribute('data-theme') === 'dark' || state.timeMood === 'night'
+    // Strictly follow data-theme for surface polarity so card/dock text NEVER collides dark-on-dark!
+    const isDark = root.getAttribute('data-theme') === 'dark'
     const dayAngle = ((state.hourFloat - 5.75) / 12.5) * Math.PI
     const sunElev = Math.sin(dayAngle)
     const twilight = Math.max(0, Math.min(1, 1 - Math.abs(sunElev - 0.08) * 3.2))
+    const isNightSky = state.timeMood === 'night'
     const isRain = effectiveWeather === 'rain'
     const tempShift = Math.max(-1, Math.min(1, (state.tempC - 15) / 18))
 
     if (isDark) {
-      root.style.setProperty('--world-card-bg', 'rgba(13, 20, 34, 0.72)')
-      root.style.setProperty('--world-card-border', 'rgba(148, 176, 218, 0.14)')
+      root.style.setProperty('--world-card-bg', 'rgba(13, 20, 34, 0.78)')
+      root.style.setProperty('--world-card-border', 'rgba(148, 176, 218, 0.16)')
       root.style.setProperty('--world-card-shadow', '0 20px 50px rgba(2, 6, 15, 0.52)')
-      root.style.setProperty('--world-nav-bg', 'linear-gradient(180deg, rgba(10, 16, 28, 0.76) 0%, rgba(10, 16, 28, 0.34) 100%)')
+      root.style.setProperty('--world-nav-bg', 'linear-gradient(180deg, rgba(10, 16, 28, 0.80) 0%, rgba(10, 16, 28, 0.42) 100%)')
       root.style.setProperty('--world-accent', '#8ab4f8')
       return
     }
 
-    // Compute subtle physical tint for daylight / twilight / rain / seasonal warmth
-    let r = 250 + Math.round(twilight * 5 + tempShift * 3 - (isRain ? 10 : 0))
-    let g = 251 - Math.round(twilight * 5 - (isRain ? 3 : 0))
-    let b = 253 - Math.round(twilight * 14 + tempShift * 5)
-    r = Math.max(232, Math.min(255, r))
-    g = Math.max(236, Math.min(255, g))
-    b = Math.max(230, Math.min(255, b))
+    // Compute subtle physical tint for daylight / twilight / rain / moonlit-light / seasonal warmth
+    let r = 250 + Math.round(twilight * 5 + tempShift * 3 - (isRain ? 10 : 0) - (isNightSky ? 10 : 0))
+    let g = 251 - Math.round(twilight * 5 - (isRain ? 3 : 0) + (isNightSky ? 6 : 0))
+    let b = 253 - Math.round(twilight * 14 + tempShift * 5) + (isNightSky ? 4 : 0)
+    r = Math.max(234, Math.min(255, r))
+    g = Math.max(238, Math.min(255, g))
+    b = Math.max(234, Math.min(255, b))
 
     const borderR = Math.min(255, r + 4)
     const borderG = Math.min(255, g + 2)
@@ -766,6 +768,16 @@
     const threshold = isFull ? 240 : 40
     root.classList.toggle('is-reading-depth', (window.scrollY || 0) > threshold)
   }
+
+  // Auto-align data-theme to dark on initial nighttime visit when user hasn't set an explicit theme preference
+  try {
+    const nowInit = new Date()
+    const initH = nowInit.getHours() + nowInit.getMinutes() / 60
+    const savedTheme = localStorage.getItem('theme')
+    if (state.override === 'auto' && !savedTheme && (initH >= 19.5 || initH < 5.5)) {
+      root.setAttribute('data-theme', 'dark')
+    }
+  } catch (e) {}
 
   applyAtmosphere()
   window.setInterval(applyAtmosphere, 60000)
