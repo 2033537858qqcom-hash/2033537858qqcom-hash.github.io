@@ -1097,6 +1097,7 @@ inject:
     - <script src="/js/cursor-enhance.js?v=1.5.12" defer></script>
     - <script src="/js/click-values.js?v=1.5.12" defer></script>
     - <script src="/js/moments-years.js?v=1.5.12" defer></script>
+    - <script src="/js/comment-enhance.js?v=1.5.12" defer></script>
 
 # CDN Settings
 # Don't modify the following settings unless you know how they work

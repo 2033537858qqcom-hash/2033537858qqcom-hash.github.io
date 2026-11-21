@@ -231,6 +231,7 @@
     window.__blogAtmosphere = Object.assign({}, state, {
       effectiveWeather,
       sceneMeta: meta,
+      toggleSound: startAmbientSound,
       setManualHour: h => {
         const clamped = Math.max(0, Math.min(23.98, Number(h) || 0))
         state.manualHour = clamped
@@ -435,9 +436,9 @@
     const meta = SCENE_META[state.activeScene] || SCENE_META.autumn
     const tempStr = state.tempC + '°C'
     if (state.override !== 'auto' || typeof state.manualHour === 'number') {
-      return meta.label + ' · ' + formatHour(state.hourFloat) + ' · ' + tempStr
+      return meta.label + ' · ' + formatHour(state.hourFloat)
     }
-    return state.city + ' · ' + state.solarTerm + ' · ' + state.weatherText + ' ' + tempStr
+    return state.solarTerm + ' · ' + tempStr
   }
 
   const setSceneOverride = next => {
@@ -490,9 +491,24 @@
     ].filter(Boolean).join('  /  ')
   }
 
+  const updateRestMusicBtn = () => {
+    const btn = document.getElementById('sanctuary-rest-music')
+    if (!btn) return
+    const ms = window.__blogMusic && typeof window.__blogMusic.getState === 'function'
+      ? window.__blogMusic.getState()
+      : null
+    const playing = Boolean(ms && ms.playing)
+    const name = ms && ms.track && ms.track.name ? ms.track.name : '放首歌'
+    btn.classList.toggle('is-active', playing)
+    btn.textContent = (playing ? '❚❚ ' : '▸ ') + (name.length > 7 ? name.slice(0, 7) + '…' : name)
+  }
+
   const ensureRestOverlay = () => {
     let overlay = document.getElementById('sanctuary-rest-overlay')
-    if (overlay) return overlay
+    if (overlay) {
+      updateRestMusicBtn()
+      return overlay
+    }
     overlay = document.createElement('aside')
     overlay.id = 'sanctuary-rest-overlay'
     overlay.className = 'sanctuary-rest'
@@ -520,10 +536,20 @@
           '<button type="button" data-sound-pick="fire">炉火</button>' +
         '</div>' +
         '<span class="sanctuary-rest__divider"></span>' +
+        '<div class="sanctuary-rest__music" role="group" aria-label="背景音乐">' +
+          '<button type="button" id="sanctuary-rest-music" data-sm-toggle title="播放或暂停音乐">▸ 宇宙无星河</button>' +
+          '<button type="button" data-sm-next title="下一首" aria-label="下一首">»</button>' +
+        '</div>' +
+        '<span class="sanctuary-rest__divider"></span>' +
         '<button type="button" class="sanctuary-rest__exit" data-rest-exit>返回阅读</button>' +
       '</div>'
 
     document.body.appendChild(overlay)
+    updateRestMusicBtn()
+
+    window.addEventListener('blog:music-state', updateRestMusicBtn)
+    window.addEventListener('blog:music-play', updateRestMusicBtn)
+    window.addEventListener('blog:music-pause', updateRestMusicBtn)
 
     window.clearInterval(restClockTimer)
     restClockTimer = window.setInterval(updateRestClock, 15000)
@@ -815,6 +841,9 @@
       const nextOpen = popover.hidden
       popover.hidden = !nextOpen
       weatherBtn.setAttribute('aria-expanded', nextOpen ? 'true' : 'false')
+      if (nextOpen) {
+        try { window.dispatchEvent(new CustomEvent('blog:sanctuary-popover-open')) } catch (e) {}
+      }
       return
     }
 

@@ -7,16 +7,12 @@
  */
 (function () {
   const SCRIPT_CANDIDATES = [
-    'https://registry.npmmirror.com/live2d-widget/3.1.4/files/lib/L2Dwidget.min.js',
+    'https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js',
     'https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js',
-    'https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js'
+    'https://registry.npmmirror.com/live2d-widget/3.1.4/files/lib/L2Dwidget.min.js'
   ]
 
-  const MODEL_CANDIDATES = [
-    'https://registry.npmmirror.com/live2d-widget-model-haruto/1.0.5/files/assets/haruto.model.json',
-    'https://unpkg.com/live2d-widget-model-haruto@1.0.5/assets/haruto.model.json',
-    'https://cdn.jsdelivr.net/npm/live2d-widget-model-haruto@1.0.5/assets/haruto.model.json'
-  ]
+  const MODEL_URL = 'https://cdn.jsdelivr.net/npm/live2d-widget-model-haruto@1.0.5/assets/haruto.model.json'
 
   const GREET_KEY = 'blog-live2d-greeted'
   let bubbleTimer = 0
@@ -100,7 +96,7 @@
   }
 
   const showBubble = (text, duration = 4200) => {
-    if (!text || !shouldLoadLive2D()) return
+    if (!text || !shouldLoadLive2D() || document.documentElement.classList.contains('is-sanctuary-rest')) return
     const widget = document.getElementById('live2d-widget') || document.getElementById('live2dcanvas')
     if (!widget) return
     const bubble = ensureBubble()
@@ -191,18 +187,7 @@
     return false
   }
 
-  const pickModelPath = async () => {
-    for (let i = 0; i < MODEL_CANDIDATES.length; i++) {
-      const url = MODEL_CANDIDATES[i]
-      try {
-        const res = await fetch(url, { method: 'HEAD', mode: 'cors', cache: 'force-cache' })
-        if (res.ok) return url
-      } catch (e) {
-        /* try next */
-      }
-    }
-    return MODEL_CANDIDATES[0]
-  }
+  const pickModelPath = async () => MODEL_URL
 
   const bindInteractions = () => {
     if (window.__blogLive2DBound) return
@@ -412,21 +397,21 @@
   }
 
   const showAtmosphereBubble = text => {
-    if (!text) return
+    if (!text || document.documentElement.classList.contains('is-sanctuary-rest')) return
     const now = Date.now()
     if (now - lastSpeakAt < 4500) return
-    const bubble = document.querySelector(
-      '#live2d-speech-bubble, .live2d-speech-bubble, #waifu-tips'
-    )
+    const widget = document.getElementById('live2d-widget') || document.getElementById('live2dcanvas')
+    if (!widget) return
+    const bubble = document.getElementById('live2d-bubble')
     if (!bubble) return
     lastSpeakAt = now
     bubble.textContent = text
-    bubble.classList.add('is-visible', 'show', 'waifu-tips-active')
+    bubble.classList.add('is-visible')
     window.setTimeout(() => {
       if (bubble.textContent === text) {
-        bubble.classList.remove('is-visible', 'show', 'waifu-tips-active')
+        bubble.classList.remove('is-visible')
       }
-    }, 5200)
+    }, 4600)
   }
 
   window.addEventListener('blog:atmosphere-change', event => {

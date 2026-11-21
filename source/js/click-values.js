@@ -41,8 +41,8 @@
 
       spark.style.left = `${x}px`
       spark.style.top = `${y}px`
-      spark.style.setProperty('--spark-dx', `${dx.toFixed(1)}px`)
-      spark.style.setProperty('--spark-dy', `${dy.toFixed(1)}px`)
+      spark.style.setProperty('--spark-x', `${dx.toFixed(1)}px`)
+      spark.style.setProperty('--spark-y', `${dy.toFixed(1)}px`)
       spark.style.setProperty('--spark-rot', `${rot}deg`)
       spark.style.setProperty('--spark-scale', scale)
 
@@ -64,7 +64,7 @@
       if (
         event.target instanceof Element &&
         event.target.closest(
-          'a, button, input, textarea, select, summary, label, [role="button"], .aplayer, .fancybox__container, #live2d-widget, #sanctuary-dock, #sanctuary-rest-overlay'
+          'a, button, input, textarea, select, summary, label, [role="button"], .aplayer, .fancybox__container, #live2d-widget, #sanctuary-dock, #sanctuary-music, #sanctuary-music-studio, #sanctuary-rest-overlay, #post-comment'
         )
       ) {
         return

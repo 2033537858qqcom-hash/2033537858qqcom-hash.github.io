@@ -2,7 +2,7 @@
 title: 友情链接
 date: 2026-05-13 21:55:00
 type: link
-top_img: /img/optimized/banner-day-bg.webp
+top_img: false
 ---
 
 > 欢迎交换友链，一起记录成长与想法。
@@ -18,6 +18,7 @@ top_img: /img/optimized/banner-day-bg.webp
 <strong>简介:</strong> 在代码、风景与日常之间<br>
 <strong>链接:</strong> https://2033537858qqcom-hash.github.io<br>
 <strong>头像:</strong> https://2033537858qqcom-hash.github.io/img/avatar.jpg
+<div style="margin-top:12px"><button type="button" class="comment-action-btn" data-copy-flink>复制友链申请格式去留言板</button></div>
 </div>
 
 ---

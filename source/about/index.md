@@ -2,7 +2,7 @@
 title: 关于我
 date: 2026-05-13 21:55:00
 type: about
-top_img: /img/optimized/banner-day-bg.webp
+top_img: false
 ---
 
 <div class="content-lead">

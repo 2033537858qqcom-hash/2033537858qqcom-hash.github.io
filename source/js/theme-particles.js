@@ -1244,6 +1244,7 @@
     uniform vec3 uHorizonCol;
     uniform vec3 uLampPos;
     uniform vec3 uPavLampPos;
+    uniform vec3 uBoatPos;
     uniform vec4 uRipples[6];
 
     float hash12(vec2 p) {
@@ -1300,6 +1301,16 @@
         }
       }
 
+      // Gentle continuous lapping micro-ripples around the bobbing wooden rowboat hull
+      vec2 boatDelta = vWorldPos.xz - uBoatPos.xz;
+      float boatD = length(boatDelta);
+      if (boatD > 0.65 && boatD < 5.2) {
+        float bEnv = smoothstep(5.2, 1.2, boatD) * smoothstep(0.65, 1.15, boatD);
+        float bWave = cos(boatD * 5.6 - uTime * 2.15) * bEnv;
+        grad += (boatDelta / max(0.05, boatD)) * bWave * 0.028;
+        rippleSheen += max(0.0, sin(boatD * 5.6 - uTime * 2.15)) * bEnv * 0.032;
+      }
+
       // Lightweight physical normal-map raindrop perturbation (60 FPS even in heavy rain!)
       if (uRainFactor > 0.05 && dist < 64.0) {
         float fade = smoothstep(64.0, 10.0, dist) * uRainFactor;
@@ -1329,7 +1340,13 @@
       float cosTheta = max(0.0, dot(V, waterN));
       float fresnel = 0.08 + 0.92 * pow(1.0 - cosTheta, 3.8);
 
+      // Subtle crystal-clear shallow lakebed stones visible beneath translucent shore water (vDepth < 1.25m)
+      vec4 bedTex = texture2D(uDetailTex, vWorldPos.xz * 0.36 + waterN.xz * 0.16);
+      vec3 pebbleCol = mix(vec3(0.09, 0.18, 0.21), vec3(0.24, 0.34, 0.36), bedTex.r * 0.6 + bedTex.a * 0.4);
+      pebbleCol *= (0.35 + 0.65 * uDayFactor) * (1.0 - uNightFactor * 0.72);
+      float bedVis = smoothstep(1.25, 0.06, vDepth) * smoothstep(54.0, 12.0, dist);
       vec3 shallowTint = mix(vec3(0.11, 0.34, 0.40), uWaterCol, smoothstep(0.0, 2.4, vDepth));
+      shallowTint = mix(shallowTint, pebbleCol, bedVis * 0.42);
       vec3 bodyCol = mix(shallowTint, uWaterCol, smoothstep(0.3, 3.2, vDepth));
       vec3 waterCol = mix(bodyCol, reflCol, clamp(fresnel * 0.88 + 0.16, 0.18, 0.94));
 
@@ -2045,8 +2062,10 @@
     group.updateMatrixWorld(true)
     const lampWorldPos = new THREE.Vector3(0, 1.74, 0)
     lampGroup.localToWorld(lampWorldPos)
+    const boatWorldPos = new THREE.Vector3(0, 0, 0)
+    boatGroup.localToWorld(boatWorldPos)
 
-    return { group, boatGroup, lampCoreMat, haloMat, lampWorldPos }
+    return { group, boatGroup, lampCoreMat, haloMat, lampWorldPos, boatWorldPos }
   }
 
   // Graceful Traditional Lakeside Sanctuary Pavilion (水榭茶亭) on unobstructed left-bay promontory (-23.5, -39.5)!
@@ -2066,6 +2085,28 @@
     const plinth = new THREE.Mesh(new THREE.BoxGeometry(5.8, 1.3, 4.6), stoneMat)
     plinth.position.y = 0.15
     group.add(plinth)
+
+    // 3 stone terrace steps leading from the veranda toward the island water's edge
+    for (let st = 0; st < 3; st += 1) {
+      const step = new THREE.Mesh(new THREE.BoxGeometry(1.75 + st * 0.16, 0.26, 0.48), stoneMat)
+      step.position.set(-0.6, 0.64 - st * 0.26, 2.52 + st * 0.44)
+      group.add(step)
+    }
+
+    // Miniature traditional stone garden lantern (石灯笼) tucked beside the island front-right edge
+    const toroGroup = new THREE.Group()
+    toroGroup.position.set(2.55, 0.08, 2.75)
+    const toroPost = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.15, 0.85, 6), stoneMat)
+    toroPost.position.y = 0.42
+    toroGroup.add(toroPost)
+    const toroCore = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.24, 0.22), winMat)
+    toroCore.position.y = 0.94
+    toroGroup.add(toroCore)
+    const toroCap = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.22, 4), stoneMat)
+    toroCap.position.y = 1.15
+    toroCap.rotation.y = Math.PI * 0.25
+    toroGroup.add(toroCap)
+    group.add(toroGroup)
 
     // Timber veranda deck overhanging the stone base + low lakeside railing
     const deck = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.24, 5.2), timberMat)
@@ -2148,11 +2189,53 @@
     pavGlow.position.set(0.4, 2.18, 2.1)
     group.add(pavGlow)
 
+    // Whisper-soft drifting hearth/incense smoke wisp rising lazily above the pavilion roof at dusk, rain & night!
+    const smokeUniforms = {
+      uTime: baseUniforms.uTime,
+      uDetailTex: baseUniforms.uDetailTex,
+      uHorizonCol: baseUniforms.uHorizonCol,
+      uSmokeAlpha: { value: 0.0 },
+      uClipBelowWater: baseUniforms.uClipBelowWater
+    }
+    const smokeMat = new THREE.ShaderMaterial({
+      vertexShader: MIST_VERT,
+      fragmentShader: `
+        precision mediump float;
+        varying vec2 vUv;
+        varying vec3 vWorldPos;
+        uniform sampler2D uDetailTex;
+        uniform float uTime;
+        uniform float uSmokeAlpha;
+        uniform vec3 uHorizonCol;
+        uniform float uClipBelowWater;
+        void main() {
+          if (uClipBelowWater > 0.5 && vWorldPos.y < 0.0) discard;
+          if (uSmokeAlpha < 0.01) discard;
+          float sway = sin(vUv.y * 5.2 - uTime * 0.75) * 0.16 * vUv.y;
+          float dx = abs(vUv.x - 0.5 - sway) / (0.14 + vUv.y * 0.32);
+          float colMask = exp(-dx * dx * 2.4);
+          float vMask = smoothstep(0.0, 0.16, vUv.y) * smoothstep(1.0, 0.25, vUv.y);
+          float n = texture2D(uDetailTex, vec2(vUv.x * 1.4, vUv.y * 1.8 - uTime * 0.11)).r;
+          float a = colMask * vMask * (0.45 + 0.55 * n) * uSmokeAlpha;
+          if (a < 0.008) discard;
+          gl_FragColor = vec4(mix(uHorizonCol, vec3(0.95, 0.94, 0.96), 0.52), a);
+        }
+      `,
+      uniforms: smokeUniforms,
+      transparent: true,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    })
+    const smokeMesh = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 7.6), smokeMat)
+    smokeMesh.position.set(-0.9, 8.8, -0.4)
+    smokeMesh.renderOrder = 5
+    group.add(smokeMesh)
+
     group.updateMatrixWorld(true)
     const pavLampWorldPos = new THREE.Vector3(0, 2.15, 1.8)
     group.localToWorld(pavLampWorldPos)
 
-    return { group, winMat, pavGlowMat, pavLampWorldPos }
+    return { group, winMat, pavGlowMat, pavLampWorldPos, smokeUniforms }
   }
 
   /* ==========================================================================
@@ -2323,12 +2406,14 @@
         uSunDir: { value: new THREE.Vector3(...pal.sunDir) },
         uMoonDir: { value: new THREE.Vector3(...pal.moonDir) },
         uLampPos: { value: new THREE.Vector3(6.5, 2.3, 11.2) },
-        uPavLampPos: { value: new THREE.Vector3(-23.5, 3.8, -39.5) }
+        uPavLampPos: { value: new THREE.Vector3(-23.5, 3.8, -39.5) },
+        uBoatPos: { value: new THREE.Vector3(5.0, 0.0, 12.0) }
       }
 
       // Pier, Lantern, Open Rowboat & Unobstructed Lakeside Pavilion
       pierRig = buildPierLanternAndBoat(THREE, sharedUniforms, glowTex)
       sharedUniforms.uLampPos.value.copy(pierRig.lampWorldPos)
+      if (pierRig.boatWorldPos) sharedUniforms.uBoatPos.value.copy(pierRig.boatWorldPos)
       scene.add(pierRig.group)
 
       pavilionRig = buildDistantPavilion(THREE, sharedUniforms, glowTex)
@@ -2502,9 +2587,9 @@
 
         if (Array.isArray(heroSpots)) {
           for (let h = 0; h < heroSpots.length; h += 1) {
-            const [hx, hz, hs, hTone] = heroSpots[h]
+            const [hx, hz, hs, hTone, hEmbed] = heroSpots[h]
             const hy = getTerrainHeight(hx, hz)
-            dummy.position.set(hx, hy - 0.32, hz)
+            dummy.position.set(hx, hy - (typeof hEmbed === 'number' ? hEmbed : 0.34), hz)
             dummy.rotation.set(0, seededRand() * Math.PI * 2, 0)
             dummy.scale.set(hs, hs * 1.04, hs)
             dummy.updateMatrix()
@@ -2565,9 +2650,9 @@
         [18.2, 17.5, 1.72, 0.65],
         [22.5, 14.2, 1.88, 0.28],
         // Framing the lakeside sanctuary pavilion (-23.5, -39.5) on dry island earth on both left & right!
-        [-28.6, -40.2, 1.85, 0.84],
-        [-27.2, -43.2, 1.78, 0.40],
-        [-19.3, -41.8, 1.56, 0.72],
+        [-28.6, -40.2, 1.85, 0.84, 0.42],
+        [-27.2, -43.2, 1.78, 0.40, 0.42],
+        [-19.4, -41.4, 1.68, 0.72, 0.58],
         // Right peninsula lush colorful grove
         [33.0, -42.0, 2.15, 0.78],
         [38.5, -46.0, 1.98, 0.32],
@@ -2580,7 +2665,7 @@
       // 220 low shoreline mossy/flowering shrubs bridging wet shoreline banks, boulders & tree trunks
       populateForest(buildOrganicShrubGeometry(THREE), 220, 1, 0.35, 3.2, -92, 23, null, [0.75, 0.75])
 
-      // 6. Instanced Angular Shoreline Boulders (scattered naturally along real wet lake shores!)
+      // 6. Instanced Angular Shoreline Boulders (curated foreground spit rocks + scattered natural wet shore boulders!)
       const rockGeom = new THREE.DodecahedronGeometry(0.9, 0)
       const rPos = rockGeom.attributes.position
       for (let i = 0; i < rPos.count; i += 1) {
@@ -2592,7 +2677,22 @@
       const rockMat = makeArchitectMat(THREE, sharedUniforms, [0.24, 0.27, 0.32], true, true, false)
       const rockDummy = new THREE.Object3D()
       const rockMatrices = []
-      for (let i = 0; i < 720 && rockMatrices.length < 62; i += 1) {
+      // Handcrafted weathered granite boulders anchoring the bottom-left foreground spit to balance the pier!
+      const heroShoreRocks = [
+        [-20.6, 12.6, 1.45, 0.72, 1.25],
+        [-22.2, 15.6, 1.15, 0.58, 1.05],
+        [-19.5, 16.4, 0.92, 0.48, 0.88]
+      ]
+      for (let r = 0; r < heroShoreRocks.length; r += 1) {
+        const [rx, rz, sx, sy, sz] = heroShoreRocks[r]
+        const ry = getTerrainHeight(rx, rz)
+        rockDummy.position.set(rx, ry - 0.16, rz)
+        rockDummy.rotation.set(0.25 + r * 0.7, r * 1.4, 0.18)
+        rockDummy.scale.set(sx, sy, sz)
+        rockDummy.updateMatrix()
+        rockMatrices.push(rockDummy.matrix.clone())
+      }
+      for (let i = 0; i < 720 && rockMatrices.length < 66; i += 1) {
         const x = (seededRand() - 0.5) * 140
         const z = -92.0 + seededRand() * 116.0
         if (Math.hypot(x - 11.0, z - 17.0) < 5.0) continue
@@ -2795,6 +2895,24 @@
         const wG = lerp(0.80, 0.80, pal.lampGlow)
         const wB = lerp(0.70, 0.42, pal.lampGlow)
         pavilionRig.winMat.color.setRGB(wR, wG, wB)
+        if (pavilionRig.smokeUniforms) {
+          pavilionRig.smokeUniforms.uSmokeAlpha.value = smoothstep(0.22, 0.75, pal.lampGlow) * 0.26
+        }
+      }
+
+      // Organic spontaneous calm-lake living ripples (falling blossom / rising fish every ~8s!)
+      if (pal.rainFactor < 0.25 && elapsedSec - (render3DBackground._lastAutoRipple || 0) > 8.2) {
+        render3DBackground._lastAutoRipple = elapsedSec + rand(-1.5, 2.5)
+        const rx = rand(-15.0, 14.0)
+        const rz = rand(-22.0, 6.0)
+        if (getTerrainHeight(rx, rz) < -0.5) {
+          const idx = rippleCursor * 4
+          rippleBuffer[idx] = rx
+          rippleBuffer[idx + 1] = rz
+          rippleBuffer[idx + 2] = elapsedSec
+          rippleBuffer[idx + 3] = 0.42
+          rippleCursor = (rippleCursor + 1) % MAX_RIPPLES
+        }
       }
 
       if (starUniforms && starPoints) {
@@ -3548,7 +3666,7 @@
     if (!(target instanceof Element)) return false
     return Boolean(
       target.closest(
-        'a, button, input, textarea, select, summary, label, [role="button"], .recent-post-item, .card-widget, .home-now__cloud, .home-now__card, .home-now__photo, #nav, #sanctuary-dock, .sanctuary-rest__bar, .aplayer, .blog-music-launcher, #live2d-widget, #post, #page, #archive'
+        'a, button, input, textarea, select, summary, label, [role="button"], .recent-post-item, .card-widget, .home-now__cloud, .home-now__card, .home-now__photo, #nav, #sanctuary-dock, #sanctuary-music, #sanctuary-music-drawer, #sanctuary-music-studio, .sanctuary-rest__bar, .aplayer, .blog-music-launcher, #live2d-widget, #post, #page, #archive, #post-comment'
       )
     )
   }

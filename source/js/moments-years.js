@@ -201,9 +201,11 @@
     const tagHtml = tags.length
       ? tags.map(tag => '<span class="shuoshuo-tag">' + escapeHtml(tag) + '</span>').join('')
       : ''
+    const snippetRaw = String(item.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 48)
+    const discussHref = '/message/?ref=' + encodeURIComponent(snippetRaw || formatDate(item.date)) + '#post-comment'
     const commentButton = item.key
       ? '<button type="button" class="shuoshuo-comment-btn" aria-label="展开或收起评论" onclick="addCommentToShuoshuo(event)"><i class="fa-solid fa-comments" aria-hidden="true"></i></button>'
-      : ''
+      : '<a class="shuoshuo-discuss-link" href="' + discussHref + '" title="去留言板聊聊这则随笔">聊聊这则 →</a>'
     const commentBox = item.key
       ? '<div class="shuoshuo-comment no-comment" data-key="' + escapeHtml(item.key) + '"></div>'
       : ''
