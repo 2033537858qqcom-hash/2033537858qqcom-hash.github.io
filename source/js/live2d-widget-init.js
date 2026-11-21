@@ -393,3 +393,62 @@
     }, 250)
   })
 })()
+
+
+;(() => {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return
+
+  let lastSceneSpoken = ''
+  let lastRestSpoken = false
+  let lastSpeakAt = 0
+
+  const SCENE_LINES = {
+    spring: '春风吹过山谷，湖面和樱花都柔柔的，慢慢看吧。',
+    summer: '盛夏的流云与草木很清透，深呼吸一下吧。',
+    autumn: '金秋的银杏叶落下来了，晚霞和远山很适合发呆。',
+    winter: '初雪落进山林了，哪怕外面微凉，这里也留着暖意。',
+    rain: '听见淅淅沥沥的雨声了吗？湖面泛起涟漪，心也会跟着静下来。',
+    night: '星空与银河亮起来了，今晚适合放下思绪，好好休息。'
+  }
+
+  const showAtmosphereBubble = text => {
+    if (!text) return
+    const now = Date.now()
+    if (now - lastSpeakAt < 4500) return
+    const bubble = document.querySelector(
+      '#live2d-speech-bubble, .live2d-speech-bubble, #waifu-tips'
+    )
+    if (!bubble) return
+    lastSpeakAt = now
+    bubble.textContent = text
+    bubble.classList.add('is-visible', 'show', 'waifu-tips-active')
+    window.setTimeout(() => {
+      if (bubble.textContent === text) {
+        bubble.classList.remove('is-visible', 'show', 'waifu-tips-active')
+      }
+    }, 5200)
+  }
+
+  window.addEventListener('blog:atmosphere-change', event => {
+    const detail = (event && event.detail) || {}
+    if (detail.restMode && !lastRestSpoken) {
+      lastRestSpoken = true
+      showAtmosphereBubble('进入小憩模式啦，卡片都替你收好了，伴着白噪音放空一会儿吧。')
+      return
+    }
+    if (!detail.restMode) {
+      lastRestSpoken = false
+    }
+
+    const scene = detail.activeScene || detail.scene
+    if (scene && scene !== lastSceneSpoken) {
+      const isInitial = !lastSceneSpoken
+      lastSceneSpoken = scene
+      if (!isInitial) {
+        showAtmosphereBubble(SCENE_LINES[scene] || '')
+      } else if (typeof detail.tempC === 'number' && detail.tempC <= 9) {
+        showAtmosphereBubble(`现在气温大约 ${detail.tempC}°C，微凉的天色里注意保暖哦。`)
+      }
+    }
+  })
+})()

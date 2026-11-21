@@ -379,34 +379,42 @@ body::after {
 }
 
 body::before {
+  z-index: -3;
   opacity: 1;
   background-image:
-    radial-gradient(circle at 50% 18%, rgba(255, 252, 244, 0.22) 0%, rgba(255, 240, 246, 0.08) 48%, rgba(245, 248, 252, 0.06) 100%),
-    url('/img/optimized/banner-day-bg.webp');
+    linear-gradient(180deg, #74b4e8 0%, #badcf5 52%, #f7e6de 78%, #88b8d6 100%);
 }
 
-/* 清晨朝霞（05:30 - 08:30） */
 html[data-time-mood='dawn']:not([data-theme='dark']) body::before {
   background-image:
-    radial-gradient(circle at 50% 20%, rgba(255, 236, 208, 0.28) 0%, rgba(255, 206, 224, 0.14) 50%, rgba(235, 245, 255, 0.08) 100%),
-    url('/img/optimized/banner-day-bg.webp');
-  filter: saturate(1.08) brightness(1.02);
+    linear-gradient(180deg, #5d8ec9 0%, #e7b5c6 52%, #fce2c4 80%, #89abc9 100%);
 }
 
-/* 傍晚橘粉晚霞（16:45 - 19:30）：动漫黄昏暖橘紫粉渐变天际 */
 html[data-time-mood='dusk']:not([data-theme='dark']) body::before {
   background-image:
-    radial-gradient(circle at 50% 22%, rgba(255, 190, 128, 0.34) 0%, rgba(255, 138, 166, 0.22) 45%, rgba(122, 102, 184, 0.18) 100%),
-    linear-gradient(180deg, rgba(112, 68, 138, 0.18) 0%, rgba(255, 148, 118, 0.24) 48%, rgba(255, 228, 212, 0.15) 100%),
-    url('/img/optimized/banner-day-bg.webp');
-  filter: sepia(0.15) hue-rotate(-10deg) saturate(1.22) contrast(1.02);
+    linear-gradient(180deg, #3c356e 0%, #bc657d 48%, #f8a673 78%, #675882 100%);
 }
 
 body::after {
+  z-index: -3;
   opacity: 0;
   background-image:
-    linear-gradient(180deg, rgba(6, 10, 20, 0.62) 0%, rgba(10, 16, 30, 0.38) 42%, rgba(16, 21, 34, 0.5) 100%),
-    url('/img/optimized/banner-night-bg.webp');
+    linear-gradient(180deg, #060b1a 0%, #10203b 54%, #1b2f4c 82%, #0a1426 100%);
+}
+
+#theme-sanctuary-webgl,
+.theme-sanctuary-webgl {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: filter 0.65s ease, opacity 0.65s ease;
+}
+
+html.is-reading-depth:not(.is-sanctuary-rest) #theme-sanctuary-webgl {
+  filter: blur(2.2px);
 }
 
 [data-theme='dark'] body::before {
@@ -3794,5 +3802,505 @@ body #page:has(.shuoshuo-item) h1.page-title {
   .click-spark {
     display: none !important;
     animation: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   Three.js 3D Sanctuary World, Living Weather Capsule & Healing Rest Mode
+   ========================================================================== */
+
+html[data-time-mood='dusk']:not([data-theme='dark']) #page-header.nav-fixed #nav,
+html[data-time-mood='dawn']:not([data-theme='dark']) #page-header.nav-fixed #nav {
+  background: linear-gradient(180deg, rgba(255, 252, 249, 0.72) 0%, rgba(255, 250, 246, 0.36) 100%) !important;
+}
+
+.sanctuary-dock {
+  position: fixed;
+  left: 22px;
+  bottom: 22px;
+  z-index: 96;
+  font-family: var(--global-font-family, 'Noto Sans SC', sans-serif);
+  user-select: none;
+}
+
+.sanctuary-dock__pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(255, 253, 250, 0.68);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  box-shadow:
+    0 12px 32px rgba(24, 34, 50, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.35s ease, box-shadow 0.35s ease;
+}
+
+.sanctuary-dock__pills:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 16px 38px rgba(24, 34, 50, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+[data-theme='dark'] .sanctuary-dock__pills {
+  background: rgba(15, 22, 36, 0.68);
+  box-shadow:
+    0 14px 36px rgba(2, 6, 16, 0.46),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.sanctuary-dock__weather,
+.sanctuary-dock__rest {
+  appearance: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #2d3848;
+  background: transparent;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease;
+}
+
+[data-theme='dark'] .sanctuary-dock__weather,
+[data-theme='dark'] .sanctuary-dock__rest {
+  color: rgba(240, 245, 255, 0.92);
+}
+
+.sanctuary-dock__weather:hover,
+.sanctuary-dock__weather[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.72);
+  color: #1c2636;
+}
+
+[data-theme='dark'] .sanctuary-dock__weather:hover,
+[data-theme='dark'] .sanctuary-dock__weather[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.sanctuary-dock__rest {
+  background: linear-gradient(135deg, rgba(255, 186, 208, 0.52), rgba(182, 218, 255, 0.52));
+  color: #263348;
+}
+
+.sanctuary-dock__rest:hover {
+  background: linear-gradient(135deg, rgba(255, 174, 200, 0.78), rgba(164, 208, 255, 0.78));
+  transform: scale(1.03);
+}
+
+[data-theme='dark'] .sanctuary-dock__rest {
+  background: linear-gradient(135deg, rgba(124, 156, 235, 0.34), rgba(168, 130, 224, 0.34));
+  color: #f3f7ff;
+}
+
+.sanctuary-dock__sep {
+  opacity: 0.45;
+  margin: 0 1px;
+}
+
+.sanctuary-dock__sound-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sanctuary-dock__sound-dot.is-playing {
+  background: #48c78e;
+  box-shadow: 0 0 8px rgba(72, 199, 142, 0.85);
+  animation: sanctuary-pulse 2s infinite ease-in-out;
+}
+
+@keyframes sanctuary-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.32); opacity: 1; }
+}
+
+.sanctuary-popover {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 12px);
+  width: 316px;
+  padding: 16px 18px;
+  border-radius: 22px;
+  background: rgba(255, 253, 250, 0.86);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow:
+    0 22px 54px rgba(18, 28, 45, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  color: #2c3645;
+  transform-origin: bottom left;
+  animation: sanctuary-pop-in 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sanctuary-popover[hidden] {
+  display: none !important;
+}
+
+[data-theme='dark'] .sanctuary-popover {
+  background: rgba(16, 23, 38, 0.86);
+  box-shadow:
+    0 24px 58px rgba(2, 6, 16, 0.56),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  color: rgba(238, 244, 255, 0.92);
+}
+
+@keyframes sanctuary-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.sanctuary-popover__sec + .sanctuary-popover__sec {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(140, 158, 184, 0.18);
+}
+
+.sanctuary-popover__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(66, 82, 108, 0.86);
+  margin-bottom: 8px;
+}
+
+[data-theme='dark'] .sanctuary-popover__title {
+  color: rgba(196, 212, 240, 0.82);
+}
+
+.sanctuary-popover__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.sanctuary-popover__grid button[data-scene-pick='auto'] {
+  grid-column: 1 / -1;
+}
+
+.sanctuary-popover__grid button,
+.sanctuary-popover__sounds button {
+  appearance: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #364356;
+  background: rgba(255, 255, 255, 0.58);
+  transition: all 0.2s ease;
+}
+
+[data-theme='dark'] .sanctuary-popover__grid button,
+[data-theme='dark'] .sanctuary-popover__sounds button {
+  color: rgba(230, 238, 255, 0.88);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.sanctuary-popover__grid button:hover,
+.sanctuary-popover__sounds button:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+[data-theme='dark'] .sanctuary-popover__grid button:hover,
+[data-theme='dark'] .sanctuary-popover__sounds button:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.sanctuary-popover__grid button.is-active,
+.sanctuary-popover__sounds button.is-active {
+  background: linear-gradient(135deg, #ff9ab8, #7eb8ff);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(126, 184, 255, 0.32);
+}
+
+[data-theme='dark'] .sanctuary-popover__grid button.is-active,
+[data-theme='dark'] .sanctuary-popover__sounds button.is-active {
+  background: linear-gradient(135deg, #6288e8, #9c73e6);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(98, 136, 232, 0.36);
+}
+
+.sanctuary-popover__sounds {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.sanctuary-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  appearance: none;
+  background: linear-gradient(90deg, rgba(130, 174, 238, 0.38), rgba(255, 168, 198, 0.48));
+  outline: none;
+  cursor: pointer;
+}
+
+.sanctuary-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(24, 38, 64, 0.28);
+  border: 2px solid #7eb8ff;
+  transition: transform 0.18s ease;
+}
+
+.sanctuary-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* ==========================================================================
+   Healing Rest Mode (🎐 小憩模式)
+   ========================================================================== */
+
+#content-inner,
+#footer,
+#page-header #site-info,
+#page-header #scroll-down,
+#hero-bottom-stack,
+#rightside {
+  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.is-sanctuary-rest #content-inner,
+html.is-sanctuary-rest #footer,
+html.is-sanctuary-rest #page-header #site-info,
+html.is-sanctuary-rest #page-header #scroll-down,
+html.is-sanctuary-rest #hero-bottom-stack,
+html.is-sanctuary-rest #rightside,
+html.is-sanctuary-rest #nav,
+html.is-sanctuary-rest #sanctuary-dock {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(10px);
+}
+
+.sanctuary-rest {
+  position: fixed;
+  inset: 0;
+  z-index: 98;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11vh 24px 42px;
+  pointer-events: none;
+  animation: sanctuary-rest-fade 0.7s ease;
+}
+
+.sanctuary-rest[hidden] {
+  display: none !important;
+}
+
+@keyframes sanctuary-rest-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sanctuary-rest__center {
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 0 4px 28px rgba(12, 22, 40, 0.42);
+  pointer-events: auto;
+  max-width: 640px;
+  padding: 24px 36px;
+  border-radius: 32px;
+  background: radial-gradient(circle, rgba(16, 26, 44, 0.18) 0%, rgba(16, 26, 44, 0) 72%);
+}
+
+.sanctuary-rest__clock {
+  font-size: clamp(3.4rem, 7vw, 5.4rem);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  line-height: 1.08;
+  font-variant-numeric: tabular-nums;
+}
+
+.sanctuary-rest__meta {
+  margin-top: 10px;
+  font-size: 0.98rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  opacity: 0.92;
+}
+
+.sanctuary-rest__quote {
+  margin-top: 22px;
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  line-height: 1.8;
+  opacity: 0.92;
+  transition: opacity 0.38s ease;
+}
+
+.sanctuary-rest__bar {
+  pointer-events: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(255, 253, 250, 0.66);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  box-shadow: 0 18px 46px rgba(10, 18, 34, 0.24);
+}
+
+[data-theme='dark'] .sanctuary-rest__bar {
+  background: rgba(14, 21, 36, 0.72);
+  box-shadow: 0 18px 48px rgba(2, 6, 16, 0.56);
+}
+
+.sanctuary-rest__group,
+.sanctuary-rest__scenes,
+.sanctuary-rest__sounds {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.sanctuary-rest__group button,
+.sanctuary-rest__scenes button,
+.sanctuary-rest__sounds button,
+.sanctuary-rest__quote-btn,
+.sanctuary-rest__exit {
+  appearance: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #2c384a;
+  background: rgba(255, 255, 255, 0.56);
+  transition: all 0.22s ease;
+}
+
+[data-theme='dark'] .sanctuary-rest__group button,
+[data-theme='dark'] .sanctuary-rest__scenes button,
+[data-theme='dark'] .sanctuary-rest__sounds button,
+[data-theme='dark'] .sanctuary-rest__quote-btn,
+[data-theme='dark'] .sanctuary-rest__exit {
+  color: rgba(236, 243, 255, 0.92);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sanctuary-rest__group button:hover,
+.sanctuary-rest__scenes button:hover,
+.sanctuary-rest__sounds button:hover,
+.sanctuary-rest__quote-btn:hover,
+.sanctuary-rest__exit:hover {
+  background: rgba(255, 255, 255, 0.92);
+  transform: translateY(-1px);
+}
+
+[data-theme='dark'] .sanctuary-rest__group button:hover,
+[data-theme='dark'] .sanctuary-rest__scenes button:hover,
+[data-theme='dark'] .sanctuary-rest__sounds button:hover,
+[data-theme='dark'] .sanctuary-rest__quote-btn:hover,
+[data-theme='dark'] .sanctuary-rest__exit:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.sanctuary-rest__group button.is-active,
+.sanctuary-rest__scenes button.is-active,
+.sanctuary-rest__sounds button.is-active {
+  background: linear-gradient(135deg, #ff9ab8, #7eb8ff);
+  color: #ffffff;
+}
+
+[data-theme='dark'] .sanctuary-rest__group button.is-active,
+[data-theme='dark'] .sanctuary-rest__scenes button.is-active,
+[data-theme='dark'] .sanctuary-rest__sounds button.is-active {
+  background: linear-gradient(135deg, #6288e8, #9c73e6);
+  color: #ffffff;
+}
+
+.sanctuary-rest__exit {
+  background: rgba(42, 56, 78, 0.85) !important;
+  color: #ffffff !important;
+}
+
+.sanctuary-rest__exit:hover {
+  background: rgba(28, 40, 60, 0.96) !important;
+}
+
+/* Seasonal click spark variants */
+.click-spark--ginkgo {
+  background: radial-gradient(circle at 35% 35%, #fff3b8 0%, #f4be44 62%, #d88b1c 100%);
+  border-radius: 75% 20% 70% 25%;
+  box-shadow: 0 0 10px rgba(244, 190, 68, 0.55);
+}
+
+.click-spark--snow {
+  background: radial-gradient(circle, #ffffff 0%, #d8ecff 72%, rgba(190, 224, 255, 0.2) 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(220, 240, 255, 0.85);
+}
+
+.click-spark--rain {
+  background: linear-gradient(180deg, rgba(220, 240, 255, 0.95), rgba(140, 192, 240, 0.45));
+  border-radius: 50% 50% 48% 48%;
+  box-shadow: 0 0 10px rgba(156, 208, 255, 0.6);
+}
+
+.click-spark--firefly {
+  background: radial-gradient(circle, #fffde0 0%, #c8f560 55%, rgba(120, 220, 90, 0.15) 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 14px rgba(196, 245, 96, 0.9);
+}
+
+@media (max-width: 768px) {
+  .sanctuary-dock {
+    left: 12px;
+    bottom: 12px;
+  }
+
+  .sanctuary-popover {
+    width: min(304px, calc(100vw - 24px));
+  }
+
+  .sanctuary-rest {
+    padding: 8vh 14px 24px;
+  }
+
+  .sanctuary-rest__bar {
+    border-radius: 24px;
+    padding: 10px 12px;
+    gap: 8px;
   }
 }

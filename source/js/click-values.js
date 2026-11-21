@@ -1,73 +1,77 @@
-/**
- * 轻盈点击微粒：
- * - 白天点击散开几片微型樱瓣，夜晚点击散开几颗柔光星芒
- * - 全站生效，自动避开交互控件、看板娘与文本划选，并尊重 prefers-reduced-motion
- */
-(function () {
+;(() => {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return
+
+  const reduceMotion =
+    window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduceMotion) return
+
   const root = document.documentElement
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-  let bound = false
+  let lastTriggerAt = 0
 
-  const ignoredSelector =
-    'input, textarea, select, option, [contenteditable="true"], .aplayer, .aplayer *, a, button, summary, [role="button"], .shuoshuo-comment-btn, #live2d-widget, #live2dcanvas'
-
-  const hasSelection = () => {
-    try {
-      return Boolean(window.getSelection && window.getSelection().toString().trim())
-    } catch (e) {
-      return false
-    }
+  const resolveSparkClass = () => {
+    const isDark = root.getAttribute('data-theme') === 'dark'
+    const scene = root.getAttribute('data-sanctuary-scene') || ''
+    if (isDark || scene === 'night') return 'click-spark--star'
+    if (scene === 'autumn') return 'click-spark--ginkgo'
+    if (scene === 'winter') return 'click-spark--snow'
+    if (scene === 'rain') return 'click-spark--rain'
+    if (scene === 'summer') return 'click-spark--firefly'
+    return 'click-spark--petal'
   }
 
-  const spawnBloom = event => {
-    if (reduceMotion.matches) return
-    if (event.button !== 0) return
-    if (hasSelection()) return
-    if (event.target.closest && event.target.closest(ignoredSelector)) return
+  const spawnMicroSparks = (x, y) => {
+    const body = document.body
+    if (!body) return
 
-    const isDark = root.getAttribute('data-theme') === 'dark'
+    const variantClass = resolveSparkClass()
     const count = 5
     const frag = document.createDocumentFragment()
     const created = []
 
     for (let i = 0; i < count; i += 1) {
       const spark = document.createElement('span')
-      spark.className = 'click-spark ' + (isDark ? 'click-spark--star' : 'click-spark--petal')
-      spark.setAttribute('aria-hidden', 'true')
+      spark.className = 'click-spark ' + variantClass
 
-      const angle = (Math.PI * 2 * i) / count + (Math.random() * 0.7 - 0.35)
-      const dist = 20 + Math.random() * 24
-      const dx = Math.cos(angle) * dist
-      const dy = Math.sin(angle) * dist + (isDark ? -6 : 10)
-      const rot = Math.round(Math.random() * 200 - 100) + 'deg'
-      const scale = (0.75 + Math.random() * 0.5).toFixed(2)
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5
+      const distance = 16 + Math.random() * 18
+      const dx = Math.cos(angle) * distance
+      const dy = Math.sin(angle) * distance - (variantClass === 'click-spark--star' ? 6 : 2)
+      const rot = Math.round((Math.random() - 0.5) * 140)
+      const scale = (0.75 + Math.random() * 0.45).toFixed(2)
 
-      spark.style.left = event.clientX + 'px'
-      spark.style.top = event.clientY + 'px'
-      spark.style.setProperty('--spark-x', dx.toFixed(1) + 'px')
-      spark.style.setProperty('--spark-y', dy.toFixed(1) + 'px')
-      spark.style.setProperty('--spark-rot', rot)
+      spark.style.left = `${x}px`
+      spark.style.top = `${y}px`
+      spark.style.setProperty('--spark-dx', `${dx.toFixed(1)}px`)
+      spark.style.setProperty('--spark-dy', `${dy.toFixed(1)}px`)
+      spark.style.setProperty('--spark-rot', `${rot}deg`)
       spark.style.setProperty('--spark-scale', scale)
 
       frag.appendChild(spark)
       created.push(spark)
     }
 
-    document.body.appendChild(frag)
+    body.appendChild(frag)
     window.setTimeout(() => {
-      for (let i = 0; i < created.length; i += 1) created[i].remove()
-    }, 760)
+      created.forEach(node => node.remove())
+    }, 650)
   }
 
-  const bind = () => {
-    if (bound) return
-    bound = true
-    document.addEventListener('click', spawnBloom, true)
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bind, { once: true })
-  } else {
-    bind()
-  }
+  document.addEventListener(
+    'click',
+    event => {
+      const now = performance.now()
+      if (now - lastTriggerAt < 90) return
+      if (
+        event.target instanceof Element &&
+        event.target.closest(
+          'a, button, input, textarea, select, summary, label, [role="button"], .aplayer, .fancybox__container, #live2d-widget, #sanctuary-dock, #sanctuary-rest-overlay'
+        )
+      ) {
+        return
+      }
+      lastTriggerAt = now
+      spawnMicroSparks(event.clientX, event.clientY)
+    },
+    { passive: true }
+  )
 })()
