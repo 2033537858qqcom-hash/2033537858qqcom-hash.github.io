@@ -37,7 +37,7 @@
     summer: { label: '夏至', desc: '碧湖晴岚', season: 'summer', weather: 'clear', defaultHour: 14.2, defaultTemp: 27 },
     autumn: { label: '秋分', desc: '层林尽染', season: 'autumn', weather: 'clear', defaultHour: 17.2, defaultTemp: 15 },
     winter: { label: '冬至', desc: '远峰霁雪', season: 'winter', weather: 'snow',  defaultHour: 11.2, defaultTemp: -2 },
-    rain:   { label: '听雨', desc: '烟雨空濛', season: 'spring', weather: 'rain',  defaultHour: 14.8, defaultTemp: 16 },
+    rain:   { label: '听雨', desc: '烟雨空濛', season: 'summer', weather: 'rain',  defaultHour: 14.8, defaultTemp: 16 },
     night:  { label: '星夜', desc: '银河静谷', season: 'autumn', weather: 'clear', defaultHour: 22.5, defaultTemp: 10 }
   }
 
@@ -544,6 +544,28 @@
     return overlay
   }
 
+  const getWeatherIconSvg = (activeScene, effectiveWeather, isNight) => {
+    if (effectiveWeather === 'rain' || activeScene === 'rain') {
+      return (
+        '<path d="M4.2 9.4h7.4a2.6 2.6 0 0 0 .3-5.18 3.7 3.7 0 0 0-7.18-.82A2.4 2.4 0 0 0 4.2 9.4Z"></path>' +
+        '<path d="M5.6 11.6l-.8 2.2M8.4 11.6l-.8 2.2M11.2 11.6l-.8 2.2" stroke-linecap="round"></path>'
+      )
+    }
+    if (effectiveWeather === 'snow' || activeScene === 'winter') {
+      return (
+        '<path d="M8 2v12M2.8 5l10.4 6M13.2 5L2.8 11" stroke-linecap="round"></path>' +
+        '<circle cx="8" cy="8" r="1.4"></circle>'
+      )
+    }
+    if (isNight || activeScene === 'night') {
+      return '<path d="M12.6 9.8A5.2 5.2 0 0 1 6.2 3.4a5.4 5.4 0 1 0 6.4 6.4Z" stroke-linejoin="round"></path>'
+    }
+    return (
+      '<circle cx="8" cy="8" r="3.1"></circle>' +
+      '<path d="M8 1.6v1.9M8 12.5v1.9M1.6 8h1.9M12.5 8h1.9M3.5 3.5l1.3 1.3M11.2 11.2l1.3 1.3M12.5 3.5l-1.3 1.3M4.8 11.2l-1.3 1.3" stroke-linecap="round"></path>'
+    )
+  }
+
   const ensureNavWidget = () => {
     if (typeof document === 'undefined' || !document.body) return null
     let dock = document.getElementById('sanctuary-dock')
@@ -554,9 +576,9 @@
       dock.innerHTML =
         '<div class="sanctuary-dock__pills">' +
           '<button type="button" class="sanctuary-dock__weather" id="sanctuary-weather-btn" aria-expanded="false" title="调节 3D 山水天时、节气、日轨、气温与环境声">' +
-            '<svg class="sanctuary-dock__icon" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4">' +
-              '<circle cx="8" cy="8" r="3.2"></circle>' +
-              '<path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M12.6 3.4l-1.4 1.4M4.8 11.2l-1.4 1.4"></path>' +
+            '<svg class="sanctuary-dock__icon" id="sanctuary-weather-icon" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4">' +
+              '<circle cx="8" cy="8" r="3.1"></circle>' +
+              '<path d="M8 1.6v1.9M8 12.5v1.9M1.6 8h1.9M12.5 8h1.9M3.5 3.5l1.3 1.3M11.2 11.2l1.3 1.3M12.5 3.5l-1.3 1.3M4.8 11.2l-1.3 1.3" stroke-linecap="round"></path>' +
             '</svg>' +
             '<span id="sanctuary-weather-text">杭州 · 小雪 · 15°C</span>' +
             '<span class="sanctuary-dock__sound-dot" id="sanctuary-sound-dot"></span>' +
@@ -642,6 +664,17 @@
     ensureNavWidget()
     const textEl = document.getElementById('sanctuary-weather-text')
     if (textEl) textEl.textContent = formatSummaryText()
+
+    const iconEl = document.getElementById('sanctuary-weather-icon')
+    if (iconEl) {
+      const effWeather = root.getAttribute('data-weather') || state.weatherKind
+      const isNight = root.getAttribute('data-theme') === 'dark' || state.timeMood === 'night'
+      const nextSvg = getWeatherIconSvg(state.activeScene, effWeather, isNight)
+      if (iconEl.getAttribute('data-icon-key') !== nextSvg) {
+        iconEl.setAttribute('data-icon-key', nextSvg)
+        iconEl.innerHTML = nextSvg
+      }
+    }
 
     const descEl = document.getElementById('sanctuary-scene-desc')
     if (descEl) {
