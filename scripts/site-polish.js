@@ -14,6 +14,43 @@ const root = path.resolve(__dirname, '..')
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
 const fallbackVersion = pkg.version || '0.0.0'
 const hashCache = new Map()
+let cachedCounts = null
+
+function getFootprintCounts () {
+  if (cachedCounts) return cachedCounts
+  const data = (hexo.locals && typeof hexo.locals.get === 'function' && hexo.locals.get('data')) || {}
+  let moments = Array.isArray(data.shuoshuo) ? data.shuoshuo.length : 0
+  if (!moments) {
+    try {
+      const yml = fs.readFileSync(path.join(root, 'source', '_data', 'shuoshuo.yml'), 'utf8')
+      moments = (yml.match(/^- /gm) || []).length
+    } catch (e) {
+      moments = 100
+    }
+  }
+  let photos = 0
+  try {
+    photos = fs.readdirSync(path.join(root, 'source', 'img', 'photography'))
+      .filter(f => f.toLowerCase().endsWith('.webp')).length
+  } catch (e) {
+    photos = 134
+  }
+  let years = (data.timeline && Array.isArray(data.timeline.years) && data.timeline.years.length) || 0
+  if (!years) years = 4
+  cachedCounts = { moments, photos, years }
+  return cachedCounts
+}
+
+function buildFootprintHtml () {
+  const { moments, photos, years } = getFootprintCounts()
+  return (
+    '<div class="site-data site-data--footprints" aria-label="站点生活足迹">' +
+      `<a class="footprint-item" href="/moments/" title="去随笔翻翻日常"><div class="headline">随笔</div><div class="length-num">${moments}</div></a>` +
+      `<a class="footprint-item" href="/photography/" title="去摄影看定格的风景"><div class="headline">光影</div><div class="length-num">${photos}</div></a>` +
+      `<a class="footprint-item" href="/timeline/" title="去人生长廊按年回看"><div class="headline">长廊</div><div class="length-num">${years}载</div></a>` +
+    '</div>'
+  )
+}
 
 function assetHash (urlPath) {
   if (hashCache.has(urlPath)) return hashCache.get(urlPath)
@@ -63,8 +100,21 @@ hexo.on('generateBefore', () => {
 
 hexo.extend.filter.register('after_render:html', str => {
   if (typeof str !== 'string') return str
-  return str.replace(
+  let out = str.replace(
     /(<span class="search-dialog-title">)搜索(<\/span>)/g,
     '$1在文字里找$2'
   )
+  if (out.includes('class="site-data"')) {
+    out = out.replace(
+      /<div class="site-data">(?:\s*<a\b[\s\S]*?<\/a>)+\s*<\/div>/g,
+      () => buildFootprintHtml()
+    )
+  }
+  if (out.includes('article-title')) {
+    out = out.replace(
+      /(<a class="article-title"[^>]*>)\s*(?:📌|<span[^>]*>\s*📌\s*<\/span>|<i class="[^"]*fa-thumbtack[^"]*"><\/i>)\s*/g,
+      '$1<span class="post-pin-badge">置顶</span>'
+    )
+  }
+  return out
 })

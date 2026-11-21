@@ -325,7 +325,7 @@ aside:
     storage: 10
     avatar: true
   card_categories:
-    enable: true
+    enable: false
     # If set 0 will show all
     limit: 8
     # Choose: none / true / false

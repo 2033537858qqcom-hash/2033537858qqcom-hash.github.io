@@ -26,6 +26,9 @@
   let pointerY = -9999
   let breezeVx = 0
   let breezeVy = 0
+  let scrollBreezeX = 0
+  let scrollBreezeY = 0
+  let lastScrollY = typeof window !== 'undefined' ? (window.scrollY || 0) : 0
   let musicActive = false
 
   const themes = {
@@ -184,11 +187,17 @@
   const starSprites = themes.dark.colors.map(c => buildGlowSprite(c, 0.9))
   const fireflySprite = buildGlowSprite(themes.dark.fireflyColor, 0.95)
 
+  const isFullPage = () => {
+    const header = document.getElementById('page-header')
+    return Boolean(header && header.classList.contains('full_page'))
+  }
+
   const particleCount = theme => {
     const isCompact = width < 768
-    const density = isCompact ? theme.density * 0.48 : theme.density
-    const min = isCompact ? Math.max(8, Math.round(theme.min * 0.48)) : theme.min
-    const max = isCompact ? Math.max(18, Math.round(theme.max * 0.52)) : theme.max
+    const pageScale = isFullPage() ? 1 : 0.72
+    const density = (isCompact ? theme.density * 0.48 : theme.density) * pageScale
+    const min = Math.max(6, Math.round((isCompact ? Math.max(8, Math.round(theme.min * 0.48)) : theme.min) * pageScale))
+    const max = Math.max(12, Math.round((isCompact ? Math.max(18, Math.round(theme.max * 0.52)) : theme.max) * pageScale))
     return Math.max(min, Math.min(max, Math.round(width * height * density)))
   }
 
@@ -323,12 +332,14 @@
 
     const sway = Math.sin(p.phase) * p.swayAmp
     const lateral = Math.sin(p.phase * 0.53 + p.roll) * p.swayAmp * 0.35
-    const gust = wind * (0.4 + p.depth * 0.45)
+    const gust = (wind + scrollBreezeX * 0.45 + breezeVx * 0.025) * (0.4 + p.depth * 0.45)
     p.x += p.vx + sway * 0.22 + lateral * 0.12 + gust
+    p.rotation += breezeVx * 0.0008 + scrollBreezeX * 0.003
 
     const face = Math.abs(Math.cos(p.roll))
     const drag = 0.72 + face * 0.38
-    p.y += p.vy * drag * (1 + Math.sin(p.phase * 1.1) * 0.06)
+    p.y += p.vy * drag * (1 + Math.sin(p.phase * 1.1) * 0.06) + scrollBreezeY * (0.25 + p.depth * 0.3)
+    if (p.y < -70) p.y = -55
     pointerPush(p, 0.55 + p.depth * 0.65)
     recyclePetal(p)
 
@@ -350,8 +361,8 @@
 
   const drawDust = p => {
     p.phase += p.twinkle
-    p.x += p.vx + wind * 0.12
-    p.y += p.vy
+    p.x += p.vx + wind * 0.12 + scrollBreezeX * 0.14
+    p.y += p.vy + scrollBreezeY * 0.12
     if (p.y > height * 0.85) {
       p.y = rand(0, height * 0.35)
       p.x = rand(0, width)
@@ -364,8 +375,9 @@
 
   const drawStar = p => {
     p.phase += p.twinkle * (musicActive ? 1.28 : 1)
-    p.x += p.vx
-    p.y += p.vy
+    const driftScale = p.type === 'firefly' ? 0.24 : 0.08
+    p.x += p.vx + (scrollBreezeX + breezeVx * 0.04) * driftScale
+    p.y += p.vy + scrollBreezeY * driftScale
     pointerPush(p, p.type === 'firefly' ? 0.52 : 0.22)
     recycleStar(p)
 
@@ -403,8 +415,12 @@
     ctx.globalAlpha = 1
     breezeVx *= 0.9
     breezeVy *= 0.9
+    scrollBreezeX *= 0.91
+    scrollBreezeY *= 0.91
     if (Math.abs(breezeVx) < 0.01) breezeVx = 0
     if (Math.abs(breezeVy) < 0.01) breezeVy = 0
+    if (Math.abs(scrollBreezeX) < 0.008) scrollBreezeX = 0
+    if (Math.abs(scrollBreezeY) < 0.008) scrollBreezeY = 0
 
     animationFrame = window.requestAnimationFrame(tick)
   }
@@ -472,8 +488,7 @@
     ) {
       return false
     }
-    const header = document.getElementById('page-header')
-    return Boolean(header && header.classList.contains('full_page'))
+    return Boolean(document.body)
   }
 
   const boot = () => {
@@ -488,6 +503,17 @@
       syncParticles(false)
     }
   }
+
+  window.addEventListener('scroll', () => {
+    if (!animationFrame) return
+    const nextY = window.scrollY || 0
+    const dy = nextY - lastScrollY
+    lastScrollY = nextY
+    if (!dy || Math.abs(dy) > 360) return
+    scrollBreezeY = Math.max(-2.2, Math.min(2.2, scrollBreezeY * 0.65 - dy * 0.016))
+    const dir = dy > 0 ? 1 : -1
+    scrollBreezeX = Math.max(-1.6, Math.min(1.6, scrollBreezeX * 0.7 + dir * Math.min(Math.abs(dy) * 0.009, 0.75)))
+  }, { passive: true })
 
   window.addEventListener('pointermove', event => {
     if (!animationFrame || !finePointer.matches || event.pointerType !== 'mouse') return

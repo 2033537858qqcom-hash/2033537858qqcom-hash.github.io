@@ -43,6 +43,12 @@
       music: '戴上耳机吧，歌单里藏着好多单曲循环的歌。',
       message: '留言板一直开着，路过也可以打个招呼呀！'
     },
+    years: {
+      '2026': '2026 这一章还在继续写下去，每一天都算数～',
+      '2025': '翻到 2025 啦，那些安静努力的日子现在看也很闪亮呢。',
+      '2024': '2024 的大学时光，好多晚风、球场和耳机里的歌都在这儿～',
+      '2023': '回到 2023 的起点啦，那时候的校园记忆真好呀。'
+    },
     clicks: [
       '哎呀，被你发现啦～',
       '风铃好像轻轻响了一声呢。',
@@ -200,12 +206,58 @@
     window.__blogLive2DBound = true
 
     let lastMusicBubbleAt = 0
+    let lastContextBubbleAt = 0
+    let lastSpokenYear = ''
+
+    const maybeSpeakYear = (year, force) => {
+      const y = String(year || '').match(/202[3-6]/)
+      if (!y) return
+      const key = y[0]
+      if (!LINES.years[key]) return
+      const now = Date.now()
+      if (!force && (key === lastSpokenYear || now - lastContextBubbleAt < 22000)) return
+      if (force && now - lastContextBubbleAt < 4500) return
+      lastSpokenYear = key
+      lastContextBubbleAt = now
+      showBubble(LINES.years[key], 3600)
+    }
 
     document.addEventListener('click', event => {
-      if (event.target && event.target.closest && event.target.closest('#live2d-widget, #live2dcanvas')) {
+      const target = event.target
+      if (!target || !target.closest) return
+      if (target.closest('#live2d-widget, #live2dcanvas')) {
         showBubble(pickLine(LINES.clicks), 3800)
+        return
+      }
+      const yearTrigger = target.closest('.moment-year > summary, .tl-hero__nav a, .photo-nav__link')
+      if (yearTrigger) {
+        maybeSpeakYear(yearTrigger.textContent || yearTrigger.getAttribute('href') || '', true)
+        return
+      }
+      const tagBtn = target.closest('[data-moment-tag]')
+      if (tagBtn) {
+        const tag = tagBtn.dataset && tagBtn.dataset.momentTag
+        const now = Date.now()
+        if (tag && now - lastContextBubbleAt > 14000) {
+          lastContextBubbleAt = now
+          showBubble('挑了「' + tag + '」呀，看看这一串回忆吧～', 3400)
+        }
       }
     })
+
+    window.addEventListener('scroll', () => {
+      const now = Date.now()
+      if (now - lastContextBubbleAt < 22000) return
+      const nodes = document.querySelectorAll('.tl-year, .photo-year, .moment-year[open]')
+      for (let i = 0; i < nodes.length; i++) {
+        const rect = nodes[i].getBoundingClientRect()
+        if (rect.top >= 40 && rect.top <= 240) {
+          const label = nodes[i].id || (nodes[i].querySelector('.tl-year__num, .moment-year__name, h3') || {}).textContent || ''
+          maybeSpeakYear(label, false)
+          break
+        }
+      }
+    }, { passive: true })
 
     document.addEventListener('mouseover', event => {
       const widget = document.getElementById('live2d-widget')
