@@ -57,15 +57,29 @@ function recentPhotos (files, limit = 3) {
   }
 }
 
-function renderMomentSnippets (moments) {
+function renderMomentClouds (moments) {
   if (!moments.length) {
-    return '<li><a href="/moments/"><span>随便点开一条就好。</span></a></li>'
+    return `<a class="home-now__cloud home-now__cloud--moment" href="/moments/">
+      <div class="home-now__cloud-head">
+        <span class="home-now__badge">随笔</span>
+      </div>
+      <p class="home-now__quote">短句、雨天、一时兴起，随便点开一条就好。</p>
+      <span class="home-now__foot">去翻随笔 →</span>
+    </a>`
   }
-  return moments.map(item => {
+  return moments.map((item, idx) => {
     const id = item && item.id ? String(item.id) : dateKey(item && item.date).slice(0, 10).replace(/-/g, '')
     const d = shortDate(item && item.date)
-    const excerpt = excerptFromMoment(item, 44)
-    return `<li><a href="/moments/#m-${escapeHtml(id)}">${d ? `<time>${escapeHtml(d)}</time>` : ''}<span>${escapeHtml(excerpt)}</span></a></li>`
+    const excerpt = excerptFromMoment(item, 64)
+    const label = idx === 0 ? '最新随笔' : '前些天写下'
+    return `<a class="home-now__cloud home-now__cloud--moment home-now__cloud--m${idx + 1}" href="/moments/#m-${escapeHtml(id)}">
+      <div class="home-now__cloud-head">
+        <span class="home-now__badge">${label}</span>
+        ${d ? `<time>${escapeHtml(d)}</time>` : ''}
+      </div>
+      <p class="home-now__quote">${escapeHtml(excerpt)}</p>
+      <span class="home-now__foot">吹吹风 · 读全文 →</span>
+    </a>`
   }).join('')
 }
 
@@ -74,28 +88,33 @@ function renderHomeNow () {
   const moments = Array.isArray(data.shuoshuo) ? data.shuoshuo.slice() : []
   moments.sort((a, b) => dateKey(b && b.date).localeCompare(dateKey(a && a.date)))
   const latestMoments = moments.slice(0, 2)
+  const momentTotal = moments.length || 100
   const photoFiles = getPhotographyFiles()
   const { total: photoTotal, picks } = recentPhotos(photoFiles, 3)
 
   const thumbs = picks.map((src, idx) =>
-    `<img src="${escapeHtml(src)}" alt="近期摄影 ${idx + 1}" loading="lazy" decoding="async" width="60" height="60">`
+    `<span class="home-now__polaroid home-now__polaroid--${idx + 1}"><img src="${escapeHtml(src)}" alt="近期摄影 ${idx + 1}" loading="lazy" decoding="async" width="76" height="76"></span>`
   ).join('')
 
   return `<section class="home-now" aria-label="近期随笔与风景">
-    <div class="home-now__strip">
-      <div class="home-now__notes">
-        <div class="home-now__row">
-          <span class="home-now__label">最近在写</span>
-          <a class="home-now__more" href="/moments/">全部随笔 →</a>
+    <div class="home-now__clouds">
+      ${renderMomentClouds(latestMoments)}
+      <div class="home-now__cloud home-now__cloud--photos">
+        <a class="home-now__photo-stage" href="/photography/" aria-label="浏览全部 ${photoTotal} 张摄影">
+          <div class="home-now__polaroids">${thumbs}</div>
+          <div class="home-now__photo-meta">
+            <span class="home-now__badge home-now__badge--sky">定格光影</span>
+            <span class="home-now__go">${photoTotal} 帧风景 →</span>
+          </div>
+        </a>
+        <div class="home-now__quick">
+          <a href="/moments/">随笔 ${momentTotal} 则</a>
+          <span aria-hidden="true">·</span>
+          <a href="/timeline/">人生长廊</a>
+          <span aria-hidden="true">·</span>
+          <a href="/anime/">追番</a>
         </div>
-        <ul class="home-now__list">
-          ${renderMomentSnippets(latestMoments)}
-        </ul>
       </div>
-      <a class="home-now__photos" href="/photography/">
-        <div class="home-now__thumbs">${thumbs}</div>
-        <span class="home-now__go">光影 · ${photoTotal} 张 →</span>
-      </a>
     </div>
   </section>`
 }
