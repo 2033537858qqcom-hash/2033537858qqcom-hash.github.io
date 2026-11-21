@@ -605,7 +605,7 @@
             '</div>' +
           '</div>' +
           '<div class="sanctuary-popover__hint">' +
-            '可直接按住天空中的日月拖动时间 · 划过湖面激起三维涟漪' +
+            '可按住天际日月拖动时间 · 划过湖面激起水波' +
           '</div>' +
         '</div>'
       document.body.appendChild(dock)

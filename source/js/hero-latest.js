@@ -43,7 +43,9 @@
     let title = '随笔'
     if (post) {
       href = safeHref(post.getAttribute('href') || '')
-      title = (post.textContent || '').trim() || '随笔'
+      const clone = post.cloneNode(true)
+      clone.querySelectorAll('.sticky, .fa-thumbtack').forEach(el => el.remove())
+      title = (clone.textContent || post.textContent || '').replace(/^置顶\s*/, '').trim() || '随笔'
     }
 
     const stack = ensureBottomStack(header)
