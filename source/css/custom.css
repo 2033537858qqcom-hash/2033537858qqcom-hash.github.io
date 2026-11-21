@@ -856,6 +856,7 @@ main.layout > #page {
   }
 
   #recent-posts .recent-post-item > .post_cover {
+    order: -1 !important;
     width: 100% !important;
     height: 204px !important;
     border-radius: 18px;

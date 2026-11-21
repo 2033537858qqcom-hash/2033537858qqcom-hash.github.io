@@ -33,12 +33,12 @@
   ]
 
   const SCENE_META = {
-    spring: { label: '春分', desc: '山樱初绽', season: 'spring', weather: 'clear' },
-    summer: { label: '夏至', desc: '碧湖晴岚', season: 'summer', weather: 'clear' },
-    autumn: { label: '秋分', desc: '层林尽染', season: 'autumn', weather: 'clear' },
-    winter: { label: '冬至', desc: '远峰霁雪', season: 'winter', weather: 'snow' },
-    rain:   { label: '听雨', desc: '烟雨空濛', season: 'spring', weather: 'rain' },
-    night:  { label: '星夜', desc: '银河静谷', season: 'autumn', weather: 'clear' }
+    spring: { label: '春分', desc: '山樱初绽', season: 'spring', weather: 'clear', defaultHour: 10.2, defaultTemp: 19 },
+    summer: { label: '夏至', desc: '碧湖晴岚', season: 'summer', weather: 'clear', defaultHour: 14.2, defaultTemp: 27 },
+    autumn: { label: '秋分', desc: '层林尽染', season: 'autumn', weather: 'clear', defaultHour: 17.2, defaultTemp: 15 },
+    winter: { label: '冬至', desc: '远峰霁雪', season: 'winter', weather: 'snow',  defaultHour: 11.2, defaultTemp: -2 },
+    rain:   { label: '听雨', desc: '烟雨空濛', season: 'spring', weather: 'rain',  defaultHour: 14.8, defaultTemp: 16 },
+    night:  { label: '星夜', desc: '银河静谷', season: 'autumn', weather: 'clear', defaultHour: 22.5, defaultTemp: 10 }
   }
 
   const REST_QUOTES = [
@@ -445,6 +445,9 @@
     if (next === 'auto') {
       state.manualHour = null
       state.manualTemp = null
+    } else if (SCENE_META[next]) {
+      state.manualHour = SCENE_META[next].defaultHour
+      state.manualTemp = SCENE_META[next].defaultTemp
     }
     try {
       sessionStorage.setItem(OVERRIDE_KEY, next)
