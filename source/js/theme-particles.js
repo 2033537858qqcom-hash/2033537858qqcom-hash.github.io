@@ -181,18 +181,27 @@
     const lakeBasinMask = (1.0 - smoothstep(lakeHalfWidth * 0.58, lakeHalfWidth * 1.08, dxChannel)) * inLakeZ
     const frontOpen = (1.0 - smoothstep(18.0, 42.0, Math.abs(x))) * smoothstep(-5.0, 32.0, z)
 
-    const farWeight = smoothstep(-88, -148, z)
-    // Hero Majestic Snow Peak (offset nicely left-of-center-right for golden-ratio balance!)
-    const heroDist = Math.hypot((x - 16.0) * 0.78, (z + 168.0) * 1.05)
-    const heroPeak = Math.pow(Math.max(0, 1.0 - heroDist / 80.0), 1.46) * 54.0
+    const farWeight = smoothstep(-86, -146, z)
+    const ultraFarWeight = smoothstep(-142, -210, z)
+    // Hero Majestic Snow Peak (offset slightly right-of-center for golden-ratio balance)
+    const heroDist = Math.hypot((x - 16.0) * 0.78, (z + 166.0) * 1.04)
+    const heroPeak = Math.pow(Math.max(0, 1.0 - heroDist / 82.0), 1.44) * 55.0
 
     const leftDist = Math.hypot((x + 62.0) * 0.76, (z + 158.0) * 1.02)
-    const leftPeak = Math.pow(Math.max(0, 1.0 - leftDist / 74.0), 1.50) * 41.0
+    const leftPeak = Math.pow(Math.max(0, 1.0 - leftDist / 74.0), 1.48) * 42.0
 
     const rightDist = Math.hypot((x - 94.0) * 0.78, (z + 152.0) * 1.0)
-    const rightPeak = Math.pow(Math.max(0, 1.0 - rightDist / 68.0), 1.54) * 36.0
+    const rightPeak = Math.pow(Math.max(0, 1.0 - rightDist / 68.0), 1.52) * 37.0
 
-    const farRidges = ridgeFbmCPU(x * 0.015 + 1.9, z * 0.015 - 1.2, 5, 101) * 35.0 * farWeight
+    // Secondary ultra-distant misty alpine massif behind the main range (4-plane receding depth!)
+    const rearLeftDist = Math.hypot((x + 32.0) * 0.68, (z + 226.0) * 0.95)
+    const rearLeftPeak = Math.pow(Math.max(0, 1.0 - rearLeftDist / 88.0), 1.38) * 62.0 * ultraFarWeight
+    const rearRightDist = Math.hypot((x - 64.0) * 0.68, (z + 222.0) * 0.95)
+    const rearRightPeak = Math.pow(Math.max(0, 1.0 - rearRightDist / 84.0), 1.40) * 58.0 * ultraFarWeight
+
+    const farRidges = ridgeFbmCPU(x * 0.0145 + 1.9, z * 0.0145 - 1.2, 5, 101) * 36.0 * farWeight
+    // Carved alpine gullies / couloirs giving crisp granite arêtes instead of smooth cones
+    const couloir = ridgeFbmCPU(x * 0.036 - 4.1, z * 0.032 + 2.7, 4, 521)
 
     const leftPeninsula =
       Math.exp(-Math.pow((x + 48.0) / 30.0, 2) - Math.pow((z + 58.0) / 28.0, 2)) * 12.6 +
@@ -213,9 +222,10 @@
     const gentleSides = smoothstep(54.0, 145.0, Math.abs(x)) * 12.5 * (0.45 + 0.65 * hillNoise)
 
     let h =
-      heroPeak * (0.74 + 0.38 * detailRidge) +
-      leftPeak * (0.75 + 0.36 * detailRidge) +
-      rightPeak * (0.77 + 0.34 * detailRidge) +
+      heroPeak * (0.68 + 0.28 * detailRidge + 0.22 * couloir) +
+      leftPeak * (0.70 + 0.26 * detailRidge + 0.20 * couloir) +
+      rightPeak * (0.72 + 0.25 * detailRidge + 0.18 * couloir) +
+      (rearLeftPeak + rearRightPeak) * (0.76 + 0.28 * detailRidge) +
       farRidges +
       farShoreHills +
       (leftPeninsula + rightPeninsula) * (0.72 + 0.42 * hillNoise) +
@@ -225,16 +235,18 @@
     const carve = clamp(lakeBasinMask * 1.2 + frontOpen * 1.05, 0, 1)
     h = lerp(h, -4.0 + hillNoise * 1.4, carve)
 
-    // Left-center lakeside promontory for the unobstructed sanctuary pavilion (-23.5, -39.5)
-    const pavHeadland = Math.exp(-Math.pow((x + 23.5) / 8.8, 2) - Math.pow((z + 39.5) / 7.8, 2))
-    h = Math.max(h, -2.5 + pavHeadland * 4.8)
+    // Organic craggy rocky promontory for the sanctuary pavilion (-23.5, -39.5) — zero circular mud dome!
+    const pavAng = Math.atan2(z + 39.5, x + 23.5)
+    const pavWarp = 1.0 + 0.16 * Math.sin(pavAng * 3.0 + 0.7) + 0.11 * Math.cos(pavAng * 5.0 - 0.4)
+    const pavHeadland = Math.exp(-Math.pow((x + 23.5) / (8.9 * pavWarp), 2) - Math.pow((z + 39.5) / (7.6 * pavWarp), 2))
+    h = Math.max(h, -2.5 + pavHeadland * (4.7 + hillNoise * 0.65))
     const pavDist = Math.hypot(x + 23.5, z + 39.5)
-    if (pavDist < 4.8) {
-      h = lerp(h, 1.95, 1.0 - smoothstep(1.9, 4.8, pavDist))
+    if (pavDist < 4.7) {
+      h = lerp(h, 1.95, 1.0 - smoothstep(1.9, 4.7, pavDist))
     }
     // Keep a calm reflective water bay directly in front of the pavilion so its warm shoji window mirrors cleanly
     const bayCarve = Math.exp(-Math.pow((x + 17.5) / 9.5, 2) - Math.pow((z + 25.5) / 11.5, 2))
-    if (bayCarve > 0.08 && pavDist > 5.2) {
+    if (bayCarve > 0.08 && pavDist > 5.3) {
       h = lerp(h, -2.6, clamp(bayCarve * 1.15, 0, 0.92))
     }
 
@@ -242,11 +254,13 @@
     const rightTip = Math.exp(-Math.pow((x - 36.0) / 16.0, 2) - Math.pow((z + 44.0) / 13.0, 2))
     h = Math.max(h, -2.2 + rightTip * 6.8)
 
-    // Foreground shelves
+    // Foreground natural rocky shore shelves with organic contour modulation
     const fgR = Math.exp(-Math.pow((x - 21.0) / 10.5, 2) - Math.pow((z - 21.0) / 9.5, 2))
-    h = Math.max(h, -2.0 + fgR * 4.2)
-    const fgL = Math.exp(-Math.pow((x + 23.0) / 11.5, 2) - Math.pow((z - 14.0) / 11.0, 2))
-    h = Math.max(h, -2.0 + fgL * 4.5)
+    h = Math.max(h, -2.0 + fgR * (4.2 + hillNoise * 0.45))
+    const fgLAng = Math.atan2(z - 14.0, x + 23.0)
+    const fgLWarp = 1.0 + 0.14 * Math.sin(fgLAng * 3.0 + 1.2)
+    const fgL = Math.exp(-Math.pow((x + 23.0) / (11.2 * fgLWarp), 2) - Math.pow((z - 14.0) / (10.5 * fgLWarp), 2))
+    h = Math.max(h, -2.0 + fgL * (4.3 + hillNoise * 0.55))
 
     return h
   }
@@ -260,7 +274,7 @@
      5. Radial Warm Glow Texture
      ========================================================================== */
   const createDetailDataTexture = THREE => {
-    const size = 256
+    const size = 512
     const data = new Uint8Array(size * size * 4)
     const pHash = (ix, iy, mask, seed) => {
       let n = ((ix & mask) * 374761393 + (iy & mask) * 668265263 + seed * 1442695041) | 0
@@ -288,10 +302,10 @@
       const v = y / size
       for (let x = 0; x < size; x += 1) {
         const u = x / size
-        const rock = tileN(u, v, 8, 17) * 0.45 + tileN(u, v, 16, 31) * 0.35 + tileN(u, v, 32, 47) * 0.2
-        const canopy = tileN(u, v, 16, 73) * 0.55 + tileN(u, v, 32, 89) * 0.45
-        const wave = tileN(u, v, 8, 131) * 0.6 + tileN(u, v, 16, 151) * 0.4
-        const grain = tileN(u, v, 32, 193) * 0.55 + tileN(u, v, 64, 211) * 0.45
+        const rock = tileN(u, v, 8, 17) * 0.40 + tileN(u, v, 16, 31) * 0.32 + tileN(u, v, 32, 47) * 0.18 + tileN(u, v, 64, 61) * 0.10
+        const canopy = tileN(u, v, 16, 73) * 0.50 + tileN(u, v, 32, 89) * 0.32 + tileN(u, v, 64, 107) * 0.18
+        const wave = tileN(u, v, 8, 131) * 0.52 + tileN(u, v, 16, 151) * 0.32 + tileN(u, v, 32, 173) * 0.16
+        const grain = tileN(u, v, 32, 193) * 0.45 + tileN(u, v, 64, 211) * 0.35 + tileN(u, v, 128, 229) * 0.20
         const idx = (y * size + x) << 2
         data[idx] = (clamp(rock, 0, 1) * 255) | 0
         data[idx + 1] = (clamp(canopy, 0, 1) * 255) | 0
@@ -304,7 +318,67 @@
     tex.wrapS = THREE.RepeatWrapping
     tex.wrapT = THREE.RepeatWrapping
     tex.magFilter = THREE.LinearFilter
-    tex.minFilter = THREE.LinearFilter
+    tex.minFilter = THREE.LinearMipmapLinearFilter
+    tex.generateMipmaps = true
+    tex.anisotropy = 4
+    tex.needsUpdate = true
+    return tex
+  }
+
+  // Handcrafted 512px Procedural Architectural Surface Atlas (R=Weathered Cedar Wood, G=Fluted Ceramic Roof Tiles, B=Ashlar Stone Masonry)
+  const createArchitectureAtlasTexture = THREE => {
+    const c = document.createElement('canvas')
+    c.width = 512
+    c.height = 512
+    const g = c.getContext('2d')
+    const img = g.createImageData(512, 512)
+    const d = img.data
+    let s = 31337
+    const r01 = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296 }
+    // Precompute plank row tones & masonry row offsets
+    const plankTones = Array.from({ length: 8 }, () => 0.84 + r01() * 0.28)
+    const brickOffsets = Array.from({ length: 12 }, () => Math.floor(r01() * 120))
+    for (let y = 0; y < 512; y += 1) {
+      const py = y / 512
+      const plankIdx = Math.min(7, (py * 8) | 0)
+      const plankLocalY = (py * 8) % 1
+      const plankSeam = (plankLocalY < 0.045 || plankLocalY > 0.955) ? 0.42 : 1.0
+      const brickRow = Math.min(11, (py * 12) | 0)
+      const brickRowY = (py * 12) % 1
+      const mortarY = (brickRowY < 0.09 || brickRowY > 0.91) ? 0.46 : 1.0
+      for (let x = 0; x < 512; x += 1) {
+        const px = x / 512
+        // R: Longitudinal weathered cedar grain + subtle ring warp + plank seams
+        const waveRing = Math.sin(px * 6.28 * 3.0 + Math.sin(py * 6.28 * 2.0 + plankIdx) * 1.8) * 0.5 + 0.5
+        const fineFiber = Math.sin(py * 6.28 * 48.0 + Math.sin(px * 6.28 * 4.0) * 2.4) * 0.5 + 0.5
+        const wood = clamp((0.68 + waveRing * 0.18 + fineFiber * 0.14) * plankTones[plankIdx] * plankSeam, 0.18, 1.0)
+
+        // G: Traditional East-Asian curved barrel tiles (筒瓦 flutes + horizontal lap shadow!)
+        const flute = Math.pow(0.5 + 0.5 * Math.cos(px * 6.28 * 18.0), 0.72)
+        const lapT = (py * 14.0) % 1
+        const lapShadow = smoothstep(0.0, 0.16, lapT) * (0.86 + 0.14 * (1.0 - lapT))
+        const tile = clamp((0.46 + 0.54 * flute) * lapShadow, 0.16, 1.0)
+
+        // B: Hand-dressed castle stone masonry blocks (stone foundation plinth & steps)
+        const bx = ((x + brickOffsets[brickRow]) % 512) / 512
+        const brickCol = (bx * 6) | 0
+        const brickLocalX = (bx * 6) % 1
+        const mortarX = (brickLocalX < 0.06 || brickLocalX > 0.94) ? 0.44 : 1.0
+        const blockHash = hashInt2(brickCol, brickRow, 809)
+        const stone = clamp((0.64 + blockHash * 0.34) * mortarY * mortarX, 0.22, 1.0)
+
+        const idx = (y * 512 + x) << 2
+        d[idx] = (wood * 255) | 0
+        d[idx + 1] = (tile * 255) | 0
+        d[idx + 2] = (stone * 255) | 0
+        d[idx + 3] = 255
+      }
+    }
+    g.putImageData(img, 0, 0)
+    const tex = new THREE.CanvasTexture(c)
+    tex.wrapS = THREE.RepeatWrapping
+    tex.wrapT = THREE.RepeatWrapping
+    tex.anisotropy = 4
     tex.needsUpdate = true
     return tex
   }
@@ -386,7 +460,7 @@
     return tex
   }
 
-  // High-Definition 512px Feathery Alpine Spruce / Cedar Bough Spray Texture (crisp tiered evergreen needles!)
+  // High-Definition 512px Tiered Alpine Spruce / Cedar Bough Texture (irregular drooping branch whorls + sky gaps + deep core shadow!)
   const createPineBoughTexture = THREE => {
     const c = document.createElement('canvas')
     c.width = 512
@@ -400,34 +474,48 @@
       return localSeed / 4294967296
     }
 
-    // Subtle dark woody bough spine
-    g.strokeStyle = 'rgba(72, 58, 48, 0.92)'
+    // Tapered dark woody bough spine glimpsed naturally between whorls
+    g.strokeStyle = 'rgba(56, 44, 36, 0.95)'
     g.lineCap = 'round'
-    g.lineWidth = 6
+    g.lineWidth = 7.5
     g.beginPath()
-    g.moveTo(256, 42)
-    g.lineTo(256, 470)
+    g.moveTo(256, 36)
+    g.lineTo(256, 476)
     g.stroke()
 
-    const boughs = 22
-    for (let b = 0; b < boughs; b += 1) {
-      const t = b / (boughs - 1)
-      const y0 = 42 + t * 402
-      const span = 28 + Math.pow(t, 0.80) * 212
+    // 9 irregular tiered conifer bough whorls (with distinct airy gaps between tiers — NO solid paper triangle!)
+    const tiers = [0.05, 0.14, 0.25, 0.36, 0.49, 0.62, 0.74, 0.85, 0.94]
+    for (let b = 0; b < tiers.length; b += 1) {
+      const t = tiers[b]
+      const y0 = 34 + t * 408
+      const tierIrreg = 0.80 + (b % 2 === 0 ? 0.26 : -0.06) + r01() * 0.16
+      const span = (26 + Math.pow(t, 0.84) * 204) * tierIrreg
       for (const side of [-1, 1]) {
-        const endX = 256 + side * span * (0.82 + r01() * 0.32)
-        const endY = y0 + 26 + t * 46 + (r01() - 0.5) * 18
-        const needles = Math.round(22 + t * 34)
+        const asym = 0.82 + r01() * 0.36
+        const endX = 256 + side * span * asym
+        const endY = y0 + 24 + t * 44 + (r01() - 0.5) * 16
+        // Dark woody sub-branch
+        g.strokeStyle = 'rgba(52, 42, 36, 0.88)'
+        g.lineWidth = 2.6 + t * 2.2
+        g.beginPath()
+        g.moveTo(256, y0)
+        g.quadraticCurveTo(lerp(256, endX, 0.5), lerp(y0, endY, 0.62) + 8, endX, endY)
+        g.stroke()
+
+        const needles = Math.round(28 + t * 42)
         for (let k = 0; k < needles; k += 1) {
           const u = k / needles
           const nx = lerp(256, endX, u)
-          const ny = lerp(y0, endY, u) + Math.sin(u * Math.PI) * 11
-          const nLen = (15 + (1 - u * 0.45) * 22) * (0.62 + t * 0.58)
-          const nAng = (side > 0 ? 0.42 : Math.PI - 0.42) + (r01() - 0.5) * 1.42
-          const shadowLayer = (k % 3 === 0) ? -34 : 10
-          const lum = Math.round(clamp(124 + (1 - t * 0.32) * 68 + u * 48 + shadowLayer + r01() * 20, 78, 255))
-          g.strokeStyle = `rgba(${lum}, ${lum}, ${lum}, 0.97)`
-          g.lineWidth = 3.2 + (1 - u) * 2.6
+          const ny = lerp(y0, endY, u) + Math.sin(u * Math.PI) * 10 + (r01() - 0.5) * 9
+          const nLen = (14 + (1 - u * 0.42) * 24) * (0.58 + t * 0.56)
+          const nAng = (side > 0 ? 0.52 : Math.PI - 0.52) + (r01() - 0.5) * 1.45
+          // Strong inner-to-outer luminance gradient (dark core -> sunlit tips!)
+          const innerShade = 0.48 + 0.52 * u
+          const topBoost = (1 - t * 0.28) * 58
+          const shadowFlick = (k % 3 === 0) ? -38 : 14
+          const lum = Math.round(clamp(78 + innerShade * 105 + topBoost + shadowFlick + r01() * 22, 54, 255))
+          g.strokeStyle = `rgba(${lum}, ${lum}, ${lum}, 0.96)`
+          g.lineWidth = 2.4 + (1 - u) * 2.4
           g.lineCap = 'round'
           g.beginPath()
           g.moveTo(nx, ny)
@@ -437,15 +525,15 @@
       }
     }
 
-    // Fine tufted center spire needle clusters
-    for (let i = 0; i < 110; i += 1) {
-      const t = r01()
-      const y = 32 + t * 428
-      const x = 256 + (r01() - 0.5) * (26 + t * 136)
-      const lum = Math.round(clamp(110 + (1 - t * 0.38) * 76 + r01() * 34, 82, 248))
-      g.fillStyle = `rgba(${lum}, ${lum}, ${lum}, 0.96)`
+    // Sparse delicate needle tufts near apex spire only
+    for (let i = 0; i < 42; i += 1) {
+      const t = r01() * 0.85
+      const y = 26 + t * 380
+      const x = 256 + (r01() - 0.5) * (18 + t * 72)
+      const lum = Math.round(clamp(82 + (1 - t * 0.35) * 92 + r01() * 34, 58, 242))
+      g.fillStyle = `rgba(${lum}, ${lum}, ${lum}, 0.94)`
       g.beginPath()
-      g.ellipse(x, y, 10 + t * 14, 5 + t * 8, (r01() - 0.5) * 1.6, 0, Math.PI * 2)
+      g.ellipse(x, y, 7 + t * 9, 4 + t * 5, (r01() - 0.5) * 1.6, 0, Math.PI * 2)
       g.fill()
     }
 
@@ -686,6 +774,8 @@
     varying vec3 vWorldDir;
 
     uniform float uTime;
+    uniform float uWindSpeed;
+    uniform float uCloudCover;
     uniform float uDayFactor;
     uniform float uTwilightFactor;
     uniform float uNightFactor;
@@ -699,6 +789,15 @@
     uniform vec3 uMoonDir;
     uniform sampler2D uDetailTex;
 
+    float sampleSkyCloud(vec2 uv, float cover) {
+      float n1 = texture2D(uDetailTex, uv).r;
+      float n2 = texture2D(uDetailTex, uv * 2.18 + vec2(0.37, 0.19)).g;
+      float n3 = texture2D(uDetailTex, uv * 4.75 - vec2(0.14, 0.62)).a;
+      float fbm = n1 * 0.56 + n2 * 0.30 + n3 * 0.14;
+      float thresh = mix(0.60, 0.31, clamp(cover, 0.0, 1.0));
+      return smoothstep(thresh, thresh + 0.28, fbm);
+    }
+
     void main() {
       vec3 rd = normalize(vWorldDir);
       float skyT = clamp(rd.y, 0.0, 1.0);
@@ -706,14 +805,16 @@
       vec3 lower = mix(uHorizonCol, uMidSkyCol, smoothstep(0.0, 0.34, skyT));
       vec3 col = mix(lower, uZenithCol, smoothstep(0.24, 0.94, skyT));
 
+      // Rayleigh / Mie solar horizon scattering glow
       float azAlign = clamp(dot(normalize(rd.xz + vec2(0.0001)), normalize(uSunDir.xz + vec2(0.0001))) * 0.5 + 0.5, 0.0, 1.0);
-      float horizonBand = exp(-skyT * 5.0);
-      col = mix(col, col + uSunCol * 0.32, pow(azAlign, 1.7) * horizonBand * (uTwilightFactor * 0.95 + uDayFactor * 0.22) * (1.0 - uRainFactor * 0.85));
+      float horizonBand = exp(-skyT * 4.8);
+      col = mix(col, col + uSunCol * 0.36, pow(azAlign, 1.65) * horizonBand * (uTwilightFactor * 0.98 + uDayFactor * 0.24) * (1.0 - uRainFactor * 0.85));
 
       float sunCos = max(0.0, dot(rd, uSunDir));
       float sunVis = clamp((uDayFactor + uTwilightFactor * 0.95) * (1.0 - uRainFactor * 0.88), 0.0, 1.0);
-      col += uSunCol * (pow(sunCos, 6.0) * 0.24 + pow(sunCos, 46.0) * 0.48 + smoothstep(0.9990, 0.9996, sunCos) * 1.45) * sunVis;
+      col += uSunCol * (pow(sunCos, 6.0) * 0.22 + pow(sunCos, 46.0) * 0.46 + smoothstep(0.9990, 0.9996, sunCos) * 1.45) * sunVis;
 
+      // Subtle atmospheric crepuscular sun corona rays
       if (sunVis > 0.05 && skyT > 0.01) {
         float ang = atan(rd.y - uSunDir.y, rd.x - uSunDir.x);
         float rayPattern = texture2D(uDetailTex, vec2(ang * 0.95 + uTime * 0.004, 0.25)).r;
@@ -721,51 +822,87 @@
         col += uSunCol * rays * sunVis;
       }
 
-      if (skyT > 0.04) {
-        vec2 cUv = rd.xz / (rd.y + 0.22) * 0.22 + vec2(uTime * 0.0028, -uTime * 0.001);
-        float cirrus = texture2D(uDetailTex, cUv).r * texture2D(uDetailTex, cUv * 2.5 + vec2(0.3, 0.7)).g;
-        float cMask = smoothstep(0.28, 0.64, cirrus) * smoothstep(0.04, 0.24, skyT) * (1.0 - smoothstep(0.66, 0.94, skyT));
-        vec3 cTint = mix(uHorizonCol, vec3(1.0), 0.62 * uDayFactor) + uSunCol * pow(sunCos, 3.0) * 0.24 * sunVis;
-        col = mix(col, cTint, cMask * 0.34 * (1.0 - uNightFactor * 0.82));
+      // Seamless Curved-Dome Volumetric Multi-Octave Clouds with 3-Tap Directional Sun Self-Shadowing!
+      if (skyT > 0.025) {
+        float horizonFade = smoothstep(0.025, 0.16, skyT) * (1.0 - smoothstep(0.84, 0.99, skyT));
+        float domeDist = 1.0 / (skyT + 0.135);
+        vec2 drift = vec2(uTime * (0.0032 + uWindSpeed * 0.0022), -uTime * 0.0012);
+        vec2 cUv = rd.xz * domeDist * 0.145 + drift;
+        float effCover = clamp(uCloudCover * 0.92 + uRainFactor * 0.48, 0.12, 0.96);
+        float dens = sampleSkyCloud(cUv, effCover);
+        float nightKeep = 1.0 - uNightFactor * (0.88 - uRainFactor * 0.72);
+        if (dens > 0.01 && nightKeep > 0.03) {
+          vec2 sunStep = normalize(uSunDir.xz + vec2(0.0001)) * 0.042;
+          float occ =
+            sampleSkyCloud(cUv + sunStep * 0.65, effCover) * 0.55 +
+            sampleSkyCloud(cUv + sunStep * 1.75, effCover) * 0.45;
+          float sunLit = exp(-occ * 1.95);
+          float powder = 1.0 - exp(-dens * 2.8);
+          float silverRim = pow(sunCos, 6.0) * (1.0 - dens * 0.55) * sunVis;
+
+          vec3 cLit = mix(vec3(0.06, 0.10, 0.20), vec3(1.06, 1.03, 0.99), uDayFactor);
+          cLit = mix(cLit, vec3(1.16, 0.72, 0.46), uTwilightFactor * 0.95);
+          cLit = mix(cLit, vec3(0.56, 0.66, 0.72), uRainFactor * 0.82);
+
+          vec3 cShade = mix(vec3(0.015, 0.03, 0.08), mix(uMidSkyCol, vec3(0.46, 0.60, 0.78), 0.55), uDayFactor);
+          cShade = mix(cShade, vec3(0.28, 0.20, 0.42), uTwilightFactor * 0.90);
+          cShade = mix(cShade, vec3(0.24, 0.33, 0.40), uRainFactor * 0.85);
+
+          vec3 cloudCol = mix(cShade, cLit, clamp(sunLit * 0.86 + 0.14 * powder, 0.0, 1.0));
+          cloudCol += uSunCol * silverRim * (0.65 + 0.55 * uTwilightFactor);
+          // Perspective fade toward horizon haze so distant clouds melt seamlessly behind peaks
+          cloudCol = mix(uHorizonCol, cloudCol, smoothstep(0.03, 0.24, skyT));
+          float alpha = clamp(dens * (0.76 + 0.18 * uRainFactor) * horizonFade * nightKeep, 0.0, 0.90);
+          col = mix(col, cloudCol, alpha);
+        }
+
+        // Delicate high-altitude wispy cirrus streaks above the main cloud deck
+        vec2 cirUv = rd.xz * domeDist * 0.26 + drift * 1.45;
+        float cir = texture2D(uDetailTex, cirUv).r * texture2D(uDetailTex, cirUv * 2.4 + vec2(0.28, 0.64)).g;
+        float cirMask = smoothstep(0.36, 0.72, cir) * smoothstep(0.10, 0.34, skyT) * (1.0 - smoothstep(0.72, 0.96, skyT));
+        vec3 cirTint = mix(uHorizonCol, vec3(1.0), 0.68 * uDayFactor) + uSunCol * pow(sunCos, 4.0) * 0.28 * sunVis;
+        col = mix(col, cirTint, cirMask * 0.24 * (1.0 - uNightFactor * 0.90) * (1.0 - uRainFactor * 0.85));
       }
 
-      // Crisp Luminous Milky Way Galactic Band + Dark Cosmic Dust Rift + Horizon Airglow + Aurora + Crescent Moon
+      // Crisp Astrophotography-Grade Milky Way + Dark Dust Rift + Subtle Airglow + Aurora + Crescent Moon
       if (uNightFactor > 0.02 && skyT > 0.0) {
-        vec2 mUv = rd.xz / (rd.y + 0.36) * 0.46;
+        vec2 mUv = rd.xz / (rd.y + 0.40) * 0.54;
         vec4 nTex1 = texture2D(uDetailTex, mUv);
-        vec4 nTex2 = texture2D(uDetailTex, mUv * 2.7 + vec2(0.37, 0.23));
-        float galacticCoord = rd.x * 0.68 + (rd.y - 0.34);
-        float milkyCore = exp(-pow(galacticCoord * 4.8, 2.0)) * smoothstep(0.03, 0.24, skyT);
-        float milkyWide = exp(-pow(galacticCoord * 2.2, 2.0)) * smoothstep(0.03, 0.26, skyT);
-        float dustRift = smoothstep(0.38, 0.78, nTex2.r) * exp(-pow(galacticCoord * 12.0, 2.0));
+        vec4 nTex2 = texture2D(uDetailTex, mUv * 2.9 + vec2(0.37, 0.23));
+        vec4 nTex3 = texture2D(uDetailTex, mUv * 6.2 - vec2(0.18, 0.51));
+        float galacticCoord = rd.x * 0.66 + (rd.y - 0.36);
+        float milkyCore = exp(-pow(galacticCoord * 5.6, 2.0)) * smoothstep(0.05, 0.26, skyT);
+        float milkyWide = exp(-pow(galacticCoord * 2.5, 2.0)) * smoothstep(0.04, 0.28, skyT);
+        float dustRift = smoothstep(0.34, 0.72, nTex2.r * 0.65 + nTex3.a * 0.35) * exp(-pow(galacticCoord * 11.5, 2.0));
+        float starCloud = smoothstep(0.42, 0.82, nTex1.r * 0.55 + nTex3.g * 0.45);
 
-        vec3 outerNebula = vec3(0.10, 0.20, 0.48);
-        vec3 innerCore = mix(vec3(0.42, 0.56, 0.88), vec3(0.84, 0.68, 0.86), nTex1.g);
-        vec3 milkyCol = outerNebula * milkyWide * (0.42 + 0.62 * nTex1.r) + innerCore * milkyCore * (0.58 + 0.90 * nTex2.a);
-        milkyCol *= (1.0 - dustRift * 0.68);
-        col += milkyCol * 0.54 * uNightFactor * (1.0 - uRainFactor * 0.92);
+        vec3 outerNebula = vec3(0.06, 0.14, 0.36);
+        vec3 innerCore = mix(vec3(0.28, 0.40, 0.72), vec3(0.68, 0.54, 0.76), nTex1.g);
+        vec3 milkyCol = outerNebula * milkyWide * (0.35 + 0.65 * starCloud) + innerCore * milkyCore * (0.38 + 0.82 * starCloud);
+        milkyCol *= (1.0 - dustRift * 0.78);
+        col += milkyCol * 0.44 * uNightFactor * (1.0 - uRainFactor * 0.94);
 
         // Subtle photographic dark-sky horizon airglow band
-        float airglow = exp(-pow((skyT - 0.08) * 10.5, 2.0)) * 0.065 * uNightFactor * (1.0 - uRainFactor * 0.85);
-        col += vec3(0.12, 0.34, 0.46) * airglow;
+        float airglow = exp(-pow((skyT - 0.07) * 11.0, 2.0)) * 0.055 * uNightFactor * (1.0 - uRainFactor * 0.85);
+        col += vec3(0.10, 0.32, 0.46) * airglow;
 
         // Northern Aurora Ribbon in winter / cold nights
-        float auroraW = uNightFactor * (0.14 + 0.86 * uSnowFactor) * (1.0 - uRainFactor);
+        float auroraW = uNightFactor * (0.12 + 0.88 * uSnowFactor) * (1.0 - uRainFactor);
         if (auroraW > 0.05) {
           float wave = sin(rd.x * 5.2 + nTex1.b * 3.8 + uTime * 0.16) * 0.5 + 0.5;
           float curtain = exp(-pow((skyT - 0.36 - wave * 0.14) * 7.2, 2.0)) * smoothstep(0.08, 0.28, skyT);
           vec3 aCol = mix(vec3(0.14, 0.86, 0.68), vec3(0.46, 0.38, 0.96), wave);
-          col += aCol * curtain * (0.55 + 0.45 * nTex1.a) * 0.30 * auroraW;
+          col += aCol * curtain * (0.55 + 0.45 * nTex1.a) * 0.28 * auroraW;
         }
 
-        // Crisp Crescent Moon + Atmospheric Lunar Ring Halo
+        // Crisp Crescent Moon + Atmospheric Lunar Halo
         float moonCos = max(0.0, dot(rd, uMoonDir));
         vec3 moonShadowDir = normalize(uMoonDir + vec3(0.014, 0.008, 0.0));
         float shadowCos = max(0.0, dot(rd, moonShadowDir));
         float moonDisc = smoothstep(0.99918, 0.99946, moonCos);
         float crescent = moonDisc * (1.0 - smoothstep(0.99926, 0.99950, shadowCos) * 0.88);
         float maria = 0.82 + 0.18 * texture2D(uDetailTex, rd.xy * 18.0).r;
-        float lunarHalo = pow(moonCos, 16.0) * 0.14 + pow(moonCos, 120.0) * 0.34;
+        float lunarHalo = pow(moonCos, 18.0) * 0.11 + pow(moonCos, 130.0) * 0.30;
         col += vec3(0.94, 0.97, 1.0) * (lunarHalo + crescent * maria * 1.48) * uNightFactor * (1.0 - uRainFactor * 0.85);
       }
 
@@ -851,20 +988,26 @@
       float dist = length(vWorldPos - cameraPosition);
       col = mix(col, uHorizonCol, smoothstep(185.0, 380.0, dist) * 0.36);
 
-      // Keep clear starry nights pristine & crisp (eliminate muddy purple cloud blotches!)
-      float nightThin = 1.0 - uNightFactor * (0.86 - uRainFactor * 0.72);
-      float density = clamp((0.54 + uCloudCover * 0.48 + uRainFactor * 0.30) * nightThin, 0.03, 0.94);
+      // Keep clear starry nights pristine & crisp (subtle peak-hugging wisps only!)
+      float nightThin = 1.0 - uNightFactor * (0.94 - uRainFactor * 0.72);
+      float density = clamp((0.28 + uCloudCover * 0.34 + uRainFactor * 0.34) * nightThin, 0.01, 0.64);
       col = (col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14);
       gl_FragColor = vec4(clamp(col, 0.0, 1.0), tex.a * density);
     }
   `
 
-  // Photographic High-Contrast 3D Alpine Terrain Shader (Dark Stratified Slate Cliffs + Lush Biomes + Crisp Glacier Snow)
+  // Photographic High-Contrast 3D Alpine Terrain Shader (Horizon-Mapped Cast Shadows + Cavity AO + Stratified Granite + Natural Pebble/Moss Shore!)
   const TERRAIN_VERT = `
+    attribute float aTerrainAO;
+    attribute vec2 aHorizonEW;
     varying vec3 vWorldPos;
     varying vec3 vWorldNormal;
+    varying float vTerrainAO;
+    varying vec2 vHorizonEW;
 
     void main() {
+      vTerrainAO = aTerrainAO;
+      vHorizonEW = aHorizonEW;
       vec4 wp = modelMatrix * vec4(position, 1.0);
       vWorldPos = wp.xyz;
       vWorldNormal = normalize(mat3(modelMatrix) * normal);
@@ -876,6 +1019,8 @@
     precision highp float;
     varying vec3 vWorldPos;
     varying vec3 vWorldNormal;
+    varying float vTerrainAO;
+    varying vec2 vHorizonEW;
 
     uniform sampler2D uDetailTex;
     uniform float uTime;
@@ -968,58 +1113,77 @@
       float vegSlope = smoothstep(0.56, 0.80, bumpN.y);
       vec3 albedo = mix(rockCol, vegCol, vegSlope * treeLine * smoothstep(0.2, 1.4, vWorldPos.y));
 
-      // Wet dark shoreline rock/pebble band where land meets lake water (y = -0.3..1.1)
-      float shoreRim = smoothstep(1.15, 0.0, vWorldPos.y);
-      vec3 wetShore = mix(vec3(0.20, 0.23, 0.26), vec3(0.07, 0.10, 0.13), smoothstep(0.45, -0.15, vWorldPos.y));
-      albedo = mix(albedo, wetShore, shoreRim * 0.88);
+      // Natural textured rocky pebble beach & mossy stone bank where land meets lake water (eliminates flat black clay!)
+      float shoreRim = smoothstep(1.35, 0.0, vWorldPos.y);
+      float pebbleTex = detFine.a * 0.55 + detMid.r * 0.45;
+      vec3 dryPebble = mix(vec3(0.28, 0.27, 0.25), vec3(0.42, 0.39, 0.34), pebbleTex);
+      vec3 shoreMoss = seasonalMix(
+        vec3(0.16, 0.32, 0.16),
+        vec3(0.12, 0.28, 0.14),
+        vec3(0.32, 0.24, 0.14),
+        vec3(0.24, 0.28, 0.32),
+        uSeason
+      );
+      vec3 bankBlend = mix(dryPebble, shoreMoss, smoothstep(0.22, 0.95, vWorldPos.y) * (0.45 + 0.55 * detMid.g));
+      float dampWaterline = smoothstep(0.38, -0.05, vWorldPos.y);
+      vec3 wetShore = bankBlend * (1.0 - dampWaterline * 0.42);
+      albedo = mix(albedo, wetShore, shoreRim * 0.86);
 
-      // 3. Crisp Glacier Snowfields & Alpine Snow Couloirs (settles on high peaks & gentler ledges, leaves steep rocky ribs dark!)
-      // In warm rain (uRainFactor > 0, uSnowFactor == 0), raise snowline so ridges read as dramatic dark ink-wash granite!
-      float snowAltStart = mix(22.5, 0.45, uSnowFactor) + uRainFactor * (1.0 - uSnowFactor) * 14.5;
-      float snowNoise = (detMacro.r - 0.36) * 9.5 + (strata - 0.5) * 4.5 + (detMid.a - 0.5) * 2.8;
-      float snowAltMask = smoothstep(snowAltStart, snowAltStart + 7.5, vWorldPos.y + snowNoise);
-      float snowSlopeMask = smoothstep(0.50, 0.80, bumpN.y);
+      // 3. Crisp Glacier Snowfields & Alpine Snow Couloirs (settles into concave gullies & high ledges, leaves steep arêtes dark!)
+      float snowAltStart = mix(22.0, 0.45, uSnowFactor) + uRainFactor * (1.0 - uSnowFactor) * 14.5;
+      float gullyBonus = clamp((1.0 - vTerrainAO) * 11.0, -3.0, 6.5);
+      float snowNoise = (detMacro.r - 0.36) * 9.5 + (strata - 0.5) * 4.5 + (detMid.a - 0.5) * 2.8 + gullyBonus;
+      float snowAltMask = smoothstep(snowAltStart, snowAltStart + 7.2, vWorldPos.y + snowNoise);
+      float snowSlopeMask = smoothstep(0.48, 0.78, bumpN.y);
       float snowMask = clamp(snowAltMask * snowSlopeMask, 0.0, 1.0);
       vec3 snowAlbedo = mix(vec3(0.96, 0.98, 1.0), vec3(0.76, 0.82, 0.88), uRainFactor * (1.0 - uSnowFactor));
       albedo = mix(albedo, snowAlbedo, snowMask);
 
-      // 4. Sculpted Directional Lighting + Drifting Cloud Shadows + Glacial Blue Shadows + Snow Sparkle + Alpenglow!
+      // 4. Sculpted Directional Lighting + Real Horizon-Mapped Cast Mountain Shadows + Drifting Cloud Shadows + Snow Sparkle!
       vec3 lightDir = uNightFactor > 0.65 ? uMoonDir : uSunDir;
       vec3 V = normalize(cameraPosition - vWorldPos);
       float diff = max(0.0, dot(bumpN, lightDir));
-      float shapedDiff = pow(diff, 1.30);
+      float shapedDiff = pow(diff, 1.28);
+
+      // AAA Horizon-Mapped Mountain Self-Shadowing (real cast valley/ridge shadows from East/West terrain profile!)
+      float sunSlope = lightDir.y / max(0.18, abs(lightDir.x) * 0.88 + 0.14);
+      float activeHorizon = lightDir.x >= 0.0 ? vHorizonEW.x : vHorizonEW.y;
+      float mountainShadow = mix(0.26, 1.0, smoothstep(activeHorizon - 0.10, activeHorizon + 0.18, sunSlope));
+      mountainShadow = mix(mountainShadow, 1.0, uRainFactor * 0.78 + uNightFactor * 0.45);
+
       // Drifting sunlit-and-cloud-shadow patches sweeping smoothly across alpine slopes!
       vec2 csUv = vWorldPos.xz * 0.0052 + vec2(uTime * (0.0055 + uWindSpeed * 0.004), uTime * 0.0018);
       float csRaw = texture2D(uDetailTex, csUv).r * 0.65 + texture2D(uDetailTex, csUv * 1.9 - vec2(0.24, 0.17)).g * 0.35;
       float cloudShadow = 1.0 - smoothstep(0.46, 0.78, csRaw) * (0.24 + 0.28 * uCloudCover) * uDayFactor * (1.0 - uRainFactor * 0.85);
-      float cavityAO = clamp(0.46 + 0.54 * smoothstep(0.0, 18.0, vWorldPos.y) * (0.66 + 0.34 * detMacro.r), 0.34, 1.0);
+      float cavityAO = clamp(vTerrainAO * (0.58 + 0.42 * smoothstep(0.0, 14.0, vWorldPos.y)) * (0.76 + 0.24 * detMacro.r), 0.36, 1.08);
       float hemi = clamp(0.22 + 0.78 * bumpN.y, 0.0, 1.0);
 
-      // Crisp glacial blue-tinted ambient shadows on snow vs luminous sunlit snow highlights (real alpine photography!)
-      vec3 snowAmbientBoost = mix(vec3(1.0), vec3(0.74, 0.94, 1.30), snowMask * (1.0 - shapedDiff * 0.76) * (1.0 - uRainFactor * 0.7));
-      vec3 lit = albedo * cavityAO * (uDirectCol * shapedDiff * cloudShadow * 1.28 + uAmbientCol * snowAmbientBoost * hemi * 0.84);
+      // Crisp glacial blue-tinted ambient shadows on snow vs luminous sunlit snow highlights
+      float sunReach = shapedDiff * mountainShadow * cloudShadow;
+      vec3 snowAmbientBoost = mix(vec3(1.0), vec3(0.70, 0.90, 1.32), snowMask * (1.0 - sunReach * 0.78) * (1.0 - uRainFactor * 0.7));
+      vec3 lit = albedo * cavityAO * (uDirectCol * sunReach * 1.34 + uAmbientCol * snowAmbientBoost * hemi * 0.82);
       // High-altitude sunlit ridge rim highlight + crisp glacier crystal snow micro-sparkle!
       vec3 H = normalize(lightDir + V);
-      float snowSparkle = pow(max(0.0, dot(bumpN, H)), 72.0) * smoothstep(0.58, 0.92, detFine.a) * snowMask * cloudShadow * uDayFactor * (1.0 - uRainFactor);
-      lit += uSunCol * snowSparkle * 0.55;
-      float ridgeRim = pow(1.0 - max(0.0, dot(bumpN, V)), 3.2) * smoothstep(14.0, 42.0, vWorldPos.y) * cloudShadow;
-      lit += mix(uHorizonCol, uSunCol, 0.55) * ridgeRim * (0.20 * uDayFactor + 0.32 * uTwilightFactor) * (1.0 - uRainFactor * 0.8);
-      // Subtle specular wet-slate sheen on rain-drenched cliffs for photographic depth!
-      if (uRainFactor > 0.08) {
+      float snowSparkle = pow(max(0.0, dot(bumpN, H)), 72.0) * smoothstep(0.58, 0.92, detFine.a) * snowMask * mountainShadow * cloudShadow * uDayFactor * (1.0 - uRainFactor);
+      lit += uSunCol * snowSparkle * 0.58;
+      float ridgeRim = pow(1.0 - max(0.0, dot(bumpN, V)), 3.2) * smoothstep(14.0, 42.0, vWorldPos.y) * mountainShadow * cloudShadow;
+      lit += mix(uHorizonCol, uSunCol, 0.55) * ridgeRim * (0.22 * uDayFactor + 0.34 * uTwilightFactor) * (1.0 - uRainFactor * 0.8);
+      // Subtle specular wet-slate sheen on rain-drenched cliffs & damp shoreline stones
+      if (uRainFactor > 0.08 || dampWaterline > 0.15) {
         vec3 skyH = normalize(vec3(0.18, 0.94, 0.28) + V);
-        float wetSpec = pow(max(0.0, dot(bumpN, skyH)), 18.0) * (1.0 - snowMask) * smoothstep(0.85, 0.35, bumpN.y);
-        lit += vec3(0.32, 0.44, 0.52) * wetSpec * 0.28 * uRainFactor;
+        float wetSpec = pow(max(0.0, dot(bumpN, skyH)), 22.0) * (1.0 - snowMask) * max(uRainFactor * smoothstep(0.85, 0.35, bumpN.y), dampWaterline * 0.6);
+        lit += vec3(0.32, 0.44, 0.52) * wetSpec * 0.30;
       }
       // Warm golden-rose alpenglow kissing sunlit snow peaks at dusk
-      lit += uSunCol * snowMask * shapedDiff * uTwilightFactor * 0.54;
+      lit += uSunCol * snowMask * sunReach * uTwilightFactor * 0.58;
       // Cool silver moonlight rim on snow ridges at night
       lit += vec3(0.36, 0.52, 0.82) * snowMask * pow(max(0.0, dot(bumpN, uMoonDir)), 1.5) * uNightFactor * 0.38;
 
-      // Dual warm architectural light spill: Pier Lantern + Pavilion Garden Lamp!
+      // Dual warm architectural light spill: Pier Lantern + Pavilion Garden Lamp (soft natural falloff!)
       float dLamp = length(vWorldPos - uLampPos);
-      lit += vec3(1.0, 0.68, 0.30) * (1.0 / (1.0 + dLamp * dLamp * 0.055)) * 0.95 * uLampGlow;
+      lit += albedo * vec3(1.45, 0.92, 0.42) * (1.0 / (1.0 + dLamp * dLamp * 0.065)) * 1.15 * uLampGlow;
       float dPav = length(vWorldPos - uPavLampPos);
-      lit += vec3(1.0, 0.66, 0.28) * (1.0 / (1.0 + dPav * dPav * 0.048)) * 0.78 * uLampGlow;
+      lit += albedo * vec3(1.45, 0.90, 0.38) * (1.0 / (1.0 + dPav * dPav * 0.060)) * 1.05 * uLampGlow;
 
       // 5. Unified Atmospheric Perspective (identical across Terrain & Forest — zero floating far trees!)
       // In Rain, peaks retain deep wet ink-wash slate depth while luminous valley mist curls along the far mountain base.
@@ -1129,40 +1293,44 @@
 
       if (vPart > 0.5) {
         vec4 fTex = vTreeKind < 0.5 ? texture2D(uPineTex, vUv) : texture2D(uLeafTex, vUv);
-        // In Winter, deciduous broadleaf trees thin out to delicate frosted branches & sparse winter snow tufts (NO white cotton balls!)
+        // In Winter, deciduous broadleaf trees thin out to delicate frosted branches & sparse winter snow tufts
         float winterThin = vTreeKind > 0.5 ? smoothstep(2.4, 3.0, uSeason) : 0.0;
-        float alphaCut = 0.36 + winterThin * 0.42 * (1.0 - fTex.b);
+        float alphaCut = 0.38 + winterThin * 0.42 * (1.0 - fTex.b);
         if (fTex.a < alphaCut) discard;
-        leafLum = 0.72 + 0.42 * fTex.r;
+        // Strong volumetric leaf-depth contrast (deep shaded interior -> luminous outer sunlit tips!)
+        leafLum = 0.46 + 0.72 * fTex.r;
         winterSnowMask = fTex.r;
       }
 
       vec3 N = normalize(vWorldNormal);
       vec3 lightDir = uNightFactor > 0.65 ? uMoonDir : uSunDir;
       float diff = max(0.0, dot(N, lightDir));
-      float hemi = clamp(0.42 + 0.58 * N.y, 0.0, 1.0);
+      float hemi = clamp(0.36 + 0.64 * N.y, 0.0, 1.0);
 
       vec3 albedo;
       if (vPart < 0.5) {
-        albedo = mix(vec3(0.16, 0.12, 0.10), vec3(0.26, 0.20, 0.16), vTone);
+        float barkVar = 0.80 + 0.38 * texture2D(uDetailTex, vec2(vWorldPos.x * 0.6 + vWorldPos.z * 0.6, vLocalY * 1.4)).a;
+        albedo = mix(vec3(0.14, 0.10, 0.08), vec3(0.24, 0.18, 0.14), vTone) * barkVar;
       } else if (vTreeKind < 0.5) {
-        // Deep Evergreen Alpine Pines: rich dark spruce needles peeking crisply beneath snowy upper boughs!
-        vec3 pineDeep = mix(vec3(0.06, 0.19, 0.12), vec3(0.13, 0.30, 0.18), vTone);
-        vec3 pineWin = mix(vec3(0.05, 0.14, 0.16), vec3(0.10, 0.22, 0.24), vTone);
-        albedo = seasonalMix(pineDeep, pineDeep * 1.12, pineDeep * 0.96, pineWin, uSeason) * leafLum;
+        // Photographic Deep Alpine Spruce & Japanese Cedar (rich forest evergreen, NEVER neon crayon mint green!)
+        vec3 pineDeep = mix(vec3(0.036, 0.125, 0.088), vec3(0.088, 0.215, 0.132), vTone);
+        vec3 pineAut = mix(vec3(0.040, 0.130, 0.095), vec3(0.095, 0.205, 0.130), vTone);
+        vec3 pineWin = mix(vec3(0.035, 0.105, 0.125), vec3(0.080, 0.175, 0.195), vTone);
+        albedo = seasonalMix(pineDeep, pineDeep * 1.08, pineAut, pineWin, uSeason) * leafLum;
         float boughSnow = smoothstep(0.42, 0.84, N.y + (winterSnowMask - 0.58) * 0.45) * smoothstep(0.28, 0.78, uSnowFactor);
         albedo = mix(albedo, vec3(0.95, 0.98, 1.0), boughSnow * 0.78);
       } else {
-        // Botanical Seasonal Broadleaf Canopies (Spring Sakura, Summer Lush Emerald, Autumn Crimson Maple & Gold Ginkgo, Winter Frosted Twigs)
-        vec3 sprBlossom = vTone < 0.22
-          ? mix(vec3(0.19, 0.45, 0.21), vec3(0.34, 0.58, 0.26), vTone * 4.5)
-          : mix(vec3(0.98, 0.52, 0.72), vec3(1.00, 0.84, 0.91), (vTone - 0.22) * 1.28);
-        vec3 sumLeaf = mix(vec3(0.09, 0.37, 0.15), vec3(0.26, 0.55, 0.21), vTone);
-        vec3 autLeaf = vTone < 0.50
-          ? mix(vec3(0.72, 0.13, 0.10), vec3(0.90, 0.32, 0.12), vTone * 2.0)
-          : mix(vec3(0.90, 0.58, 0.10), vec3(0.98, 0.78, 0.18), (vTone - 0.50) * 2.0);
-        // Winter: dark frosted bark/twigs with crisp snow frosting on upper clusters
-        vec3 winTwig = mix(vec3(0.22, 0.24, 0.30), vec3(0.86, 0.91, 0.97), smoothstep(0.25, 0.75, N.y + (winterSnowMask - 0.45) * 0.5));
+        // Photographic Seasonal Broadleaf Canopies (Delicate Blush Sakura, Deep Woodland Oak, Kyoto Russet/Burgundy/Ochre Maple, Frosted Winter Twigs)
+        vec3 sprBlossom = vTone < 0.26
+          ? mix(vec3(0.13, 0.31, 0.15), vec3(0.26, 0.44, 0.20), vTone * 3.85)
+          : mix(vec3(0.94, 0.64, 0.75), vec3(0.99, 0.88, 0.92), (vTone - 0.26) * 1.35);
+        vec3 sumLeaf = mix(vec3(0.06, 0.26, 0.11), vec3(0.19, 0.42, 0.16), vTone);
+        vec3 autLeaf = vTone < 0.34
+          ? mix(vec3(0.46, 0.09, 0.08), vec3(0.68, 0.18, 0.10), vTone * 2.94)
+          : (vTone < 0.68
+            ? mix(vec3(0.72, 0.25, 0.09), vec3(0.84, 0.46, 0.12), (vTone - 0.34) * 2.94)
+            : mix(vec3(0.82, 0.56, 0.14), vec3(0.90, 0.72, 0.22), (vTone - 0.68) * 3.12));
+        vec3 winTwig = mix(vec3(0.20, 0.22, 0.28), vec3(0.86, 0.91, 0.97), smoothstep(0.25, 0.75, N.y + (winterSnowMask - 0.45) * 0.5));
         albedo = seasonalMix(sprBlossom, sumLeaf, autLeaf, winTwig, uSeason) * leafLum;
       }
 
@@ -1173,19 +1341,24 @@
       vec2 csUv = vWorldPos.xz * 0.0052 + vec2(uTime * (0.0055 + uWindSpeed * 0.004), uTime * 0.0018);
       float csRaw = texture2D(uDetailTex, csUv).r * 0.65 + texture2D(uDetailTex, csUv * 1.9 - vec2(0.24, 0.17)).g * 0.35;
       float cloudShadow = 1.0 - smoothstep(0.46, 0.78, csRaw) * (0.24 + 0.28 * uCloudCover) * uDayFactor * (1.0 - uRainFactor * 0.85);
-      float canopyAO = clamp(0.42 + 0.58 * smoothstep(0.35, 4.4, vLocalY), 0.38, 1.0);
+      float canopyAO = clamp(0.38 + 0.62 * smoothstep(0.35, 4.4, vLocalY), 0.34, 1.0);
       float crownSunTip = smoothstep(0.15, 0.88, N.y) * smoothstep(1.2, 4.5, vLocalY);
       float sss = pow(max(0.0, dot(normalize(cameraPosition - vWorldPos), -lightDir)), 2.8) * 0.44 * vPart * (1.0 - uRainFactor * 0.75);
-      vec3 coolUnder = mix(vec3(0.76, 0.86, 1.06), vec3(1.06, 1.02, 0.96), crownSunTip);
-      vec3 lit = albedo * canopyAO * (uDirectCol * (diff * 1.12 + sss) * cloudShadow + uAmbientCol * coolUnder * (0.44 + 0.56 * hemi) * 0.84);
+      vec3 coolUnder = mix(vec3(0.72, 0.84, 1.08), vec3(1.06, 1.02, 0.96), crownSunTip);
+      vec3 lit = albedo * canopyAO * (uDirectCol * (diff * 1.14 + sss) * cloudShadow + uAmbientCol * coolUnder * (0.42 + 0.58 * hemi) * 0.84);
       // Velvety dark midnight silhouettes at night (makes Milky Way, lantern & pavilion glow pop!)
-      lit *= (1.0 - uNightFactor * 0.48);
+      lit *= (1.0 - uNightFactor * 0.50);
 
-      // Dual warm architectural light spill: Pier Lantern + Pavilion Shoji/Garden Lamp illuminating nearby trees!
-      float dLamp = length(vWorldPos - uLampPos);
-      lit += vec3(1.0, 0.68, 0.30) * (1.0 / (1.0 + dLamp * dLamp * 0.055)) * 0.95 * uLampGlow;
-      float dPav = length(vWorldPos - uPavLampPos);
-      lit += vec3(1.0, 0.66, 0.28) * (1.0 / (1.0 + dPav * dPav * 0.042)) * 0.92 * uLampGlow;
+      // Physically multiplied warm architectural spill light (keeps rich dark-gold 3D leaf relief instead of flat yellow wash!)
+      vec3 toLamp = uLampPos - vWorldPos;
+      float dLamp = length(toLamp);
+      float lampFacing = max(0.18, dot(N, toLamp / max(0.01, dLamp)));
+      lit += albedo * vec3(1.55, 0.96, 0.42) * lampFacing * (1.0 / (1.0 + dLamp * dLamp * 0.055)) * 1.35 * uLampGlow;
+
+      vec3 toPav = uPavLampPos - vWorldPos;
+      float dPav = length(toPav);
+      float pavFacing = max(0.16, dot(N, toPav / max(0.01, dPav)));
+      lit += albedo * vec3(1.50, 0.92, 0.36) * pavFacing * (1.0 / (1.0 + dPav * dPav * 0.052)) * 1.15 * uLampGlow;
 
       // Exact unified atmospheric fog + valley mist matching TERRAIN_FRAG (eliminates floating trees!)
       float dist = length(vWorldPos - cameraPosition);
@@ -1201,11 +1374,13 @@
     }
   `
 
-  // Non-Instanced Architecture Vertex Shader (Pier, Lantern, Boat, Pavilion)
+  // Non-Instanced Architecture Vertex Shader (Pier, Lantern, Boat, Pavilion — passes local coords for wood/tile/masonry projection!)
   const ARCHITECT_VERT = `
     varying vec3 vWorldPos;
     varying vec3 vWorldNormal;
+    varying vec3 vLocalPos;
     void main() {
+      vLocalPos = position;
       vec4 wp = modelMatrix * vec4(position, 1.0);
       vWorldPos = wp.xyz;
       vWorldNormal = normalize(mat3(modelMatrix) * normal);
@@ -1213,11 +1388,13 @@
     }
   `
 
-  // Instanced Shoreline Boulder Vertex Shader (FIXES the center-lake (0,0,0) boulder pile bug!)
+  // Instanced Shoreline Boulder Vertex Shader
   const INSTANCED_ARCHITECT_VERT = `
     varying vec3 vWorldPos;
     varying vec3 vWorldNormal;
+    varying vec3 vLocalPos;
     void main() {
+      vLocalPos = position;
       vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
       vWorldPos = wp.xyz;
       vWorldNormal = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
@@ -1229,13 +1406,17 @@
     precision highp float;
     varying vec3 vWorldPos;
     varying vec3 vWorldNormal;
+    varying vec3 vLocalPos;
 
     uniform vec3 uBaseColor;
     uniform float uAllowSnow;
+    uniform float uMatType; // 0=neutral/plaster/iron, 1=cedar wood planks, 2=fluted ceramic roof tiles, 3=mossy granite boulder, 4=ashlar stone masonry
     uniform sampler2D uDetailTex;
+    uniform sampler2D uArchTex;
     uniform float uTime;
     uniform float uWindSpeed;
     uniform float uCloudCover;
+    uniform float uSeason;
     uniform float uDayFactor;
     uniform float uTwilightFactor;
     uniform float uNightFactor;
@@ -1257,10 +1438,43 @@
 
       vec3 N = normalize(vWorldNormal);
       float grain = texture2D(uDetailTex, vWorldPos.xz * 0.85 + vec2(vWorldPos.y * 0.4)).a;
-      vec3 albedo = uBaseColor * (0.78 + 0.42 * grain);
+      vec3 albedo = uBaseColor * (0.82 + 0.36 * grain);
 
-      float wet = smoothstep(0.45, 0.0, vWorldPos.y);
-      albedo *= (1.0 - wet * 0.46 - uRainFactor * 0.18);
+      if (uMatType > 0.5 && uMatType < 1.5) {
+        // 1: Weathered Japanese Cedar Wood Planks + fine fiber grain + damp green algae near submerged pilings
+        vec2 wUv = vec2(vLocalPos.x * 0.55 + vLocalPos.z * 0.55, vLocalPos.z * 0.45 + vLocalPos.y * 0.65);
+        float wood = texture2D(uArchTex, wUv).r;
+        albedo = uBaseColor * (0.64 + 0.68 * wood);
+        float algae = smoothstep(0.36, -0.04, vWorldPos.y) * smoothstep(0.35, 0.78, grain);
+        albedo = mix(albedo, vec3(0.09, 0.16, 0.11), algae * 0.58);
+      } else if (uMatType > 1.5 && uMatType < 2.5) {
+        // 2: Traditional East-Asian Fluted Ceramic Barrel Roof Tiles (筒瓦)
+        float roofU = (abs(N.x) > abs(N.z) ? vLocalPos.z : vLocalPos.x) * 0.62;
+        float roofV = vLocalPos.y * 0.72 + length(vLocalPos.xz) * 0.35;
+        float tile = texture2D(uArchTex, vec2(roofU, roofV)).g;
+        albedo = uBaseColor * (0.58 + 0.74 * tile);
+        N = normalize(N + vec3((tile - 0.5) * 0.24, 0.0, (tile - 0.5) * 0.24));
+      } else if (uMatType > 2.5 && uMatType < 3.5) {
+        // 3: Sculpted Moss-Topped Weathered Granite Shoreline Boulders!
+        vec4 rDet = texture2D(uDetailTex, vWorldPos.xz * 0.42 + vec2(vWorldPos.y * 0.38));
+        float strata = texture2D(uDetailTex, vec2(vWorldPos.x * 0.55 + vWorldPos.y * 0.9, vWorldPos.z * 0.55)).r;
+        albedo = mix(uBaseColor * 0.62, uBaseColor * 1.28, smoothstep(0.24, 0.78, strata * 0.6 + rDet.a * 0.4));
+        // Velvety seasonal moss blankets on upward-facing boulder ledges above waterline
+        float mossMask = smoothstep(0.56, 0.86, N.y) * smoothstep(0.18, 0.75, vWorldPos.y) * smoothstep(0.34, 0.74, rDet.g) * (1.0 - uSnowFactor * 0.8);
+        vec3 mossCol = mix(vec3(0.14, 0.29, 0.13), vec3(0.34, 0.27, 0.13), smoothstep(1.2, 2.2, uSeason));
+        albedo = mix(albedo, mossCol, mossMask * 0.76);
+        N = normalize(N + vec3((rDet.r - 0.5) * 0.34, 0.0, (rDet.g - 0.5) * 0.34));
+      } else if (uMatType > 3.5) {
+        // 4: Hand-Dressed Ashlar Stone Masonry Foundation & Steps
+        vec2 mUv = vec2((vLocalPos.x + vLocalPos.z) * 0.36, vLocalPos.y * 0.48);
+        float masonry = texture2D(uArchTex, mUv).b;
+        albedo = uBaseColor * (0.62 + 0.66 * masonry);
+        float baseMoss = smoothstep(0.65, 0.05, vWorldPos.y) * smoothstep(0.42, 0.82, grain);
+        albedo = mix(albedo, vec3(0.14, 0.24, 0.13), baseMoss * 0.42);
+      }
+
+      float wet = smoothstep(0.42, -0.02, vWorldPos.y);
+      albedo *= (1.0 - wet * 0.44 - uRainFactor * 0.16);
 
       if (uAllowSnow > 0.5 && uSnowFactor > 0.25) {
         float snowCap = smoothstep(0.56, 0.86, N.y) * smoothstep(0.25, 0.72, uSnowFactor) * (0.72 + 0.28 * grain);
@@ -1274,13 +1488,15 @@
       float csRaw = texture2D(uDetailTex, csUv).r * 0.65 + texture2D(uDetailTex, csUv * 1.9 - vec2(0.24, 0.17)).g * 0.35;
       float cloudShadow = 1.0 - smoothstep(0.46, 0.78, csRaw) * (0.24 + 0.28 * uCloudCover) * uDayFactor * (1.0 - uRainFactor * 0.85);
       float hemi = clamp(0.36 + 0.64 * N.y, 0.0, 1.0);
-      vec3 lit = albedo * (uDirectCol * diff * cloudShadow * 1.02 + uAmbientCol * hemi * 0.82);
+      vec3 lit = albedo * (uDirectCol * diff * cloudShadow * 1.04 + uAmbientCol * hemi * 0.84);
 
-      // Subtle wet wood & stone sheen in rain / near waterline
-      if (uRainFactor > 0.08 || wet > 0.1) {
+      // Subtle ceramic roof sheen & wet wood/stone specular glint
+      if (uRainFactor > 0.08 || wet > 0.1 || (uMatType > 1.5 && uMatType < 2.5)) {
         vec3 wetH = normalize(lightDir + V);
-        float wetSpec = pow(max(0.0, dot(N, wetH)), 26.0) * max(uRainFactor * 0.65, wet * 0.55);
-        lit += mix(uHorizonCol, vec3(0.9, 0.95, 1.0), 0.4) * wetSpec * 0.32;
+        float specPow = (uMatType > 1.5 && uMatType < 2.5) ? 38.0 : 26.0;
+        float specW = max(max(uRainFactor * 0.65, wet * 0.55), (uMatType > 1.5 && uMatType < 2.5) ? 0.28 : 0.0);
+        float wetSpec = pow(max(0.0, dot(N, wetH)), specPow) * specW;
+        lit += mix(uHorizonCol, vec3(0.94, 0.96, 1.0), 0.45) * wetSpec * 0.32;
       }
 
       // Dual warm architectural light sources: Pier Lantern + Pavilion Tea-House Window & Garden Lantern!
@@ -1305,6 +1521,52 @@
 
       finalCol = (finalCol * (2.51 * finalCol + 0.03)) / (finalCol * (2.43 * finalCol + 0.59) + 0.14);
       gl_FragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    }
+  `
+
+  // Warm Translucent Shoji Paper & Interior Lantern Flame Gradient Shader (Pavilion Tea-Room Window & Pier Lantern!)
+  const SHOJI_VERT = `
+    varying vec2 vUv;
+    varying vec3 vWorldPos;
+    void main() {
+      vUv = uv;
+      vec4 wp = modelMatrix * vec4(position, 1.0);
+      vWorldPos = wp.xyz;
+      gl_Position = projectionMatrix * viewMatrix * wp;
+    }
+  `
+
+  const SHOJI_FRAG = `
+    precision highp float;
+    varying vec2 vUv;
+    varying vec3 vWorldPos;
+    uniform sampler2D uDetailTex;
+    uniform float uTime;
+    uniform float uLampGlow;
+    uniform float uNightFactor;
+    uniform vec3 uHorizonCol;
+    uniform float uClipBelowWater;
+
+    void main() {
+      if (uClipBelowWater > 0.5 && vWorldPos.y < -0.05) discard;
+      float paperFiber = 0.92 + 0.08 * texture2D(uDetailTex, vUv * 4.5).a;
+      // Warm interior candlelight / hearth core brighter in center, softer amber toward outer paper edges
+      float distC = length((vUv - vec2(0.5, 0.46)) * vec2(1.15, 1.35));
+      float hearthCore = exp(-distC * distC * 2.4);
+      float flicker = 0.96 + 0.04 * sin(uTime * 5.8 + sin(uTime * 11.2));
+      vec3 dayPaper = vec3(0.84, 0.80, 0.72) * (0.86 + 0.14 * hearthCore);
+      vec3 warmEdge = vec3(0.96, 0.64, 0.28);
+      vec3 warmCore = vec3(1.06, 0.94, 0.68);
+      vec3 nightLit = mix(warmEdge, warmCore, hearthCore) * flicker;
+      vec3 col = mix(dayPaper, nightLit, uLampGlow) * paperFiber;
+      // Subtle lower interior table silhouette inside the tea-house shoji screen
+      float interiorShade = smoothstep(0.24, 0.04, vUv.y) * smoothstep(0.18, 0.42, vUv.x) * smoothstep(0.82, 0.58, vUv.x);
+      col *= (1.0 - interiorShade * 0.22 * uLampGlow);
+      float dist = length(vWorldPos - cameraPosition);
+      float fog = min(0.32, 1.0 - exp(-max(0.0, dist - 42.0) * 0.0014));
+      col = mix(col, uHorizonCol, fog * (1.0 - uLampGlow * 0.72));
+      col = (col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14);
+      gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
     }
   `
 
@@ -1380,20 +1642,25 @@
       float dist = length(viewVec);
       vec3 V = viewVec / max(0.001, dist);
 
-      // Multi-octave organic wind lanes: alternating glassy mirror slicks & gently ruffled breeze bands!
-      vec2 wShift1 = vec2(uTime * 0.017 * uWindSpeed, uTime * 0.011);
-      vec2 wShift2 = vec2(-uTime * 0.015 * uWindSpeed, uTime * 0.023);
-      vec2 wShift3 = vec2(uTime * 0.026 * uWindSpeed, -uTime * 0.019);
-      vec4 wTex1 = texture2D(uDetailTex, vWorldPos.xz * 0.044 + wShift1);
-      vec4 wTex2 = texture2D(uDetailTex, vWorldPos.xz * 0.135 + wShift2);
-      vec4 wTex3 = texture2D(uDetailTex, vWorldPos.xz * 0.340 + wShift3);
-      float windLane = 0.42 + 0.58 * smoothstep(0.26, 0.78, texture2D(uDetailTex, vWorldPos.xz * 0.011 + vec2(uTime * 0.004, 0.0)).r);
+      // True Finite-Difference 3-Octave Capillary & Swell Wave Heightfield + Organic Wind Lanes!
+      vec2 wShift1 = vec2(uTime * 0.016 * uWindSpeed, uTime * 0.010);
+      vec2 wShift2 = vec2(-uTime * 0.014 * uWindSpeed, uTime * 0.022);
+      vec2 wShift3 = vec2(uTime * 0.028 * uWindSpeed, -uTime * 0.020);
+      vec2 p1 = vWorldPos.xz * 0.044 + wShift1;
+      vec2 p2 = vWorldPos.xz * 0.142 + wShift2;
+      vec2 p3 = vWorldPos.xz * 0.365 + wShift3;
+      vec4 wTex1 = texture2D(uDetailTex, p1);
+      vec4 wTex2 = texture2D(uDetailTex, p2);
+      vec4 wTex3 = texture2D(uDetailTex, p3);
 
-      float waveScale = (0.040 + 0.024 * uWindSpeed) * windLane / (1.0 + dist * 0.013);
-      vec2 grad = vec2(
-        (wTex1.b - 0.5) * 0.52 + (wTex2.a - 0.5) * 0.32 + (wTex3.r - 0.5) * 0.16,
-        (wTex1.r - 0.5) * 0.52 + (wTex2.b - 0.5) * 0.32 + (wTex3.g - 0.5) * 0.16
-      ) * waveScale;
+      float e1 = 0.010, e2 = 0.016;
+      float hC = wTex1.b * 0.54 + wTex2.b * 0.30 + wTex3.a * 0.16;
+      float hX = texture2D(uDetailTex, p1 + vec2(e1, 0.0)).b * 0.54 + texture2D(uDetailTex, p2 + vec2(e2, 0.0)).b * 0.30 + texture2D(uDetailTex, p3 + vec2(e2, 0.0)).a * 0.16;
+      float hZ = texture2D(uDetailTex, p1 + vec2(0.0, e1)).b * 0.54 + texture2D(uDetailTex, p2 + vec2(0.0, e2)).b * 0.30 + texture2D(uDetailTex, p3 + vec2(0.0, e2)).a * 0.16;
+
+      float windLane = 0.42 + 0.58 * smoothstep(0.24, 0.78, texture2D(uDetailTex, vWorldPos.xz * 0.011 + vec2(uTime * 0.004, 0.0)).r);
+      float waveScale = (0.32 + 0.18 * uWindSpeed) * windLane / (1.0 + dist * 0.011);
+      vec2 grad = vec2(hC - hX, hC - hZ) * waveScale;
 
       float rippleSheen = 0.0;
       for (int i = 0; i < 6; i++) {
@@ -1436,15 +1703,18 @@
 
       vec3 waterN = normalize(vec3(-grad.x, 1.0, -grad.y));
 
-      // Project into 768x768 4x MSAA Planar Reflection RenderTarget
+      // Project into 1024x1024 4x MSAA Planar Reflection RenderTarget with optical anisotropic vertical stretching & soft far-lake shimmer!
       vec2 reflUv = (vReflectClip.xy / max(0.001, vReflectClip.w)) * 0.5 + 0.5;
-      vec2 distort = vec2(waterN.x, waterN.z) * clamp((0.15 + 0.14 * uRainFactor) / (1.0 + dist * 0.014), 0.02, 0.22);
+      float distortAmp = clamp((0.16 + 0.15 * uRainFactor) / (1.0 + dist * 0.012), 0.025, 0.24);
+      vec2 distort = vec2(waterN.x * 0.72, waterN.z * 1.42) * distortAmp;
       vec2 baseUv = clamp(reflUv + distort, vec2(0.005), vec2(0.995));
-      vec2 texel = vec2(0.0013, 0.0013);
+      float blurSpread = 0.0010 + smoothstep(18.0, 96.0, dist) * 0.0024 + uRainFactor * 0.0014;
       vec3 reflCol = (
-        texture2D(uReflectionTex, baseUv).rgb * 0.56 +
-        texture2D(uReflectionTex, clamp(baseUv + vec2(texel.x, 0.0), vec2(0.004), vec2(0.996))).rgb * 0.22 +
-        texture2D(uReflectionTex, clamp(baseUv - vec2(texel.x, 0.0), vec2(0.004), vec2(0.996))).rgb * 0.22
+        texture2D(uReflectionTex, baseUv).rgb * 0.40 +
+        texture2D(uReflectionTex, clamp(baseUv + vec2(blurSpread, 0.0), vec2(0.004), vec2(0.996))).rgb * 0.15 +
+        texture2D(uReflectionTex, clamp(baseUv - vec2(blurSpread, 0.0), vec2(0.004), vec2(0.996))).rgb * 0.15 +
+        texture2D(uReflectionTex, clamp(baseUv + vec2(0.0, blurSpread * 1.6), vec2(0.004), vec2(0.996))).rgb * 0.15 +
+        texture2D(uReflectionTex, clamp(baseUv - vec2(0.0, blurSpread * 1.6), vec2(0.004), vec2(0.996))).rgb * 0.15
       );
 
       float cosTheta = max(0.0, dot(V, waterN));
@@ -1529,7 +1799,9 @@
       vec3 finalCol = mix(waterCol, uHorizonCol, lakeFog);
 
       finalCol = (finalCol * (2.51 * finalCol + 0.03)) / (finalCol * (2.43 * finalCol + 0.59) + 0.14);
-      gl_FragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+      // Seamless shoreline alpha feathering (eliminates hard polygon water-shore intersection seam!)
+      float shoreAlpha = smoothstep(0.0, 0.16, vDepth);
+      gl_FragColor = vec4(clamp(finalCol, 0.0, 1.0), shoreAlpha);
     }
   `
 
@@ -1919,67 +2191,94 @@
     return { positions: pos, normals: nor, uvs: uv, indices: idx, partId }
   }
 
-  // Organic 3D Alpine Pine Tree: dark tapered cedar trunk + 4 crossed intersecting feathery pine needle planes!
+  // Organic 3D Alpine Spruce / Cedar: flared tapered trunk + staggered vertical fronds + 4 tiered drooping bough whorls!
   const buildOrganicPineGeometry = THREE => {
     const parts = []
-    const trunk = new THREE.CylinderGeometry(0.08, 0.21, 3.8, 6)
-    trunk.translate(0, 1.9, 0)
-    parts.push(extractMeshPart(trunk, 0))
+    const lowerTrunk = new THREE.CylinderGeometry(0.13, 0.27, 1.9, 6)
+    lowerTrunk.translate(0, 0.95, 0)
+    parts.push(extractMeshPart(lowerTrunk, 0))
+    const upperTrunk = new THREE.CylinderGeometry(0.045, 0.13, 3.2, 6)
+    upperTrunk.rotateZ(0.04)
+    upperTrunk.translate(0.05, 3.45, 0)
+    parts.push(extractMeshPart(upperTrunk, 0))
 
-    // 4 intersecting vertical feathery pine spray cards (0°, 45°, 90°, 135°) for rich 3D silhouette from every angle!
-    const angles = [0, Math.PI * 0.25, Math.PI * 0.5, Math.PI * 0.75]
+    // 3 staggered vertical feathery pine spray cards (0°, 60°, 120°) with slight organic lean
+    const angles = [0, Math.PI * 0.33, Math.PI * 0.67]
     for (let i = 0; i < angles.length; i += 1) {
-      const plane = new THREE.PlaneGeometry(3.4, 5.2)
+      const plane = new THREE.PlaneGeometry(3.5, 5.5)
+      plane.rotateZ((i - 1) * 0.045)
       plane.rotateY(angles[i])
-      plane.translate(0, 3.45, 0)
-      parts.push(extractMeshPart(plane, 1, 2.2))
+      plane.translate(0, 3.65, 0)
+      parts.push(extractMeshPart(plane, 1, 2.35))
     }
-    // 2 tilted horizontal mid-crown pine bough skirts so overhead/lake reflections look lush & volumetric
-    for (let j = 0; j < 2; j += 1) {
-      const skirt = new THREE.PlaneGeometry(2.7 - j * 0.6, 2.7 - j * 0.6)
-      skirt.rotateX(-Math.PI * 0.42)
-      skirt.rotateY(j * 1.1)
-      skirt.translate(0, 2.3 + j * 1.35, 0)
-      parts.push(extractMeshPart(skirt, 1, 1.8))
+    // 4 stepped horizontal drooping conifer bough-skirt whorls for true volumetric tiered alpine silhouettes!
+    const whorls = [
+      [1.85, 3.25, 0.0, -0.34],
+      [2.85, 2.65, 0.95, -0.38],
+      [3.82, 2.05, 2.05, -0.40],
+      [4.70, 1.42, 3.15, -0.42]
+    ]
+    for (let j = 0; j < whorls.length; j += 1) {
+      const [wy, ws, ry, tilt] = whorls[j]
+      const skirt = new THREE.PlaneGeometry(ws, ws)
+      skirt.rotateX(-Math.PI * 0.5 + tilt * 0.25)
+      skirt.rotateY(ry)
+      skirt.translate((j % 2 === 0 ? 0.08 : -0.07), wy, 0)
+      parts.push(extractMeshPart(skirt, 1, wy - 0.45))
     }
     return mergeTexturedParts(THREE, parts)
   }
 
-  // Organic 3D Broadleaf Tree (Sakura / Summer Oak / Autumn Maple & Ginkgo):
-  // Forking 3D wooden trunk + 4 outward branches + 14 intersecting botanical leaf/blossom cluster cards!
+  // Sculpted Gnarled Broadleaf Tree (Lakeside Momiji Maple / Somei-Yoshino Sakura):
+  // Curved 2-segment root-flared trunk + 5 asymmetric sweeping branches + 16 airy multi-tier foliage clusters!
   const buildOrganicBroadleafGeometry = THREE => {
     const parts = []
-    const trunk = new THREE.CylinderGeometry(0.11, 0.24, 2.3, 6)
-    trunk.translate(0, 1.15, 0)
-    parts.push(extractMeshPart(trunk, 0))
+    const trunkBase = new THREE.CylinderGeometry(0.15, 0.29, 1.35, 6)
+    trunkBase.rotateZ(0.09)
+    trunkBase.translate(0.05, 0.65, 0)
+    parts.push(extractMeshPart(trunkBase, 0))
 
-    // 4 graceful outward-reaching 3D wooden limbs
-    const limbDirs = [[0.55, 0.42, 0.25], [-0.52, 0.46, -0.22], [0.18, 0.48, -0.52], [-0.24, 0.44, 0.48]]
+    const trunkMid = new THREE.CylinderGeometry(0.095, 0.155, 1.35, 6)
+    trunkMid.rotateZ(-0.14)
+    trunkMid.rotateX(0.06)
+    trunkMid.translate(0.02, 1.85, 0.04)
+    parts.push(extractMeshPart(trunkMid, 0))
+
+    // 5 graceful outward-reaching 3D wooden limbs creating natural Japanese garden spread!
+    const limbDirs = [
+      [0.72, 0.36, 0.28, 1.75],
+      [-0.68, 0.42, -0.24, 1.65],
+      [0.24, 0.52, -0.66, 1.55],
+      [-0.32, 0.46, 0.62, 1.50],
+      [0.14, 0.68, 0.12, 1.35]
+    ]
     for (let b = 0; b < limbDirs.length; b += 1) {
-      const [bx, by, bz] = limbDirs[b]
-      const limb = new THREE.CylinderGeometry(0.045, 0.10, 1.45, 5)
-      limb.rotateZ(-bx * 1.05)
-      limb.rotateX(bz * 1.05)
-      limb.translate(bx * 0.75, 2.1 + by * 0.5, bz * 0.75)
+      const [bx, by, bz, len] = limbDirs[b]
+      const limb = new THREE.CylinderGeometry(0.036, 0.092, len, 5)
+      limb.rotateZ(-bx * 1.02)
+      limb.rotateX(bz * 1.02)
+      limb.translate(bx * 0.78, 2.25 + by * 0.58, bz * 0.78)
       parts.push(extractMeshPart(limb, 0))
     }
 
-    // 14 intersecting angled botanical leaf cluster cards forming an airy, organic crown
+    // 16 asymmetric airy foliage sub-crown pads with natural sky-gaps revealing crooked branches!
     const clusters = [
-      [0.0, 3.15, 0.0, 2.55, 0.0, 0.12],
-      [0.0, 3.15, 0.0, 2.55, Math.PI * 0.5, -0.10],
-      [0.0, 3.15, 0.0, 2.35, Math.PI * 0.25, 0.15],
-      [0.95, 2.75, 0.35, 2.10, 0.35, 0.22],
-      [0.95, 2.75, 0.35, 1.95, 1.85, -0.18],
-      [-0.92, 2.85, -0.28, 2.15, -0.42, 0.20],
-      [-0.92, 2.85, -0.28, 1.95, 1.12, -0.22],
-      [0.25, 2.82, -0.88, 2.05, 0.78, 0.18],
-      [0.25, 2.82, -0.88, 1.85, 2.32, -0.15],
-      [-0.32, 2.72, 0.86, 2.00, 0.22, -0.20],
-      [-0.32, 2.72, 0.86, 1.85, 1.78, 0.18],
-      [0.15, 3.72, -0.12, 1.95, 0.62, 0.35],
-      [-0.18, 3.68, 0.14, 1.85, 2.18, -0.32],
-      [0.0, 3.35, 0.0, 2.40, 0.0, Math.PI * 0.42]
+      [0.05, 3.45, 0.0, 2.45, 0.0, 0.14],
+      [0.05, 3.45, 0.0, 2.35, Math.PI * 0.52, -0.12],
+      [1.22, 2.92, 0.44, 2.15, 0.35, 0.24],
+      [1.22, 2.92, 0.44, 1.95, 1.88, -0.18],
+      [1.45, 2.65, 0.28, 1.65, 0.75, Math.PI * 0.36],
+      [-1.16, 3.04, -0.34, 2.18, -0.42, 0.22],
+      [-1.16, 3.04, -0.34, 1.92, 1.12, -0.20],
+      [-1.36, 2.74, -0.20, 1.60, 2.25, Math.PI * 0.38],
+      [0.36, 3.08, -1.04, 2.02, 0.78, 0.20],
+      [0.36, 3.08, -1.04, 1.82, 2.32, -0.16],
+      [-0.44, 2.94, 1.02, 1.98, 0.22, -0.22],
+      [-0.44, 2.94, 1.02, 1.78, 1.78, 0.18],
+      [0.24, 4.02, -0.18, 1.88, 0.62, 0.32],
+      [-0.22, 3.92, 0.22, 1.78, 2.18, -0.30],
+      [0.10, 3.68, 0.05, 2.30, 0.15, Math.PI * 0.44],
+      [-0.58, 3.48, -0.52, 1.68, 1.35, 0.28]
     ]
     for (let i = 0; i < clusters.length; i += 1) {
       const [cx, cy, cz, sc, ry, rx] = clusters[i]
@@ -1987,7 +2286,7 @@
       card.rotateX(rx)
       card.rotateY(ry)
       card.translate(cx, cy, cz)
-      parts.push(extractMeshPart(card, 1, 2.65))
+      parts.push(extractMeshPart(card, 1, 2.75))
     }
 
     return mergeTexturedParts(THREE, parts)
@@ -2014,17 +2313,19 @@
     return mergeTexturedParts(THREE, parts)
   }
 
-  // Graceful Multi-Blade Curved Grass / Shoreline Reed Tuft (5 slender naturally arching blades per tuft!)
+  // Graceful Multi-Blade Tall Lakeside Reed & Sedge Tuft (7 slender naturally arching blades per tuft!)
   const buildCurvedGrassTuftGeometry = THREE => {
     const positions = []
     const bladeHs = []
     const indices = []
     const blades = [
-      [0.0, 0.0, 0.0, 1.15, 0.060, 0.28],
-      [0.14, 0.06, 1.18, 0.96, 0.052, 0.34],
-      [-0.12, 0.09, 2.38, 1.05, 0.055, 0.32],
-      [0.07, -0.13, 3.72, 0.86, 0.048, 0.30],
-      [-0.10, -0.08, 5.10, 0.92, 0.050, 0.36]
+      [0.0, 0.0, 0.0, 1.38, 0.056, 0.30],
+      [0.16, 0.06, 0.92, 1.18, 0.050, 0.36],
+      [-0.14, 0.10, 1.88, 1.26, 0.052, 0.34],
+      [0.08, -0.15, 2.85, 1.05, 0.046, 0.32],
+      [-0.12, -0.09, 3.78, 1.12, 0.048, 0.38],
+      [0.18, -0.08, 4.72, 0.94, 0.044, 0.40],
+      [-0.06, 0.16, 5.58, 1.22, 0.048, 0.33]
     ]
     let vOff = 0
     for (let b = 0; b < blades.length; b += 1) {
@@ -2195,13 +2496,48 @@
   }
 
   const buildTerrainGeometry = (THREE, mobile) => {
-    const geom = new THREE.PlaneGeometry(440, 270, mobile ? 168 : 224, mobile ? 120 : 160)
+    const segX = mobile ? 168 : 240
+    const segZ = mobile ? 124 : 176
+    const geom = new THREE.PlaneGeometry(480, 310, segX, segZ)
     geom.rotateX(-Math.PI / 2)
-    geom.translate(0, 0, -90)
+    geom.translate(0, 0, -104)
     const pos = geom.attributes.position
-    for (let i = 0; i < pos.count; i += 1) {
-      pos.setY(i, getTerrainHeight(pos.getX(i), pos.getZ(i)))
+    const count = pos.count
+    const aoArr = new Float32Array(count)
+    const horizonArr = new Float32Array(count * 2)
+    const steps = [4.0, 10.0, 20.0, 34.0, 52.0]
+
+    for (let i = 0; i < count; i += 1) {
+      const vx = pos.getX(i)
+      const vz = pos.getZ(i)
+      const vy = getTerrainHeight(vx, vz)
+      pos.setY(i, vy)
+
+      // Bake local terrain cavity ambient occlusion + East/West Horizon-Mapped Cast Shadows (0.0ms GPU cost!)
+      const hAvg = (
+        getTerrainHeight(vx + 4.5, vz) +
+        getTerrainHeight(vx - 4.5, vz) +
+        getTerrainHeight(vx, vz + 4.5) +
+        getTerrainHeight(vx, vz - 4.5)
+      ) * 0.25
+      aoArr[i] = clamp(0.92 + (vy - hAvg) * 0.14, 0.45, 1.12)
+
+      let maxEast = 0.0
+      let maxWest = 0.0
+      if (vy > -1.0) {
+        for (let s = 0; s < steps.length; s += 1) {
+          const d = steps[s]
+          const sE = (getTerrainHeight(vx + d, vz - d * 0.22) - vy) / d
+          const sW = (getTerrainHeight(vx - d, vz - d * 0.22) - vy) / d
+          if (sE > maxEast) maxEast = sE
+          if (sW > maxWest) maxWest = sW
+        }
+      }
+      horizonArr[i * 2] = clamp(maxEast, 0.0, 2.2)
+      horizonArr[i * 2 + 1] = clamp(maxWest, 0.0, 2.2)
     }
+    geom.setAttribute('aTerrainAO', new THREE.BufferAttribute(aoArr, 1))
+    geom.setAttribute('aHorizonEW', new THREE.BufferAttribute(horizonArr, 2))
     geom.computeVertexNormals()
     return geom
   }
@@ -2219,26 +2555,36 @@
     return geom
   }
 
-  const makeArchitectMat = (THREE, baseUniforms, rgb, allowSnow, isInstanced, doubleSide) => new THREE.ShaderMaterial({
+  const makeArchitectMat = (THREE, baseUniforms, rgb, allowSnow, isInstanced, doubleSide, matType) => new THREE.ShaderMaterial({
     vertexShader: isInstanced ? INSTANCED_ARCHITECT_VERT : ARCHITECT_VERT,
     fragmentShader: ARCHITECT_FRAG,
     side: doubleSide ? THREE.DoubleSide : THREE.FrontSide,
     uniforms: Object.assign({}, baseUniforms, {
       uBaseColor: { value: new THREE.Vector3(rgb[0], rgb[1], rgb[2]) },
-      uAllowSnow: { value: allowSnow ? 1.0 : 0.0 }
+      uAllowSnow: { value: allowSnow ? 1.0 : 0.0 },
+      uMatType: { value: typeof matType === 'number' ? matType : 0.0 }
     })
   })
 
-  // Refined Wooden Lakeside Pier + Lantern + Sculpted Open Hollow Rowboat + Catenary Sagging Mooring Rope!
+  const makeShojiMat = (THREE, baseUniforms) => new THREE.ShaderMaterial({
+    vertexShader: SHOJI_VERT,
+    fragmentShader: SHOJI_FRAG,
+    uniforms: baseUniforms,
+    side: THREE.DoubleSide
+  })
+
+  // Refined Wooden Lakeside Pier + Latticed Lantern + Clinker Hollow Rowboat + Slatted Resting Bench & Teapot!
   const buildPierLanternAndBoat = (THREE, baseUniforms, glowTex) => {
     const group = new THREE.Group()
     group.position.set(12.2, 0, 20.0)
     group.rotation.y = 0.56
 
-    const woodLightMat = makeArchitectMat(THREE, baseUniforms, [0.42, 0.31, 0.23], true, false, false)
-    const woodDarkMat = makeArchitectMat(THREE, baseUniforms, [0.24, 0.17, 0.13], true, false, true)
-    const woodDeepMat = makeArchitectMat(THREE, baseUniforms, [0.14, 0.10, 0.08], false, false, false)
-    const ironDarkMat = makeArchitectMat(THREE, baseUniforms, [0.14, 0.16, 0.19], true, false, true)
+    const woodLightMat = makeArchitectMat(THREE, baseUniforms, [0.46, 0.34, 0.24], true, false, false, 1)
+    const woodDarkMat = makeArchitectMat(THREE, baseUniforms, [0.28, 0.20, 0.14], true, false, true, 1)
+    const woodBoatMat = makeArchitectMat(THREE, baseUniforms, [0.35, 0.24, 0.17], true, false, true, 1)
+    const woodDeepMat = makeArchitectMat(THREE, baseUniforms, [0.16, 0.11, 0.09], false, false, false, 1)
+    const ironDarkMat = makeArchitectMat(THREE, baseUniforms, [0.14, 0.16, 0.19], true, false, true, 0)
+    const tileCapMat = makeArchitectMat(THREE, baseUniforms, [0.15, 0.17, 0.21], true, false, true, 2)
 
     const plankGeom = new THREE.BoxGeometry(2.38, 0.11, 0.42)
     for (let i = 0; i < 25; i += 1) {
@@ -2289,14 +2635,29 @@
     baseCollar.position.y = 1.54
     lampGroup.add(baseCollar)
 
-    const roof = new THREE.Mesh(buildCurvedEaveRoofGeometry(THREE, 0.36, 0.36, 0.24, 0.05), ironDarkMat)
+    const roof = new THREE.Mesh(buildCurvedEaveRoofGeometry(THREE, 0.38, 0.38, 0.25, 0.06), tileCapMat)
     roof.position.y = 1.92
     lampGroup.add(roof)
+    const lampFinial = new THREE.Mesh(new THREE.SphereGeometry(0.042, 8, 6), ironDarkMat)
+    lampFinial.position.y = 2.18
+    lampGroup.add(lampFinial)
 
-    const lampCoreMat = new THREE.MeshBasicMaterial({ color: 0xffd594 })
-    const lampCore = new THREE.Mesh(new THREE.BoxGeometry(0.27, 0.36, 0.27), lampCoreMat)
+    const lampCoreMat = makeShojiMat(THREE, baseUniforms)
+    const lampCore = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.36, 0.26), lampCoreMat)
     lampCore.position.y = 1.74
     lampGroup.add(lampCore)
+
+    // Delicate wrought-iron corner mullions & mid-crossbar framing the glowing paper lantern!
+    for (const cx of [-0.135, 0.135]) {
+      for (const cz of [-0.135, 0.135]) {
+        const mullion = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.38, 0.022), ironDarkMat)
+        mullion.position.set(cx, 1.74, cz)
+        lampGroup.add(mullion)
+      }
+    }
+    const midBand = new THREE.Mesh(new THREE.BoxGeometry(0.295, 0.02, 0.295), ironDarkMat)
+    midBand.position.y = 1.74
+    lampGroup.add(midBand)
 
     const haloMat = new THREE.SpriteMaterial({
       map: glowTex,
@@ -2318,8 +2679,8 @@
     boatGroup.position.set(-3.05, 0.02, -9.4)
     boatGroup.rotation.y = -0.26
 
-    // True hollow curved plank hull with thick wooden gunwale rim
-    const openHull = new THREE.Mesh(buildOpenRowboatGeometry(THREE), woodDarkMat)
+    // True hollow curved clinker cedar plank hull with thick wooden gunwale rim
+    const openHull = new THREE.Mesh(buildOpenRowboatGeometry(THREE), woodBoatMat)
     boatGroup.add(openHull)
 
     // Darkened wet wooden floorboards lining the open bilge cavity
@@ -2384,28 +2745,40 @@
     ropeCoil.position.set(-0.62, 0.64, -7.65)
     group.add(ropeCoil)
 
-    // Weathered Lakeside Resting Bench facing the pavilion & snow peaks (inviting visitors to sit & rest!)
+    // Handcrafted Slatted Lakeside Resting Bench with armrests, ceramic teapot & teacup!
     const benchGroup = new THREE.Group()
     benchGroup.position.set(0.54, 0.62, -6.1)
     benchGroup.rotation.y = -Math.PI * 0.5
-    const benchSeat = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.075, 0.44), woodLightMat)
-    benchSeat.position.y = 0.42
-    benchGroup.add(benchSeat)
-    const benchBack = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.24, 0.065), woodDarkMat)
-    benchBack.position.set(0, 0.70, -0.20)
-    benchBack.rotation.x = -0.14
-    benchGroup.add(benchBack)
-    for (const bx of [-0.66, 0.66]) {
-      const legF = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.42, 0.08), woodDarkMat)
-      legF.position.set(bx, 0.21, 0.14)
-      benchGroup.add(legF)
-      const legB = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.78, 0.08), woodDarkMat)
-      legB.position.set(bx, 0.39, -0.17)
-      benchGroup.add(legB)
+    for (const sz of [-0.13, 0.0, 0.13]) {
+      const seatSlat = new THREE.Mesh(new THREE.BoxGeometry(1.68, 0.055, 0.115), woodLightMat)
+      seatSlat.position.set(0, 0.42, sz)
+      benchGroup.add(seatSlat)
     }
-    // Small warm ceramic teacup resting peacefully on the pier bench
-    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.032, 0.075, 8), makeArchitectMat(THREE, baseUniforms, [0.76, 0.72, 0.66], false, false, false))
-    cup.position.set(0.52, 0.495, 0.04)
+    for (const sy of [0.62, 0.77]) {
+      const backSlat = new THREE.Mesh(new THREE.BoxGeometry(1.68, 0.10, 0.048), woodDarkMat)
+      backSlat.position.set(0, sy, -0.20 - (sy - 0.62) * 0.16)
+      backSlat.rotation.x = -0.14
+      benchGroup.add(backSlat)
+    }
+    for (const bx of [-0.72, 0.72]) {
+      const legF = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.56, 0.075), woodDarkMat)
+      legF.position.set(bx, 0.28, 0.15)
+      benchGroup.add(legF)
+      const legB = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.84, 0.075), woodDarkMat)
+      legB.position.set(bx, 0.42, -0.18)
+      benchGroup.add(legB)
+      const armrest = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.045, 0.38), woodLightMat)
+      armrest.position.set(bx, 0.57, -0.02)
+      benchGroup.add(armrest)
+    }
+    // Dark glazed ceramic kyusu teapot + warm teacup resting peacefully on the lakeside bench
+    const glazeMat = makeArchitectMat(THREE, baseUniforms, [0.22, 0.20, 0.22], false, false, false, 0)
+    const teapot = new THREE.Mesh(new THREE.SphereGeometry(0.072, 10, 8), glazeMat)
+    teapot.scale.set(1.0, 0.78, 1.0)
+    teapot.position.set(0.36, 0.50, 0.02)
+    benchGroup.add(teapot)
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.032, 0.072, 8), makeArchitectMat(THREE, baseUniforms, [0.78, 0.74, 0.68], false, false, false, 0))
+    cup.position.set(0.54, 0.485, 0.04)
     benchGroup.add(cup)
     group.add(benchGroup)
 
@@ -2425,11 +2798,11 @@
     group.position.set(-23.5, baseY - 0.12, -39.5)
     group.rotation.y = 0.48
 
-    const darkRoofMat = makeArchitectMat(THREE, baseUniforms, [0.15, 0.17, 0.21], true, false, true)
-    const stoneMat = makeArchitectMat(THREE, baseUniforms, [0.24, 0.26, 0.30], true, false, false)
-    const timberMat = makeArchitectMat(THREE, baseUniforms, [0.26, 0.18, 0.13], true, false, false)
-    const plasterMat = makeArchitectMat(THREE, baseUniforms, [0.64, 0.60, 0.54], false, false, false)
-    const winMat = new THREE.MeshBasicMaterial({ color: 0xdfd4c0, side: THREE.DoubleSide })
+    const darkRoofMat = makeArchitectMat(THREE, baseUniforms, [0.16, 0.18, 0.22], true, false, true, 2)
+    const stoneMat = makeArchitectMat(THREE, baseUniforms, [0.27, 0.29, 0.32], true, false, false, 4)
+    const timberMat = makeArchitectMat(THREE, baseUniforms, [0.29, 0.20, 0.14], true, false, false, 1)
+    const plasterMat = makeArchitectMat(THREE, baseUniforms, [0.68, 0.64, 0.58], false, false, false, 0)
+    const winMat = makeShojiMat(THREE, baseUniforms)
 
     // Stone plinth foundation anchoring into the rocky headland
     const plinth = new THREE.Mesh(new THREE.BoxGeometry(5.8, 1.3, 4.6), stoneMat)
@@ -2739,8 +3112,8 @@
 
       reflectionCamera = new THREE.PerspectiveCamera(fov, aspect, 0.5, 720)
       const isWebGL2 = Boolean(renderer.capabilities && renderer.capabilities.isWebGL2)
-      // Desktop: 768x768 4x MSAA planar reflection; Mobile: 512x512 single-sample for cool battery & locked 60 FPS!
-      const rtSize = mobile ? 512 : 768
+      // Desktop: 1024x1024 4x MSAA planar reflection; Mobile: 512x512 single-sample for cool battery & locked 60 FPS!
+      const rtSize = mobile ? 512 : 1024
       reflectionRT = new THREE.WebGLRenderTarget(rtSize, rtSize, {
         minFilter: THREE.LinearFilter,
         magFilter: THREE.LinearFilter,
@@ -2753,6 +3126,7 @@
       waterPlane3D = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
 
       const detailTex = createDetailDataTexture(THREE)
+      const archTex = createArchitectureAtlasTexture(THREE)
       const cloudTex = createCloudPuffTexture(THREE)
       const leafTex = createBroadleafCardTexture(THREE)
       const pineTex = createPineBoughTexture(THREE)
@@ -2773,6 +3147,7 @@
         uLampGlow: { value: pal.lampGlow },
         uClipBelowWater: { value: 0.0 },
         uDetailTex: { value: detailTex },
+        uArchTex: { value: archTex },
         uLeafTex: { value: leafTex },
         uPineTex: { value: pineTex },
         uZenithCol: { value: new THREE.Vector3(...pal.zenith) },
@@ -2814,14 +3189,14 @@
       skyDome.renderOrder = 0
       scene.add(skyDome)
 
-      // 2. 3D Celestial Stars with Dense Diagonal Milky Way Concentration!
-      const starCount = mobile ? 1800 : 3200
-      const bandStarCount = mobile ? 940 : 1650
+      // 2. 3D Celestial Stars with Dense Diagonal Milky Way & Realistic Blackbody Star Colors!
+      const starCount = mobile ? 2000 : 3800
+      const bandStarCount = mobile ? 1050 : 2050
       const sPos = new Float32Array(starCount * 3)
       const sSize = new Float32Array(starCount)
       const sPhase = new Float32Array(starCount)
       const sCol = new Float32Array(starCount * 3)
-      const sTints = [[0.76, 0.88, 1.0], [1.0, 0.98, 0.94], [0.68, 0.82, 1.0], [1.0, 0.88, 0.72]]
+      const sTints = [[0.72, 0.86, 1.0], [1.0, 0.98, 0.95], [0.64, 0.80, 1.0], [1.0, 0.86, 0.68], [1.0, 0.78, 0.74]]
       for (let i = 0; i < starCount; i += 1) {
         let dirX, dirY, dirZ
         if (i < bandStarCount) {
@@ -2875,41 +3250,34 @@
       starPoints.renderOrder = 1
       scene.add(starPoints)
 
-      // 3. Elevated 3D Volumetric Cumulus Cloud Deck (soaring ABOVE & BEHIND the alpine peaks!)
-      const puffCount = 132
+      // 3. Curated 3D Alpine Saddle Cloud Wisps (36 peak-hugging parallax wisps complementing the seamless curved-dome volumetric cloud deck!)
+      const puffCount = 36
       const puffOffsets = new Float32Array(puffCount * 3)
       const puffScales = new Float32Array(puffCount * 3)
       const puffPhases = new Float32Array(puffCount)
       const puffShades = new Float32Array(puffCount)
       const clusterCenters = [
-        [-155, 58, -238, 1.32],
-        [-84, 64, -228, 1.22],
-        [-16, 68, -252, 1.38],
-        [52, 62, -234, 1.24],
-        [124, 58, -224, 1.18],
-        [-125, 48, -172, 0.92],
-        [105, 50, -176, 0.95],
-        [-28, 56, -205, 1.02],
-        [176, 60, -242, 1.20],
-        [-192, 56, -210, 1.12]
+        [-115, 36, -182, 0.95],
+        [-42, 42, -196, 1.05],
+        [48, 38, -192, 0.98],
+        [118, 36, -178, 0.92]
       ]
       let pIdx = 0
       for (let c = 0; c < clusterCenters.length; c += 1) {
         const [cx, cy, cz, cs] = clusterCenters[c]
-        const puffsInCluster = c < 2 ? 14 : 13
-        for (let k = 0; k < puffsInCluster && pIdx < puffCount; k += 1) {
-          const spreadX = (seededRand() - 0.5) * 52 * cs
-          const domeRise = Math.max(0, 1 - Math.abs(spreadX) / (30 * cs)) * seededRand() * 18 * cs
+        for (let k = 0; k < 9 && pIdx < puffCount; k += 1) {
+          const spreadX = (seededRand() - 0.5) * 44 * cs
+          const domeRise = Math.max(0, 1 - Math.abs(spreadX) / (26 * cs)) * seededRand() * 11 * cs
           puffOffsets[pIdx * 3] = cx + spreadX
           puffOffsets[pIdx * 3 + 1] = cy + domeRise
-          puffOffsets[pIdx * 3 + 2] = cz + (seededRand() - 0.5) * 22
-          const wScale = (24 + seededRand() * 28) * cs
-          const hScale = wScale * (0.64 + seededRand() * 0.24)
+          puffOffsets[pIdx * 3 + 2] = cz + (seededRand() - 0.5) * 18
+          const wScale = (28 + seededRand() * 24) * cs
+          const hScale = wScale * (0.42 + seededRand() * 0.16)
           puffScales[pIdx * 3] = wScale
           puffScales[pIdx * 3 + 1] = hScale
-          puffScales[pIdx * 3 + 2] = 0.65 + seededRand() * 0.65
+          puffScales[pIdx * 3 + 2] = 0.55 + seededRand() * 0.55
           puffPhases[pIdx] = seededRand() * Math.PI * 2
-          puffShades[pIdx] = clamp(0.28 + (domeRise / (18 * cs)) * 0.72, 0.15, 1.0)
+          puffShades[pIdx] = clamp(0.32 + (domeRise / (11 * cs)) * 0.68, 0.20, 1.0)
           pIdx += 1
         }
       }
@@ -3023,66 +3391,77 @@
       }
 
       const heroBroadleafSpots = [
-        // Left foreground edge frame (shifted outward so sightline to lakeside pavilion stays 100% open!)
-        [-25.2, 13.8, 1.92, 0.76],
-        [-28.8, 9.8, 1.68, 0.36],
-        [-22.2, 18.8, 1.48, 0.88],
+        // Left foreground overhanging lakeside maple/sakura frame + cove grove (zero occlusion of pavilion!)
+        [-22.2, 15.6, 2.15, 0.28, 0.35],
+        [-25.4, 13.4, 1.98, 0.72],
+        [-28.8, 9.8, 1.72, 0.42],
+        [-22.4, 19.2, 1.52, 0.84],
         // Right foreground pier framing
-        [18.2, 17.5, 1.72, 0.65],
-        [22.5, 14.2, 1.88, 0.28],
+        [18.2, 17.5, 1.78, 0.65],
+        [22.5, 14.2, 1.92, 0.24],
         // Framing the lakeside sanctuary pavilion (-23.5, -39.5) on dry island earth on both left & right!
-        [-28.6, -40.2, 1.85, 0.84, 0.42],
-        [-27.2, -43.2, 1.78, 0.40, 0.42],
-        [-19.4, -41.4, 1.68, 0.72, 0.58],
+        [-28.8, -40.4, 1.82, 0.78, 0.44],
+        [-27.2, -43.4, 1.74, 0.34, 0.44],
+        [-19.2, -41.6, 1.62, 0.66, 0.56],
         // Right peninsula lush colorful grove
-        [33.0, -42.0, 2.15, 0.78],
-        [38.5, -46.0, 1.98, 0.32],
-        [29.5, -47.0, 1.75, 0.62],
-        [43.0, -39.0, 1.92, 0.88]
+        [33.0, -42.0, 2.15, 0.76],
+        [38.5, -46.0, 1.98, 0.28],
+        [29.5, -47.0, 1.75, 0.56],
+        [43.0, -39.0, 1.92, 0.84]
       ]
 
       populateForest(buildOrganicPineGeometry(THREE), mobile ? 520 : 900, 0, 0.88, 22.5, -118, 22, null)
       populateForest(buildOrganicBroadleafGeometry(THREE), mobile ? 420 : 700, 1, 0.72, 14.5, -104, 23, heroBroadleafSpots)
       // Low shoreline mossy/flowering shrubs bridging wet shoreline banks, boulders & tree trunks
-      populateForest(buildOrganicShrubGeometry(THREE), mobile ? 120 : 220, 1, 0.35, 3.2, -92, 23, null, [0.75, 0.75])
+      populateForest(buildOrganicShrubGeometry(THREE), mobile ? 140 : 260, 1, 0.28, 3.2, -92, 23, null, [0.75, 0.78])
 
-      // 6. Instanced Angular Shoreline Boulders (curated foreground spit rocks + scattered natural wet shore boulders!)
-      const rockGeom = new THREE.DodecahedronGeometry(0.9, 0)
+      // 6. High-Subdivision Sculpted Mossy Granite Boulders (ZERO low-poly dodecahedrons!)
+      const rockGeom = new THREE.IcosahedronGeometry(0.95, 2)
       const rPos = rockGeom.attributes.position
       for (let i = 0; i < rPos.count; i += 1) {
         const vx = rPos.getX(i), vy = rPos.getY(i), vz = rPos.getZ(i)
-        const n = 0.78 + hashInt2(Math.round(vx * 10), Math.round(vz * 10), 401) * 0.44
-        rPos.setXYZ(i, vx * n, vy * (0.72 + n * 0.25), vz * n)
+        const n1 = fbmCPU(vx * 1.45 + 3.1, vz * 1.45 - 2.4, 3, 401)
+        const n2 = ridgeFbmCPU(vx * 2.1 - vy * 1.3, vz * 2.1 + 1.7, 2, 613)
+        const scaleR = 0.74 + n1 * 0.34 + n2 * 0.20
+        const flatBase = vy < 0 ? (vy * 0.55) : (vy * (0.76 + n1 * 0.26))
+        rPos.setXYZ(i, vx * scaleR, flatBase, vz * scaleR)
       }
       rockGeom.computeVertexNormals()
-      const rockMat = makeArchitectMat(THREE, sharedUniforms, [0.24, 0.27, 0.32], true, true, false)
+      const rockMat = makeArchitectMat(THREE, sharedUniforms, [0.27, 0.29, 0.33], true, true, false, 3)
       const rockDummy = new THREE.Object3D()
       const rockMatrices = []
-      // Handcrafted weathered granite boulders anchoring the bottom-left foreground spit to balance the pier!
+      // Curated layered mossy granite boulders anchoring the bottom-left cove & pavilion island flanks!
       const heroShoreRocks = [
-        [-20.6, 12.6, 1.45, 0.72, 1.25],
-        [-22.2, 15.6, 1.15, 0.58, 1.05],
-        [-19.5, 16.4, 0.92, 0.48, 0.88]
+        [-19.8, 12.2, 1.75, 0.86, 1.42],
+        [-21.8, 14.8, 1.42, 0.72, 1.25],
+        [-18.6, 15.8, 1.12, 0.56, 1.02],
+        [-23.2, 12.4, 1.35, 0.68, 1.18],
+        [-17.4, 13.6, 0.88, 0.44, 0.82],
+        // Pavilion island natural flank rocks (never blocking the front landing jetty!)
+        [-27.8, -38.6, 1.38, 0.76, 1.18],
+        [-19.8, -37.2, 1.22, 0.64, 1.08],
+        [-25.4, -36.0, 0.92, 0.48, 0.85]
       ]
       for (let r = 0; r < heroShoreRocks.length; r += 1) {
         const [rx, rz, sx, sy, sz] = heroShoreRocks[r]
         const ry = getTerrainHeight(rx, rz)
-        rockDummy.position.set(rx, ry - 0.16, rz)
-        rockDummy.rotation.set(0.25 + r * 0.7, r * 1.4, 0.18)
+        rockDummy.position.set(rx, ry - 0.14, rz)
+        rockDummy.rotation.set(0.08 * (r % 3 - 1), r * 1.35, 0.08 * ((r + 1) % 3 - 1))
         rockDummy.scale.set(sx, sy, sz)
         rockDummy.updateMatrix()
         rockMatrices.push(rockDummy.matrix.clone())
       }
-      for (let i = 0; i < 720 && rockMatrices.length < 66; i += 1) {
-        const x = (seededRand() - 0.5) * 140
+      for (let i = 0; i < 820 && rockMatrices.length < 78; i += 1) {
+        const x = (seededRand() - 0.5) * 145
         const z = -92.0 + seededRand() * 116.0
-        if (Math.hypot(x - 11.0, z - 17.0) < 5.0) continue
+        if (Math.hypot(x - 11.0, z - 17.0) < 5.2) continue
+        // Keep the pavilion front landing jetty completely unobstructed!
+        if (Math.hypot(x + 21.8, z + 35.5) < 4.4) continue
         const y = getTerrainHeight(x, z)
-        // Place strictly right along the natural wet shoreline (-0.25m to +0.85m)!
-        if (y < -0.25 || y > 0.85) continue
-        rockDummy.position.set(x, y - 0.14, z)
-        rockDummy.rotation.set(seededRand() * 3, seededRand() * 3, seededRand() * 3)
-        rockDummy.scale.set(0.65 + seededRand() * 1.4, 0.40 + seededRand() * 0.65, 0.65 + seededRand() * 1.35)
+        if (y < -0.25 || y > 0.88) continue
+        rockDummy.position.set(x, y - 0.16, z)
+        rockDummy.rotation.set((seededRand() - 0.5) * 0.35, seededRand() * Math.PI * 2, (seededRand() - 0.5) * 0.35)
+        rockDummy.scale.set(0.68 + seededRand() * 1.45, 0.42 + seededRand() * 0.68, 0.68 + seededRand() * 1.38)
         rockDummy.updateMatrix()
         rockMatrices.push(rockDummy.matrix.clone())
       }
@@ -3093,28 +3472,39 @@
         scene.add(rockMesh)
       }
 
-      // 7. Graceful Curved Multi-Blade Shoreline Reeds & Meadow Grass Tufts
+      // 7. Lush Tall Lakeside Reeds & Meadow Grass Tufts (curated dense foreground coves + scattered shoreline!)
       const bladeGeom = buildCurvedGrassTuftGeometry(THREE)
       const grassMatrices = []
       const grassPhases = []
       const grassTones = []
       const gDummy = new THREE.Object3D()
-      const maxGrassTufts = mobile ? 320 : 680
-      for (let i = 0; i < 3400 && grassMatrices.length < maxGrassTufts; i += 1) {
+      const addGrassTuft = (gx, gz, scBase) => {
+        const gy = getTerrainHeight(gx, gz)
+        if (gy < -0.18 || gy > 2.4) return
+        gDummy.position.set(gx, Math.max(-0.08, gy - 0.06), gz)
+        gDummy.rotation.set((seededRand() - 0.5) * 0.14, seededRand() * Math.PI * 2, (seededRand() - 0.5) * 0.14)
+        gDummy.scale.set(scBase, scBase * (0.78 + seededRand() * 0.55), scBase)
+        gDummy.updateMatrix()
+        grassMatrices.push(gDummy.matrix.clone())
+        grassPhases.push(seededRand() * Math.PI * 2)
+        grassTones.push(seededRand())
+      }
+      // Dense foreground left cove reedbed & right pier bank reeds (transforms foreground into rich living lakeside!)
+      for (let k = 0; k < (mobile ? 28 : 48); k += 1) {
+        addGrassTuft(-22.5 + seededRand() * 7.8, 10.2 + seededRand() * 10.5, 0.72 + seededRand() * 0.68)
+      }
+      for (let k = 0; k < (mobile ? 20 : 34); k += 1) {
+        addGrassTuft(13.5 + seededRand() * 9.5, 13.5 + seededRand() * 10.5, 0.68 + seededRand() * 0.64)
+      }
+      const maxGrassTufts = mobile ? 380 : 780
+      for (let i = 0; i < 3600 && grassMatrices.length < maxGrassTufts; i += 1) {
         const x = (seededRand() - 0.5) * 135
         const z = -72.0 + seededRand() * 98.0
         if (z > 14 && Math.abs(x) < 14) continue
         if (Math.hypot(x + 23.5, z + 39.5) < 4.5) continue
         const y = getTerrainHeight(x, z)
         if (y < 0.02 || y > 2.2) continue
-        gDummy.position.set(x, y - 0.08, z)
-        gDummy.rotation.set((seededRand() - 0.5) * 0.14, seededRand() * Math.PI * 2, (seededRand() - 0.5) * 0.14)
-        const sc = 0.54 + seededRand() * 0.72
-        gDummy.scale.set(sc, sc * (0.70 + seededRand() * 0.55), sc)
-        gDummy.updateMatrix()
-        grassMatrices.push(gDummy.matrix.clone())
-        grassPhases.push(seededRand() * Math.PI * 2)
-        grassTones.push(seededRand())
+        addGrassTuft(x, z, 0.58 + seededRand() * 0.74)
       }
       bladeGeom.setAttribute('aPhase', new THREE.InstancedBufferAttribute(new Float32Array(grassPhases), 1))
       bladeGeom.setAttribute('aTone', new THREE.InstancedBufferAttribute(new Float32Array(grassTones), 1))
@@ -3358,7 +3748,9 @@
         new THREE.ShaderMaterial({
           vertexShader: WATER_VERT,
           fragmentShader: WATER_FRAG,
-          uniforms: waterUniforms
+          uniforms: waterUniforms,
+          transparent: true,
+          depthWrite: true
         })
       )
       waterMesh.position.y = 0
@@ -3452,11 +3844,13 @@
 
       if (pierRig) {
         const flicker = 0.94 + 0.06 * Math.sin(elapsedSec * 7.2 + Math.cos(elapsedSec * 12.4))
-        pierRig.haloMat.opacity = pal.lampGlow * 0.92 * flicker
-        const rC = lerp(0.76, 1.0, pal.lampGlow)
-        const gC = lerp(0.74, 0.84, pal.lampGlow)
-        const bC = lerp(0.68, 0.48, pal.lampGlow)
-        pierRig.lampCoreMat.color.setRGB(rC, gC, bC)
+        pierRig.haloMat.opacity = pal.lampGlow * 0.88 * flicker
+        if (pierRig.lampCoreMat && pierRig.lampCoreMat.color) {
+          const rC = lerp(0.76, 1.0, pal.lampGlow)
+          const gC = lerp(0.74, 0.84, pal.lampGlow)
+          const bC = lerp(0.68, 0.48, pal.lampGlow)
+          pierRig.lampCoreMat.color.setRGB(rC, gC, bC)
+        }
         if (pierRig.boatGroup) {
           pierRig.boatGroup.position.y = 0.04 + Math.sin(elapsedSec * 1.45) * 0.045
           pierRig.boatGroup.rotation.z = Math.sin(elapsedSec * 1.15 + 0.8) * 0.038
@@ -3465,12 +3859,13 @@
       }
 
       if (pavilionRig) {
-        pavilionRig.pavGlowMat.opacity = pal.lampGlow * 0.82
-        // Warm cream rice-paper shoji in daylight -> rich glowing golden amber at dusk, rain & night!
-        const wR = lerp(0.84, 1.0, pal.lampGlow)
-        const wG = lerp(0.80, 0.80, pal.lampGlow)
-        const wB = lerp(0.70, 0.42, pal.lampGlow)
-        pavilionRig.winMat.color.setRGB(wR, wG, wB)
+        pavilionRig.pavGlowMat.opacity = pal.lampGlow * 0.78
+        if (pavilionRig.winMat && pavilionRig.winMat.color) {
+          const wR = lerp(0.84, 1.0, pal.lampGlow)
+          const wG = lerp(0.80, 0.80, pal.lampGlow)
+          const wB = lerp(0.70, 0.42, pal.lampGlow)
+          pavilionRig.winMat.color.setRGB(wR, wG, wB)
+        }
         if (pavilionRig.smokeUniforms) {
           pavilionRig.smokeUniforms.uSmokeAlpha.value = smoothstep(0.22, 0.75, pal.lampGlow) * 0.26
         }
@@ -3878,8 +4273,9 @@
   ].map(buildPetalSprite)
 
   const ginkgoSprites = [
-    { stem: [204, 132, 28], body: [245, 192, 56], tip: [255, 226, 112] },
-    { stem: [192, 104, 34], body: [236, 162, 48], tip: [252, 212, 92] }
+    { stem: [152, 82, 24], body: [212, 146, 48], tip: [232, 184, 86] },
+    { stem: [132, 48, 28], body: [188, 76, 38], tip: [216, 118, 52] },
+    { stem: [118, 34, 28], body: [164, 52, 36], tip: [196, 86, 54] }
   ].map(buildGinkgoSprite)
 
   const snowCrystalSprite = buildSnowCrystalSprite()
@@ -4008,10 +4404,10 @@
       kind,
       x: rand(-40, width + 40),
       y: initial ? rand(-40, height + 20) : rand(-55, -12),
-      vx: rand(-0.22, 0.44),
-      vy: (0.36 + z * 0.68) * (isGinkgo ? 1.06 : 1.0),
-      size: (isGinkgo ? 7.8 : 7.0) + z * 8.6,
-      alpha: 0.32 + z * 0.52,
+      vx: rand(-0.20, 0.38),
+      vy: (0.34 + z * 0.62) * (isGinkgo ? 1.04 : 1.0),
+      size: (isGinkgo ? 5.2 : 5.0) + z * 5.6,
+      alpha: 0.24 + z * 0.42,
       yaw: rand(0, Math.PI * 2),
       yawSpeed: rand(-0.014, 0.014),
       pitch: rand(0, Math.PI * 2),
