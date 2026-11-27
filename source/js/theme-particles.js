@@ -641,8 +641,9 @@
     const sunDir = [sx / sLen, sy / sLen, sz / sLen]
 
     const nightAngle = (((h + 12) % 24 - 5.75) / 12.5) * Math.PI
-    const moonElev = Math.max(0.24, Math.sin(nightAngle) * 0.62)
-    const moonAzim = Math.cos(nightAngle) * 0.68
+    // Keep the crescent moon gracefully framed inside BOTH desktop (45° FOV) & mobile skies above the right alpine peaks!
+    const moonElev = Math.max(0.19, Math.sin(nightAngle) * 0.34)
+    const moonAzim = Math.cos(nightAngle) * 0.56
     const mce = Math.cos(moonElev)
     const mx = Math.sin(moonAzim) * mce
     const my = Math.sin(moonElev)
@@ -793,9 +794,9 @@
       float n1 = texture2D(uDetailTex, uv).r;
       float n2 = texture2D(uDetailTex, uv * 2.18 + vec2(0.37, 0.19)).g;
       float n3 = texture2D(uDetailTex, uv * 4.75 - vec2(0.14, 0.62)).a;
-      float fbm = n1 * 0.56 + n2 * 0.30 + n3 * 0.14;
-      float thresh = mix(0.60, 0.31, clamp(cover, 0.0, 1.0));
-      return smoothstep(thresh, thresh + 0.28, fbm);
+      float fbm = smoothstep(0.22, 0.80, n1 * 0.54 + n2 * 0.30 + n3 * 0.16);
+      float thresh = mix(0.56, 0.22, clamp(cover, 0.0, 1.0));
+      return smoothstep(thresh, thresh + 0.24, fbm);
     }
 
     void main() {
@@ -824,35 +825,34 @@
 
       // Seamless Curved-Dome Volumetric Multi-Octave Clouds with 3-Tap Directional Sun Self-Shadowing!
       if (skyT > 0.025) {
-        float horizonFade = smoothstep(0.025, 0.16, skyT) * (1.0 - smoothstep(0.84, 0.99, skyT));
-        float domeDist = 1.0 / (skyT + 0.135);
+        float horizonFade = smoothstep(0.025, 0.13, skyT) * (1.0 - smoothstep(0.76, 0.96, skyT));
+        float domeDist = 1.0 / (skyT + 0.16);
         vec2 drift = vec2(uTime * (0.0032 + uWindSpeed * 0.0022), -uTime * 0.0012);
-        vec2 cUv = rd.xz * domeDist * 0.145 + drift;
-        float effCover = clamp(uCloudCover * 0.92 + uRainFactor * 0.48, 0.12, 0.96);
+        vec2 cUv = rd.xz * domeDist * 0.135 + drift;
+        float effCover = clamp(0.26 + uCloudCover * 0.72 + uRainFactor * 0.44, 0.28, 0.96);
         float dens = sampleSkyCloud(cUv, effCover);
-        float nightKeep = 1.0 - uNightFactor * (0.88 - uRainFactor * 0.72);
+        float nightKeep = 1.0 - uNightFactor * (0.90 - uRainFactor * 0.74);
         if (dens > 0.01 && nightKeep > 0.03) {
-          vec2 sunStep = normalize(uSunDir.xz + vec2(0.0001)) * 0.042;
+          vec2 sunStep = normalize(uSunDir.xz + vec2(0.0001)) * 0.048;
           float occ =
             sampleSkyCloud(cUv + sunStep * 0.65, effCover) * 0.55 +
-            sampleSkyCloud(cUv + sunStep * 1.75, effCover) * 0.45;
-          float sunLit = exp(-occ * 1.95);
-          float powder = 1.0 - exp(-dens * 2.8);
-          float silverRim = pow(sunCos, 6.0) * (1.0 - dens * 0.55) * sunVis;
+            sampleSkyCloud(cUv + sunStep * 1.85, effCover) * 0.45;
+          float sunLit = exp(-occ * 2.15);
+          float powder = 1.0 - exp(-dens * 3.0);
+          float silverRim = pow(sunCos, 5.0) * (1.0 - dens * 0.50) * sunVis;
 
-          vec3 cLit = mix(vec3(0.06, 0.10, 0.20), vec3(1.06, 1.03, 0.99), uDayFactor);
-          cLit = mix(cLit, vec3(1.16, 0.72, 0.46), uTwilightFactor * 0.95);
-          cLit = mix(cLit, vec3(0.56, 0.66, 0.72), uRainFactor * 0.82);
+          vec3 cLit = mix(vec3(0.06, 0.10, 0.20), vec3(1.12, 1.09, 1.04), uDayFactor);
+          cLit = mix(cLit, vec3(1.22, 0.74, 0.46), uTwilightFactor * 0.95);
+          cLit = mix(cLit, vec3(0.58, 0.68, 0.74), uRainFactor * 0.82);
 
-          vec3 cShade = mix(vec3(0.015, 0.03, 0.08), mix(uMidSkyCol, vec3(0.46, 0.60, 0.78), 0.55), uDayFactor);
-          cShade = mix(cShade, vec3(0.28, 0.20, 0.42), uTwilightFactor * 0.90);
+          vec3 cShade = mix(vec3(0.015, 0.03, 0.08), mix(uMidSkyCol, vec3(0.42, 0.56, 0.76), 0.58), uDayFactor);
+          cShade = mix(cShade, vec3(0.28, 0.20, 0.44), uTwilightFactor * 0.90);
           cShade = mix(cShade, vec3(0.24, 0.33, 0.40), uRainFactor * 0.85);
 
-          vec3 cloudCol = mix(cShade, cLit, clamp(sunLit * 0.86 + 0.14 * powder, 0.0, 1.0));
-          cloudCol += uSunCol * silverRim * (0.65 + 0.55 * uTwilightFactor);
-          // Perspective fade toward horizon haze so distant clouds melt seamlessly behind peaks
-          cloudCol = mix(uHorizonCol, cloudCol, smoothstep(0.03, 0.24, skyT));
-          float alpha = clamp(dens * (0.76 + 0.18 * uRainFactor) * horizonFade * nightKeep, 0.0, 0.90);
+          vec3 cloudCol = mix(cShade, cLit, clamp(sunLit * 0.88 + 0.12 * powder, 0.0, 1.0));
+          cloudCol += uSunCol * silverRim * (0.72 + 0.58 * uTwilightFactor);
+          cloudCol = mix(uHorizonCol, cloudCol, smoothstep(0.03, 0.20, skyT));
+          float alpha = clamp(dens * (0.84 + 0.14 * uRainFactor) * horizonFade * nightKeep, 0.0, 0.92);
           col = mix(col, cloudCol, alpha);
         }
 
@@ -1309,8 +1309,8 @@
 
       vec3 albedo;
       if (vPart < 0.5) {
-        float barkVar = 0.80 + 0.38 * texture2D(uDetailTex, vec2(vWorldPos.x * 0.6 + vWorldPos.z * 0.6, vLocalY * 1.4)).a;
-        albedo = mix(vec3(0.14, 0.10, 0.08), vec3(0.24, 0.18, 0.14), vTone) * barkVar;
+        float barkVar = 0.82 + 0.38 * texture2D(uDetailTex, vec2(vWorldPos.x * 0.6 + vWorldPos.z * 0.6, vLocalY * 1.4)).a;
+        albedo = mix(vec3(0.18, 0.13, 0.10), vec3(0.30, 0.22, 0.17), vTone) * barkVar;
       } else if (vTreeKind < 0.5) {
         // Photographic Deep Alpine Spruce & Japanese Cedar (rich forest evergreen, NEVER neon crayon mint green!)
         vec3 pineDeep = mix(vec3(0.036, 0.125, 0.088), vec3(0.088, 0.215, 0.132), vTone);
@@ -3413,34 +3413,41 @@
       populateForest(buildOrganicPineGeometry(THREE), mobile ? 520 : 900, 0, 0.88, 22.5, -118, 22, null)
       populateForest(buildOrganicBroadleafGeometry(THREE), mobile ? 420 : 700, 1, 0.72, 14.5, -104, 23, heroBroadleafSpots)
       // Low shoreline mossy/flowering shrubs bridging wet shoreline banks, boulders & tree trunks
-      populateForest(buildOrganicShrubGeometry(THREE), mobile ? 140 : 260, 1, 0.28, 3.2, -92, 23, null, [0.75, 0.78])
+      const heroShrubSpots = [
+        [-21.2, 13.6, 1.05, 0.45, 0.16],
+        [-19.2, 14.6, 0.88, 0.72, 0.16],
+        [-25.6, -38.8, 0.92, 0.62, 0.18],
+        [-20.8, -38.6, 0.86, 0.42, 0.18]
+      ]
+      populateForest(buildOrganicShrubGeometry(THREE), mobile ? 140 : 260, 1, 0.28, 3.2, -92, 23, heroShrubSpots, [0.75, 0.78])
 
-      // 6. High-Subdivision Sculpted Mossy Granite Boulders (ZERO low-poly dodecahedrons!)
-      const rockGeom = new THREE.IcosahedronGeometry(0.95, 2)
+      // 6. Smooth-Normal Sculpted Mossy Granite Boulders (indexed SphereGeometry -> ZERO flat poly facets!)
+      const rockGeom = new THREE.SphereGeometry(0.95, 24, 18)
       const rPos = rockGeom.attributes.position
       for (let i = 0; i < rPos.count; i += 1) {
         const vx = rPos.getX(i), vy = rPos.getY(i), vz = rPos.getZ(i)
-        const n1 = fbmCPU(vx * 1.45 + 3.1, vz * 1.45 - 2.4, 3, 401)
-        const n2 = ridgeFbmCPU(vx * 2.1 - vy * 1.3, vz * 2.1 + 1.7, 2, 613)
-        const scaleR = 0.74 + n1 * 0.34 + n2 * 0.20
-        const flatBase = vy < 0 ? (vy * 0.55) : (vy * (0.76 + n1 * 0.26))
+        const n1 = fbmCPU(vx * 1.35 + 3.1, vz * 1.35 - 2.4, 3, 401)
+        const n2 = fbmCPU(vx * 2.0 - vy * 1.1 + 7.2, vz * 2.0 + vy * 0.9 - 1.5, 3, 613)
+        const scaleR = 0.76 + n1 * 0.30 + n2 * 0.18
+        const flatBase = vy < 0 ? (vy * 0.48) : (vy * (0.72 + n1 * 0.24))
         rPos.setXYZ(i, vx * scaleR, flatBase, vz * scaleR)
       }
       rockGeom.computeVertexNormals()
-      const rockMat = makeArchitectMat(THREE, sharedUniforms, [0.27, 0.29, 0.33], true, true, false, 3)
+      const rockMat = makeArchitectMat(THREE, sharedUniforms, [0.30, 0.32, 0.36], true, true, false, 3)
       const rockDummy = new THREE.Object3D()
       const rockMatrices = []
-      // Curated layered mossy granite boulders anchoring the bottom-left cove & pavilion island flanks!
+      // Curated layered mossy granite boulder clusters anchoring the bottom-left foreground cove & pavilion island flanks!
       const heroShoreRocks = [
-        [-19.8, 12.2, 1.75, 0.86, 1.42],
-        [-21.8, 14.8, 1.42, 0.72, 1.25],
-        [-18.6, 15.8, 1.12, 0.56, 1.02],
-        [-23.2, 12.4, 1.35, 0.68, 1.18],
-        [-17.4, 13.6, 0.88, 0.44, 0.82],
+        [-19.8, 12.2, 1.75, 0.84, 1.45],
+        [-21.7, 14.6, 1.45, 0.70, 1.28],
+        [-18.2, 15.2, 1.18, 0.56, 1.04],
+        [-23.2, 12.6, 1.38, 0.66, 1.18],
+        [-16.9, 13.4, 0.96, 0.44, 0.88],
+        [-18.8, 13.4, 0.82, 0.42, 0.78],
         // Pavilion island natural flank rocks (never blocking the front landing jetty!)
-        [-27.8, -38.6, 1.38, 0.76, 1.18],
-        [-19.8, -37.2, 1.22, 0.64, 1.08],
-        [-25.4, -36.0, 0.92, 0.48, 0.85]
+        [-27.8, -38.6, 1.38, 0.74, 1.18],
+        [-19.8, -37.2, 1.22, 0.62, 1.08],
+        [-25.4, -36.0, 0.92, 0.46, 0.85]
       ]
       for (let r = 0; r < heroShoreRocks.length; r += 1) {
         const [rx, rz, sx, sy, sz] = heroShoreRocks[r]
@@ -3900,8 +3907,8 @@
         mistPeakUniforms.uMistAlpha.value = clamp(0.08 + pal.rainFactor * 0.36 + pal.fogFactor * 0.38 + worldState.cloudCover * 0.12, 0.04, 0.48) * (1.0 - pal.nightFactor * 0.72)
       }
       if (godRayUniforms && godRayGroup) {
-        const rayVis = clamp((pal.twilightFactor * 0.95 + pal.dayFactor * 0.35) * (1.0 - pal.rainFactor * 0.92) * (1.0 - pal.nightFactor), 0, 1)
-        godRayUniforms.uRayAlpha.value = rayVis * 0.095
+        const rayVis = clamp((pal.twilightFactor * 1.0 + pal.dayFactor * 0.42) * (1.0 - pal.rainFactor * 0.92) * (1.0 - pal.nightFactor), 0, 1)
+        godRayUniforms.uRayAlpha.value = rayVis * 0.145
         const rayTilt = clamp(-pal.sunDir[0] * 0.55, -0.58, 0.58)
         for (let r = 0; r < godRayGroup.children.length; r += 1) {
           godRayGroup.children[r].rotation.z = rayTilt + (r - 2) * 0.04
