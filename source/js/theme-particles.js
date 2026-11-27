@@ -3286,8 +3286,20 @@
   const fireflySprite = buildGlowSprite([255, 226, 136], 0.94)
   const summerBreezeSprite = buildGlowSprite([210, 248, 232], 0.82)
 
+  let wasRestMode = false
+
   const syncWorldWithAtmosphere = detail => {
     const atm = detail || window.__blogAtmosphere || {}
+    const isRestNow = Boolean(atm.restMode || root.classList.contains('is-sanctuary-rest'))
+    if (wasRestMode && !isRestNow) {
+      isDraggingWorld = false
+      if (isDraggingSun) {
+        isDraggingSun = false
+        root.style.cursor = ''
+      }
+      camZoomTarget = height > 0 ? Math.min(0.45, (window.scrollY || 0) / (height * 3.0)) : 0
+    }
+    wasRestMode = isRestNow
     const hour = typeof atm.hourFloat === 'number' ? atm.hourFloat : 15.5
     const seasonStr = atm.season || root.getAttribute('data-season') || 'autumn'
     const sceneStr = atm.activeScene || root.getAttribute('data-sanctuary-scene') || 'autumn'

@@ -472,8 +472,17 @@
     root.classList.toggle('is-sanctuary-rest', next)
     if (next) {
       root.classList.remove('is-reading-depth')
-      ensureRestOverlay()
+      if (window.__blogMusic && typeof window.__blogMusic.setDrawerOpen === 'function') {
+        window.__blogMusic.setDrawerOpen(false)
+      }
+      const overlay = ensureRestOverlay()
+      if (overlay) overlay.hidden = false
       updateRestClock()
+      updateRestMusicBtn()
+    } else {
+      const overlay = document.getElementById('sanctuary-rest-overlay')
+      if (overlay) overlay.hidden = true
+      syncScrollDepth()
     }
     applyAtmosphere()
   }
@@ -790,8 +799,11 @@
   })
 
   document.addEventListener('pjax:complete', () => {
-    applyAtmosphere()
-    syncScrollDepth()
+    if (state.restMode) toggleRestMode(false)
+    else {
+      applyAtmosphere()
+      syncScrollDepth()
+    }
   })
 
   document.addEventListener('keydown', event => {
@@ -862,7 +874,11 @@
     const restBtn = target.closest('#sanctuary-rest-btn')
     if (restBtn) {
       event.stopPropagation()
-      if (popover) popover.hidden = true
+      if (popover) {
+        popover.hidden = true
+        const wb = document.getElementById('sanctuary-weather-btn')
+        if (wb) wb.setAttribute('aria-expanded', 'false')
+      }
       toggleRestMode()
       return
     }

@@ -4218,7 +4218,7 @@ html[data-time-mood='dawn']:not([data-theme='dark']) #page-header.nav-fixed #nav
 #page-header #scroll-down,
 #hero-bottom-stack,
 #rightside {
-  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.45s ease;
 }
 
 html.is-sanctuary-rest,
@@ -4244,7 +4244,6 @@ html.is-sanctuary-rest #live2d-bubble {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
-  transform: translateY(10px);
 }
 
 .sanctuary-rest {
@@ -4257,11 +4256,13 @@ html.is-sanctuary-rest #live2d-bubble {
   justify-content: space-between;
   padding: 10vh 24px 36px;
   pointer-events: none;
-  animation: sanctuary-rest-fade 0.7s ease;
+  animation: sanctuary-rest-fade 0.5s ease;
 }
 
-.sanctuary-rest[hidden] {
+.sanctuary-rest[hidden],
+html:not(.is-sanctuary-rest) .sanctuary-rest {
   display: none !important;
+  pointer-events: none !important;
 }
 
 @keyframes sanctuary-rest-fade {
