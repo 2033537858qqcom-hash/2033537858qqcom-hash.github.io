@@ -778,12 +778,14 @@
     root.classList.toggle('is-reading-depth', (window.scrollY || 0) > threshold)
   }
 
-  // Auto-align data-theme to dark on initial nighttime visit when user hasn't set an explicit theme preference
+  // Auto-align data-theme to dark on initial nighttime visit or restored night preset
   try {
     const nowInit = new Date()
     const initH = nowInit.getHours() + nowInit.getMinutes() / 60
     const savedTheme = localStorage.getItem('theme')
-    if (state.override === 'auto' && !savedTheme && (initH >= 19.5 || initH < 5.5)) {
+    if (state.override === 'night') {
+      root.setAttribute('data-theme', 'dark')
+    } else if (state.override === 'auto' && !savedTheme && (initH >= 19.5 || initH < 5.5)) {
       root.setAttribute('data-theme', 'dark')
     }
   } catch (e) {}

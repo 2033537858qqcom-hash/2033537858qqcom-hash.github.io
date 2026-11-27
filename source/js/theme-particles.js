@@ -309,78 +309,90 @@
     return tex
   }
 
-  // Botanical Broadleaf Foliage Cluster Card (180 painted overlapping leaves/petals with airy sky-gaps!)
+  // High-Definition 512px Botanical Broadleaf Foliage Cluster Card (layered shadow interior + crisp outer leaf clusters!)
   const createBroadleafCardTexture = THREE => {
     const c = document.createElement('canvas')
-    c.width = 256
-    c.height = 256
+    c.width = 512
+    c.height = 512
     const g = c.getContext('2d')
-    g.clearRect(0, 0, 256, 256)
+    g.clearRect(0, 0, 512, 512)
 
-    // Paint subtle inner twig network first (so Winter sparse canopies reveal delicate branches!)
-    g.strokeStyle = 'rgba(70, 56, 48, 0.92)'
+    // Delicate dark interior twig network (reveals fine winter branches when foliage thins!)
+    g.strokeStyle = 'rgba(64, 50, 42, 0.94)'
     g.lineCap = 'round'
-    g.lineWidth = 4.5
+    g.lineWidth = 7.5
     g.beginPath()
-    g.moveTo(128, 224)
-    g.quadraticCurveTo(124, 165, 118, 128)
-    g.moveTo(124, 178)
-    g.quadraticCurveTo(90, 150, 62, 118)
-    g.moveTo(122, 162)
-    g.quadraticCurveTo(164, 136, 196, 108)
-    g.moveTo(118, 128)
-    g.quadraticCurveTo(96, 92, 84, 58)
-    g.moveTo(118, 128)
-    g.quadraticCurveTo(148, 92, 168, 56)
+    g.moveTo(256, 456)
+    g.quadraticCurveTo(248, 336, 236, 256)
+    g.moveTo(248, 360)
+    g.quadraticCurveTo(176, 304, 118, 236)
+    g.moveTo(244, 326)
+    g.quadraticCurveTo(332, 272, 396, 212)
+    g.moveTo(236, 256)
+    g.quadraticCurveTo(190, 182, 162, 112)
+    g.moveTo(236, 256)
+    g.quadraticCurveTo(298, 184, 342, 108)
+    g.stroke()
+    g.lineWidth = 3.8
+    g.beginPath()
+    g.moveTo(164, 286); g.lineTo(108, 278)
+    g.moveTo(324, 266); g.lineTo(384, 268)
+    g.moveTo(202, 178); g.lineTo(138, 162)
+    g.moveTo(294, 172); g.lineTo(366, 152)
     g.stroke()
 
-    // Paint 195 individual botanical leaves/blossoms with varied brightness (R = leaf lum, G = density core)
     let localSeed = 7731
     const r01 = () => {
       localSeed = (localSeed * 1664525 + 1013904223) >>> 0
       return localSeed / 4294967296
     }
 
-    for (let i = 0; i < 195; i += 1) {
-      const ang = r01() * Math.PI * 2
-      const rad = Math.pow(r01(), 0.62) * 96
-      const lx = 128 + Math.cos(ang) * rad * 1.04
-      const ly = 124 + Math.sin(ang) * rad * 0.94
-      const rot = ang + (r01() - 0.5) * 1.4
-      const lw = 9 + r01() * 11
-      const lh = 15 + r01() * 14
+    // 2-pass botanical painting: back shadow leaves first, then luminous sunlit outer clusters with crisp serrated margins!
+    const paintLeafLayer = (count, radMax, lumBase, lumSpan, sizeScale) => {
+      for (let i = 0; i < count; i += 1) {
+        const ang = r01() * Math.PI * 2
+        const rad = Math.pow(r01(), 0.66) * radMax
+        const lx = 256 + Math.cos(ang) * rad * 1.05
+        const ly = 248 + Math.sin(ang) * rad * 0.94
+        const rot = ang + (r01() - 0.5) * 1.35
+        const lw = (12 + r01() * 14) * sizeScale
+        const lh = (20 + r01() * 18) * sizeScale
 
-      // Outer/upper leaves brighter, inner core slightly deeper for realistic 3D leaf depth!
-      const heightBoost = clamp((220 - ly) / 180, 0, 1)
-      const lum = Math.round(158 + heightBoost * 72 + r01() * 25)
-      // Store "core survival" in green/blue variation so winter alpha-thinning creates airy snow-dusted twigs!
-      const coreness = Math.round(clamp(1.0 - rad / 105, 0.15, 1.0) * 255)
+        const heightBoost = clamp((430 - ly) / 360, 0, 1)
+        const rimBoost = clamp(rad / radMax, 0, 1) * 0.35
+        const lum = Math.round(clamp(lumBase + (heightBoost * 0.72 + rimBoost) * lumSpan + r01() * 24, 92, 255))
+        const coreness = Math.round(clamp(1.0 - rad / 212, 0.14, 1.0) * 255)
 
-      g.save()
-      g.translate(lx, ly)
-      g.rotate(rot)
-      g.fillStyle = `rgba(${lum}, ${Math.round(lum * 0.98)}, ${coreness}, 0.96)`
-      g.beginPath()
-      g.moveTo(0, -lh * 0.55)
-      g.bezierCurveTo(lw * 0.68, -lh * 0.25, lw * 0.62, lh * 0.35, 0, lh * 0.55)
-      g.bezierCurveTo(-lw * 0.62, lh * 0.35, -lw * 0.68, -lh * 0.25, 0, -lh * 0.55)
-      g.closePath()
-      g.fill()
-      g.restore()
+        g.save()
+        g.translate(lx, ly)
+        g.rotate(rot)
+        g.fillStyle = `rgba(${lum}, ${Math.round(lum * 0.97)}, ${coreness}, 0.97)`
+        g.beginPath()
+        g.moveTo(0, -lh * 0.58)
+        g.bezierCurveTo(lw * 0.74, -lh * 0.24, lw * 0.60, lh * 0.36, 0, lh * 0.56)
+        g.bezierCurveTo(-lw * 0.60, lh * 0.36, -lw * 0.74, -lh * 0.24, 0, -lh * 0.58)
+        g.closePath()
+        g.fill()
+        g.restore()
+      }
     }
 
+    paintLeafLayer(165, 178, 112, 58, 1.12)
+    paintLeafLayer(225, 206, 166, 86, 0.92)
+
     const tex = new THREE.CanvasTexture(c)
+    tex.anisotropy = 4
     tex.needsUpdate = true
     return tex
   }
 
-  // Feathery Alpine Pine Bough Spray Texture (crisp evergreen needle fronds, zero geometric cones!)
+  // High-Definition 512px Feathery Alpine Spruce / Cedar Bough Spray Texture (crisp tiered evergreen needles!)
   const createPineBoughTexture = THREE => {
     const c = document.createElement('canvas')
-    c.width = 256
-    c.height = 256
+    c.width = 512
+    c.height = 512
     const g = c.getContext('2d')
-    g.clearRect(0, 0, 256, 256)
+    g.clearRect(0, 0, 512, 512)
 
     let localSeed = 9941
     const r01 = () => {
@@ -388,25 +400,34 @@
       return localSeed / 4294967296
     }
 
-    // Draw feathery drooping pine boughs fanning down & out from central stem
-    const boughs = 16
+    // Subtle dark woody bough spine
+    g.strokeStyle = 'rgba(72, 58, 48, 0.92)'
+    g.lineCap = 'round'
+    g.lineWidth = 6
+    g.beginPath()
+    g.moveTo(256, 42)
+    g.lineTo(256, 470)
+    g.stroke()
+
+    const boughs = 22
     for (let b = 0; b < boughs; b += 1) {
-      const t = b / (boughs - 1) // 0=top spire, 1=wide drooping lower boughs
-      const y0 = 26 + t * 195
-      const span = 18 + Math.pow(t, 0.82) * 104
+      const t = b / (boughs - 1)
+      const y0 = 42 + t * 402
+      const span = 28 + Math.pow(t, 0.80) * 212
       for (const side of [-1, 1]) {
-        const endX = 128 + side * span * (0.85 + r01() * 0.28)
-        const endY = y0 + 16 + t * 24 + (r01() - 0.5) * 10
-        const needles = Math.round(14 + t * 22)
+        const endX = 256 + side * span * (0.82 + r01() * 0.32)
+        const endY = y0 + 26 + t * 46 + (r01() - 0.5) * 18
+        const needles = Math.round(22 + t * 34)
         for (let k = 0; k < needles; k += 1) {
           const u = k / needles
-          const nx = lerp(128, endX, u)
-          const ny = lerp(y0, endY, u) + Math.sin(u * Math.PI) * 5
-          const nLen = (11 + (1 - u * 0.5) * 13) * (0.65 + t * 0.55)
-          const nAng = (side > 0 ? 0.45 : Math.PI - 0.45) + (r01() - 0.5) * 1.35
-          const lum = Math.round(145 + (1 - t * 0.35) * 65 + u * 35 + r01() * 18)
-          g.strokeStyle = `rgba(${lum}, ${lum}, ${lum}, 0.96)`
-          g.lineWidth = 3.2 + (1 - u) * 2.2
+          const nx = lerp(256, endX, u)
+          const ny = lerp(y0, endY, u) + Math.sin(u * Math.PI) * 11
+          const nLen = (15 + (1 - u * 0.45) * 22) * (0.62 + t * 0.58)
+          const nAng = (side > 0 ? 0.42 : Math.PI - 0.42) + (r01() - 0.5) * 1.42
+          const shadowLayer = (k % 3 === 0) ? -34 : 10
+          const lum = Math.round(clamp(124 + (1 - t * 0.32) * 68 + u * 48 + shadowLayer + r01() * 20, 78, 255))
+          g.strokeStyle = `rgba(${lum}, ${lum}, ${lum}, 0.97)`
+          g.lineWidth = 3.2 + (1 - u) * 2.6
           g.lineCap = 'round'
           g.beginPath()
           g.moveTo(nx, ny)
@@ -416,23 +437,25 @@
       }
     }
 
-    // Fill center core spire needles
-    for (let i = 0; i < 65; i += 1) {
+    // Fine tufted center spire needle clusters
+    for (let i = 0; i < 110; i += 1) {
       const t = r01()
-      const y = 20 + t * 208
-      const x = 128 + (r01() - 0.5) * (16 + t * 65)
-      const lum = Math.round(135 + (1 - t * 0.4) * 70 + r01() * 25)
+      const y = 32 + t * 428
+      const x = 256 + (r01() - 0.5) * (26 + t * 136)
+      const lum = Math.round(clamp(110 + (1 - t * 0.38) * 76 + r01() * 34, 82, 248))
       g.fillStyle = `rgba(${lum}, ${lum}, ${lum}, 0.96)`
       g.beginPath()
-      g.ellipse(x, y, 8 + t * 10, 5 + t * 7, (r01() - 0.5) * 1.5, 0, Math.PI * 2)
+      g.ellipse(x, y, 10 + t * 14, 5 + t * 8, (r01() - 0.5) * 1.6, 0, Math.PI * 2)
       g.fill()
     }
 
     const tex = new THREE.CanvasTexture(c)
+    tex.anisotropy = 4
     tex.needsUpdate = true
     return tex
   }
 
+  // Sculpted High-Definition 512px Billowy Cumulus Cloud Texture (crisp sunlit cauliflower crests + shaded base!)
   const createCloudPuffTexture = THREE => {
     const c = document.createElement('canvas')
     c.width = 512
@@ -443,11 +466,12 @@
     const drawLobes = list => {
       for (let i = 0; i < list.length; i += 1) {
         const [lx, ly, lr, alpha, lum] = list[i]
-        const grad = g.createRadialGradient(lx, ly - lr * 0.22, lr * 0.1, lx, ly, lr)
+        const grad = g.createRadialGradient(lx - lr * 0.08, ly - lr * 0.28, lr * 0.08, lx, ly, lr)
         grad.addColorStop(0, `rgba(${lum},${lum},${lum},${alpha})`)
-        grad.addColorStop(0.58, `rgba(${Math.max(110, lum - 28)},${Math.max(110, lum - 24)},${Math.max(120, lum - 16)},${alpha * 0.72})`)
-        grad.addColorStop(0.86, `rgba(${Math.max(95, lum - 45)},${Math.max(95, lum - 40)},${Math.max(110, lum - 28)},${alpha * 0.22})`)
-        grad.addColorStop(1, 'rgba(140,145,160,0)')
+        grad.addColorStop(0.52, `rgba(${Math.max(105, lum - 16)},${Math.max(108, lum - 14)},${Math.max(118, lum - 8)},${alpha * 0.86})`)
+        grad.addColorStop(0.78, `rgba(${Math.max(92, lum - 38)},${Math.max(96, lum - 34)},${Math.max(112, lum - 22)},${alpha * 0.42})`)
+        grad.addColorStop(0.92, `rgba(${Math.max(84, lum - 52)},${Math.max(88, lum - 46)},${Math.max(105, lum - 32)},${alpha * 0.10})`)
+        grad.addColorStop(1, 'rgba(130,140,158,0)')
         g.fillStyle = grad
         g.beginPath()
         g.arc(lx, ly, lr, 0, Math.PI * 2)
@@ -455,17 +479,21 @@
       }
     }
 
+    // Flat-bottomed shaded cumulus belly
     drawLobes([
-      [256, 300, 155, 0.55, 165], [158, 318, 118, 0.52, 155], [356, 316, 116, 0.50, 155],
-      [108, 336, 76, 0.40, 145], [406, 334, 74, 0.38, 145]
+      [256, 312, 148, 0.62, 152], [156, 326, 114, 0.56, 144], [358, 324, 112, 0.54, 144],
+      [102, 342, 74, 0.44, 136], [412, 340, 72, 0.42, 136]
     ])
+    // Sculpted mid-body cumulus towers
     drawLobes([
-      [212, 244, 116, 0.65, 220], [304, 250, 110, 0.62, 218], [156, 268, 86, 0.55, 205],
-      [358, 272, 82, 0.52, 205], [256, 214, 102, 0.68, 235]
+      [208, 246, 110, 0.74, 214], [308, 250, 106, 0.72, 212], [150, 272, 82, 0.64, 196],
+      [362, 274, 80, 0.62, 196], [256, 214, 98, 0.78, 234]
     ])
+    // Crisp sunlit cauliflower crown crests (smaller high-contrast lobes!)
     drawLobes([
-      [244, 164, 82, 0.72, 255], [296, 184, 72, 0.68, 252], [198, 190, 68, 0.65, 250],
-      [266, 134, 56, 0.62, 255], [226, 142, 48, 0.55, 255]
+      [242, 158, 76, 0.82, 255], [298, 178, 68, 0.78, 252], [192, 186, 64, 0.74, 248],
+      [268, 126, 52, 0.74, 255], [220, 136, 46, 0.68, 255], [334, 216, 54, 0.68, 242],
+      [164, 224, 52, 0.66, 240], [256, 182, 62, 0.76, 254], [286, 148, 42, 0.70, 255]
     ])
 
     const tex = new THREE.CanvasTexture(c)
@@ -699,42 +727,49 @@
         col = mix(col, cTint, cMask * 0.34 * (1.0 - uNightFactor * 0.82));
       }
 
-      // Crisp Luminous Milky Way Galactic Band + Dark Cosmic Dust Rift + Aurora + Crescent Moon
+      // Crisp Luminous Milky Way Galactic Band + Dark Cosmic Dust Rift + Horizon Airglow + Aurora + Crescent Moon
       if (uNightFactor > 0.02 && skyT > 0.0) {
-        vec2 mUv = rd.xz / (rd.y + 0.34) * 0.48;
+        vec2 mUv = rd.xz / (rd.y + 0.36) * 0.46;
         vec4 nTex1 = texture2D(uDetailTex, mUv);
-        vec4 nTex2 = texture2D(uDetailTex, mUv * 2.6 + vec2(0.37, 0.23));
+        vec4 nTex2 = texture2D(uDetailTex, mUv * 2.7 + vec2(0.37, 0.23));
         float galacticCoord = rd.x * 0.68 + (rd.y - 0.34);
-        float milkyCore = exp(-pow(galacticCoord * 4.4, 2.0)) * smoothstep(0.02, 0.22, skyT);
-        float milkyWide = exp(-pow(galacticCoord * 2.1, 2.0)) * smoothstep(0.02, 0.24, skyT);
-        float dustRift = smoothstep(0.36, 0.76, nTex2.r) * exp(-pow(galacticCoord * 11.0, 2.0));
+        float milkyCore = exp(-pow(galacticCoord * 4.8, 2.0)) * smoothstep(0.03, 0.24, skyT);
+        float milkyWide = exp(-pow(galacticCoord * 2.2, 2.0)) * smoothstep(0.03, 0.26, skyT);
+        float dustRift = smoothstep(0.38, 0.78, nTex2.r) * exp(-pow(galacticCoord * 12.0, 2.0));
 
-        vec3 outerNebula = vec3(0.16, 0.28, 0.62);
-        vec3 innerCore = mix(vec3(0.46, 0.56, 0.88), vec3(0.76, 0.64, 0.88), nTex1.g);
-        vec3 milkyCol = outerNebula * milkyWide * (0.45 + 0.65 * nTex1.r) + innerCore * milkyCore * (0.55 + 0.85 * nTex2.a);
-        milkyCol *= (1.0 - dustRift * 0.62);
-        col += milkyCol * 0.58 * uNightFactor * (1.0 - uRainFactor * 0.92);
+        vec3 outerNebula = vec3(0.10, 0.20, 0.48);
+        vec3 innerCore = mix(vec3(0.42, 0.56, 0.88), vec3(0.84, 0.68, 0.86), nTex1.g);
+        vec3 milkyCol = outerNebula * milkyWide * (0.42 + 0.62 * nTex1.r) + innerCore * milkyCore * (0.58 + 0.90 * nTex2.a);
+        milkyCol *= (1.0 - dustRift * 0.68);
+        col += milkyCol * 0.54 * uNightFactor * (1.0 - uRainFactor * 0.92);
+
+        // Subtle photographic dark-sky horizon airglow band
+        float airglow = exp(-pow((skyT - 0.08) * 10.5, 2.0)) * 0.065 * uNightFactor * (1.0 - uRainFactor * 0.85);
+        col += vec3(0.12, 0.34, 0.46) * airglow;
 
         // Northern Aurora Ribbon in winter / cold nights
-        float auroraW = uNightFactor * (0.18 + 0.82 * uSnowFactor) * (1.0 - uRainFactor);
+        float auroraW = uNightFactor * (0.14 + 0.86 * uSnowFactor) * (1.0 - uRainFactor);
         if (auroraW > 0.05) {
           float wave = sin(rd.x * 5.2 + nTex1.b * 3.8 + uTime * 0.16) * 0.5 + 0.5;
           float curtain = exp(-pow((skyT - 0.36 - wave * 0.14) * 7.2, 2.0)) * smoothstep(0.08, 0.28, skyT);
           vec3 aCol = mix(vec3(0.14, 0.86, 0.68), vec3(0.46, 0.38, 0.96), wave);
-          col += aCol * curtain * (0.55 + 0.45 * nTex1.a) * 0.32 * auroraW;
+          col += aCol * curtain * (0.55 + 0.45 * nTex1.a) * 0.30 * auroraW;
         }
 
-        // Crisp Crescent Moon
+        // Crisp Crescent Moon + Atmospheric Lunar Ring Halo
         float moonCos = max(0.0, dot(rd, uMoonDir));
         vec3 moonShadowDir = normalize(uMoonDir + vec3(0.014, 0.008, 0.0));
         float shadowCos = max(0.0, dot(rd, moonShadowDir));
-        float moonDisc = smoothstep(0.99915, 0.99945, moonCos);
-        float crescent = moonDisc * (1.0 - smoothstep(0.99925, 0.9995, shadowCos) * 0.86);
+        float moonDisc = smoothstep(0.99918, 0.99946, moonCos);
+        float crescent = moonDisc * (1.0 - smoothstep(0.99926, 0.99950, shadowCos) * 0.88);
         float maria = 0.82 + 0.18 * texture2D(uDetailTex, rd.xy * 18.0).r;
-        col += vec3(0.95, 0.97, 1.0) * (pow(moonCos, 24.0) * 0.28 + crescent * maria * 1.55) * uNightFactor * (1.0 - uRainFactor * 0.85);
+        float lunarHalo = pow(moonCos, 16.0) * 0.14 + pow(moonCos, 120.0) * 0.34;
+        col += vec3(0.94, 0.97, 1.0) * (lunarHalo + crescent * maria * 1.48) * uNightFactor * (1.0 - uRainFactor * 0.85);
       }
 
-      gl_FragColor = vec4(col, 1.0);
+      // Unified ACES Filmic tone mapping
+      col = (col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14);
+      gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
     }
   `
 
@@ -792,27 +827,33 @@
       if (tex.a < 0.025) discard;
 
       vec3 viewDir = normalize(vWorldPos - cameraPosition);
-      float forwardScatter = pow(max(0.0, dot(viewDir, uSunDir)), 5.0);
-      float litWeight = clamp(tex.r * 0.72 + vUv.y * 0.24 + vShade * 0.22 - 0.18, 0.0, 1.0);
+      float forwardScatter = pow(max(0.0, dot(viewDir, uSunDir)), 6.0);
+      float rimEdge = smoothstep(0.75, 0.18, tex.a) * smoothstep(0.03, 0.25, tex.a);
+      // Beer-Lambert powder term for sculpted cauliflower cumulus depth
+      float powder = 1.0 - exp(-tex.a * 2.4);
+      float litWeight = clamp(tex.r * 0.72 + vUv.y * 0.24 + vShade * 0.22 - 0.16, 0.0, 1.0);
 
-      vec3 litTop = mix(vec3(0.07, 0.12, 0.24), vec3(1.0, 0.995, 0.99), uDayFactor);
-      litTop = mix(litTop, vec3(1.0, 0.74, 0.56), uTwilightFactor * 0.92);
-      litTop = mix(litTop, vec3(0.54, 0.64, 0.69), uRainFactor * 0.80);
+      vec3 litTop = mix(vec3(0.06, 0.11, 0.22), vec3(1.06, 1.04, 1.01), uDayFactor);
+      litTop = mix(litTop, vec3(1.12, 0.76, 0.54), uTwilightFactor * 0.94);
+      litTop = mix(litTop, vec3(0.56, 0.66, 0.72), uRainFactor * 0.80);
 
-      vec3 shadeBot = mix(vec3(0.02, 0.05, 0.12), mix(uMidSkyCol, vec3(0.64, 0.76, 0.90), 0.50), uDayFactor);
-      shadeBot = mix(shadeBot, vec3(0.34, 0.24, 0.48), uTwilightFactor * 0.90);
-      shadeBot = mix(shadeBot, vec3(0.28, 0.37, 0.43), uRainFactor * 0.85);
+      vec3 shadeBot = mix(vec3(0.015, 0.032, 0.085), mix(uMidSkyCol, vec3(0.56, 0.70, 0.88), 0.52), uDayFactor);
+      shadeBot = mix(shadeBot, vec3(0.30, 0.22, 0.46), uTwilightFactor * 0.90);
+      shadeBot = mix(shadeBot, vec3(0.26, 0.35, 0.42), uRainFactor * 0.85);
 
-      vec3 col = mix(shadeBot, litTop, smoothstep(0.12, 0.88, litWeight));
-      col += uSunCol * forwardScatter * (1.0 - tex.a * 0.4) * 0.56 * clamp(uDayFactor + uTwilightFactor, 0.0, 1.0) * (1.0 - uRainFactor * 0.85);
+      vec3 col = mix(shadeBot, litTop, smoothstep(0.10, 0.86, litWeight) * (0.72 + 0.28 * powder));
+      // Luminous Makoto Shinkai silver-lining on backlit & sunset cloud rims
+      float sunVis = clamp(uDayFactor + uTwilightFactor, 0.0, 1.0) * (1.0 - uRainFactor * 0.85);
+      col += uSunCol * (forwardScatter * 0.62 + rimEdge * (0.28 + 0.42 * uTwilightFactor)) * sunVis;
 
       float dist = length(vWorldPos - cameraPosition);
-      col = mix(col, uHorizonCol, smoothstep(185.0, 380.0, dist) * 0.38);
+      col = mix(col, uHorizonCol, smoothstep(185.0, 380.0, dist) * 0.36);
 
-      // Keep starry night skies crisp & open for the Milky Way
-      float nightThin = 1.0 - uNightFactor * (0.78 - uRainFactor * 0.65);
-      float density = clamp((0.52 + uCloudCover * 0.50 + uRainFactor * 0.32) * nightThin, 0.08, 0.94);
-      gl_FragColor = vec4(col, tex.a * density);
+      // Keep clear starry nights pristine & crisp (eliminate muddy purple cloud blotches!)
+      float nightThin = 1.0 - uNightFactor * (0.86 - uRainFactor * 0.72);
+      float density = clamp((0.54 + uCloudCover * 0.48 + uRainFactor * 0.30) * nightThin, 0.03, 0.94);
+      col = (col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14);
+      gl_FragColor = vec4(clamp(col, 0.0, 1.0), tex.a * density);
     }
   `
 
@@ -835,6 +876,9 @@
     varying vec3 vWorldNormal;
 
     uniform sampler2D uDetailTex;
+    uniform float uTime;
+    uniform float uWindSpeed;
+    uniform float uCloudCover;
     uniform float uSeason;
     uniform float uDayFactor;
     uniform float uTwilightFactor;
@@ -850,6 +894,7 @@
     uniform vec3 uHorizonCol;
     uniform vec3 uSunCol;
     uniform vec3 uLampPos;
+    uniform vec3 uPavLampPos;
     uniform float uClipBelowWater;
 
     vec3 seasonalMix(vec3 spr, vec3 sum, vec3 aut, vec3 win, float s) {
@@ -878,10 +923,14 @@
         vWorldPos.z * 0.068 + detMid.g * 0.35
       )).g;
 
+      // Finite-difference micro-relief normal perturbation for razor-chiseled alpine granite ridges!
+      float hC = texture2D(uDetailTex, vWorldPos.xz * 0.062).r;
+      float hX = texture2D(uDetailTex, vWorldPos.xz * 0.062 + vec2(0.012, 0.0)).r;
+      float hZ = texture2D(uDetailTex, vWorldPos.xz * 0.062 + vec2(0.0, 0.012)).r;
       vec3 bumpN = normalize(N + vec3(
-        (detMid.r - 0.5) * 0.44 + (detFine.a - 0.5) * 0.24 + (fracture - 0.5) * 0.20,
+        (hC - hX) * 2.25 + (detMid.r - 0.5) * 0.34 + (detFine.a - 0.5) * 0.24 + (fracture - 0.5) * 0.24,
         0.0,
-        (detMid.g - 0.5) * 0.44 + (detFine.r - 0.5) * 0.24
+        (hC - hZ) * 2.25 + (detMid.g - 0.5) * 0.34 + (detFine.r - 0.5) * 0.24
       ));
 
       // 1. Deep High-Contrast Stratified Granite & Wet Alpine Slate (NEVER flat chalk grey!)
@@ -932,46 +981,58 @@
       vec3 snowAlbedo = mix(vec3(0.96, 0.98, 1.0), vec3(0.76, 0.82, 0.88), uRainFactor * (1.0 - uSnowFactor));
       albedo = mix(albedo, snowAlbedo, snowMask);
 
-      // 4. Sculpted Directional Lighting + Glacial Blue Snow Shadows + Ridge Contrast + Alpenglow + Wet Cliff Sheen
+      // 4. Sculpted Directional Lighting + Drifting Cloud Shadows + Glacial Blue Shadows + Snow Sparkle + Alpenglow!
       vec3 lightDir = uNightFactor > 0.65 ? uMoonDir : uSunDir;
+      vec3 V = normalize(cameraPosition - vWorldPos);
       float diff = max(0.0, dot(bumpN, lightDir));
-      float shapedDiff = pow(diff, 1.24);
-      float cavityAO = clamp(0.48 + 0.52 * smoothstep(0.0, 18.0, vWorldPos.y) * (0.68 + 0.32 * detMacro.r), 0.36, 1.0);
+      float shapedDiff = pow(diff, 1.30);
+      // Drifting sunlit-and-cloud-shadow patches sweeping smoothly across alpine slopes!
+      vec2 csUv = vWorldPos.xz * 0.0052 + vec2(uTime * (0.0055 + uWindSpeed * 0.004), uTime * 0.0018);
+      float csRaw = texture2D(uDetailTex, csUv).r * 0.65 + texture2D(uDetailTex, csUv * 1.9 - vec2(0.24, 0.17)).g * 0.35;
+      float cloudShadow = 1.0 - smoothstep(0.46, 0.78, csRaw) * (0.24 + 0.28 * uCloudCover) * uDayFactor * (1.0 - uRainFactor * 0.85);
+      float cavityAO = clamp(0.46 + 0.54 * smoothstep(0.0, 18.0, vWorldPos.y) * (0.66 + 0.34 * detMacro.r), 0.34, 1.0);
       float hemi = clamp(0.22 + 0.78 * bumpN.y, 0.0, 1.0);
 
       // Crisp glacial blue-tinted ambient shadows on snow vs luminous sunlit snow highlights (real alpine photography!)
-      vec3 snowAmbientBoost = mix(vec3(1.0), vec3(0.78, 0.96, 1.26), snowMask * (1.0 - shapedDiff * 0.75) * (1.0 - uRainFactor * 0.7));
-      vec3 lit = albedo * cavityAO * (uDirectCol * shapedDiff * 1.22 + uAmbientCol * snowAmbientBoost * hemi * 0.82);
+      vec3 snowAmbientBoost = mix(vec3(1.0), vec3(0.74, 0.94, 1.30), snowMask * (1.0 - shapedDiff * 0.76) * (1.0 - uRainFactor * 0.7));
+      vec3 lit = albedo * cavityAO * (uDirectCol * shapedDiff * cloudShadow * 1.28 + uAmbientCol * snowAmbientBoost * hemi * 0.84);
+      // High-altitude sunlit ridge rim highlight + crisp glacier crystal snow micro-sparkle!
+      vec3 H = normalize(lightDir + V);
+      float snowSparkle = pow(max(0.0, dot(bumpN, H)), 72.0) * smoothstep(0.58, 0.92, detFine.a) * snowMask * cloudShadow * uDayFactor * (1.0 - uRainFactor);
+      lit += uSunCol * snowSparkle * 0.55;
+      float ridgeRim = pow(1.0 - max(0.0, dot(bumpN, V)), 3.2) * smoothstep(14.0, 42.0, vWorldPos.y) * cloudShadow;
+      lit += mix(uHorizonCol, uSunCol, 0.55) * ridgeRim * (0.20 * uDayFactor + 0.32 * uTwilightFactor) * (1.0 - uRainFactor * 0.8);
       // Subtle specular wet-slate sheen on rain-drenched cliffs for photographic depth!
       if (uRainFactor > 0.08) {
-        vec3 V = normalize(cameraPosition - vWorldPos);
         vec3 skyH = normalize(vec3(0.18, 0.94, 0.28) + V);
         float wetSpec = pow(max(0.0, dot(bumpN, skyH)), 18.0) * (1.0 - snowMask) * smoothstep(0.85, 0.35, bumpN.y);
         lit += vec3(0.32, 0.44, 0.52) * wetSpec * 0.28 * uRainFactor;
       }
       // Warm golden-rose alpenglow kissing sunlit snow peaks at dusk
-      lit += uSunCol * snowMask * shapedDiff * uTwilightFactor * 0.48;
+      lit += uSunCol * snowMask * shapedDiff * uTwilightFactor * 0.54;
       // Cool silver moonlight rim on snow ridges at night
-      lit += vec3(0.36, 0.52, 0.82) * snowMask * pow(max(0.0, dot(bumpN, uMoonDir)), 1.5) * uNightFactor * 0.36;
+      lit += vec3(0.36, 0.52, 0.82) * snowMask * pow(max(0.0, dot(bumpN, uMoonDir)), 1.5) * uNightFactor * 0.38;
 
+      // Dual warm architectural light spill: Pier Lantern + Pavilion Garden Lamp!
       float dLamp = length(vWorldPos - uLampPos);
       lit += vec3(1.0, 0.68, 0.30) * (1.0 / (1.0 + dLamp * dLamp * 0.055)) * 0.95 * uLampGlow;
+      float dPav = length(vWorldPos - uPavLampPos);
+      lit += vec3(1.0, 0.66, 0.28) * (1.0 / (1.0 + dPav * dPav * 0.048)) * 0.78 * uLampGlow;
 
       // 5. Unified Atmospheric Perspective (identical across Terrain & Forest — zero floating far trees!)
       // In Rain, peaks retain deep wet ink-wash slate depth while luminous valley mist curls along the far mountain base.
       float dist = length(vWorldPos - cameraPosition);
       float fogDensity = mix(0.0019, 0.0036, uRainFactor * 0.70 + uFogFactor * 0.95);
-      float aerialCap = mix(0.62, 0.36, uRainFactor);
+      float aerialCap = mix(0.60, 0.35, uRainFactor);
       float aerialFog = min(aerialCap, 1.0 - exp(-max(0.0, dist - 34.0) * fogDensity));
       float valleyMist = exp(-max(0.0, vWorldPos.y - 1.2) * 0.16) * smoothstep(72.0, 148.0, dist) * (0.14 + 0.36 * uRainFactor + 0.16 * uTwilightFactor + 0.34 * uFogFactor);
-      float totalFog = clamp(aerialFog + valleyMist * (1.0 - aerialFog * 0.65), 0.0, mix(0.68, 0.52, uRainFactor));
+      float totalFog = clamp(aerialFog + valleyMist * (1.0 - aerialFog * 0.65), 0.0, mix(0.66, 0.50, uRainFactor));
 
       vec3 finalCol = mix(lit, uHorizonCol, totalFog);
 
-      vec3 x = max(vec3(0.0), finalCol * 1.02 - 0.003);
-      finalCol = (x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06);
-
-      gl_FragColor = vec4(finalCol, 1.0);
+      // Unified ACES Filmic tone mapping
+      finalCol = (finalCol * (2.51 * finalCol + 0.03)) / (finalCol * (2.43 * finalCol + 0.59) + 0.14);
+      gl_FragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
     }
   `
 
@@ -1026,8 +1087,12 @@
     varying float vTone;
     varying float vLocalY;
 
+    uniform sampler2D uDetailTex;
     uniform sampler2D uLeafTex;
     uniform sampler2D uPineTex;
+    uniform float uTime;
+    uniform float uWindSpeed;
+    uniform float uCloudCover;
     uniform float uSeason;
     uniform float uDayFactor;
     uniform float uTwilightFactor;
@@ -1042,6 +1107,7 @@
     uniform vec3 uAmbientCol;
     uniform vec3 uHorizonCol;
     uniform vec3 uLampPos;
+    uniform vec3 uPavLampPos;
     uniform float uClipBelowWater;
 
     vec3 seasonalMix(vec3 spr, vec3 sum, vec3 aut, vec3 win, float s) {
@@ -1101,29 +1167,35 @@
       // Wet saturation darkening in Rain (Garden of Words lush wet emerald & bark!)
       albedo *= (1.0 - uRainFactor * 0.20);
 
-      // Ground contact AO near trunk base + sculpted 3D sunlit-crown vs cool-underside shading + leaf SSS
-      float canopyAO = clamp(0.46 + 0.54 * smoothstep(0.35, 4.2, vLocalY), 0.42, 1.0);
-      float sss = pow(max(0.0, dot(normalize(cameraPosition - vWorldPos), -lightDir)), 3.0) * 0.38 * vPart * (1.0 - uRainFactor * 0.75);
-      vec3 lit = albedo * canopyAO * (uDirectCol * (diff * 1.06 + sss) + uAmbientCol * (0.48 + 0.52 * hemi) * 0.84);
+      // Ground contact AO near trunk base + drifting cloud shadows + sculpted sunlit crown vs cool underside + backlit SSS!
+      vec2 csUv = vWorldPos.xz * 0.0052 + vec2(uTime * (0.0055 + uWindSpeed * 0.004), uTime * 0.0018);
+      float csRaw = texture2D(uDetailTex, csUv).r * 0.65 + texture2D(uDetailTex, csUv * 1.9 - vec2(0.24, 0.17)).g * 0.35;
+      float cloudShadow = 1.0 - smoothstep(0.46, 0.78, csRaw) * (0.24 + 0.28 * uCloudCover) * uDayFactor * (1.0 - uRainFactor * 0.85);
+      float canopyAO = clamp(0.42 + 0.58 * smoothstep(0.35, 4.4, vLocalY), 0.38, 1.0);
+      float crownSunTip = smoothstep(0.15, 0.88, N.y) * smoothstep(1.2, 4.5, vLocalY);
+      float sss = pow(max(0.0, dot(normalize(cameraPosition - vWorldPos), -lightDir)), 2.8) * 0.44 * vPart * (1.0 - uRainFactor * 0.75);
+      vec3 coolUnder = mix(vec3(0.76, 0.86, 1.06), vec3(1.06, 1.02, 0.96), crownSunTip);
+      vec3 lit = albedo * canopyAO * (uDirectCol * (diff * 1.12 + sss) * cloudShadow + uAmbientCol * coolUnder * (0.44 + 0.56 * hemi) * 0.84);
       // Velvety dark midnight silhouettes at night (makes Milky Way, lantern & pavilion glow pop!)
-      lit *= (1.0 - uNightFactor * 0.46);
+      lit *= (1.0 - uNightFactor * 0.48);
 
+      // Dual warm architectural light spill: Pier Lantern + Pavilion Shoji/Garden Lamp illuminating nearby trees!
       float dLamp = length(vWorldPos - uLampPos);
       lit += vec3(1.0, 0.68, 0.30) * (1.0 / (1.0 + dLamp * dLamp * 0.055)) * 0.95 * uLampGlow;
+      float dPav = length(vWorldPos - uPavLampPos);
+      lit += vec3(1.0, 0.66, 0.28) * (1.0 / (1.0 + dPav * dPav * 0.042)) * 0.92 * uLampGlow;
 
       // Exact unified atmospheric fog + valley mist matching TERRAIN_FRAG (eliminates floating trees!)
       float dist = length(vWorldPos - cameraPosition);
       float fogDensity = mix(0.0019, 0.0036, uRainFactor * 0.70 + uFogFactor * 0.95);
-      float aerialCap = mix(0.62, 0.36, uRainFactor);
+      float aerialCap = mix(0.60, 0.35, uRainFactor);
       float aerialFog = min(aerialCap, 1.0 - exp(-max(0.0, dist - 34.0) * fogDensity));
       float valleyMist = exp(-max(0.0, vWorldPos.y - 1.2) * 0.16) * smoothstep(72.0, 148.0, dist) * (0.14 + 0.36 * uRainFactor + 0.16 * uTwilightFactor + 0.34 * uFogFactor);
-      float totalFog = clamp(aerialFog + valleyMist * (1.0 - aerialFog * 0.65), 0.0, mix(0.68, 0.52, uRainFactor));
+      float totalFog = clamp(aerialFog + valleyMist * (1.0 - aerialFog * 0.65), 0.0, mix(0.66, 0.50, uRainFactor));
       vec3 finalCol = mix(lit, uHorizonCol, totalFog);
 
-      vec3 x = max(vec3(0.0), finalCol * 1.02 - 0.003);
-      finalCol = (x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06);
-
-      gl_FragColor = vec4(finalCol, 1.0);
+      finalCol = (finalCol * (2.51 * finalCol + 0.03)) / (finalCol * (2.43 * finalCol + 0.59) + 0.14);
+      gl_FragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
     }
   `
 
@@ -1159,6 +1231,10 @@
     uniform vec3 uBaseColor;
     uniform float uAllowSnow;
     uniform sampler2D uDetailTex;
+    uniform float uTime;
+    uniform float uWindSpeed;
+    uniform float uCloudCover;
+    uniform float uDayFactor;
     uniform float uTwilightFactor;
     uniform float uNightFactor;
     uniform float uRainFactor;
@@ -1171,6 +1247,7 @@
     uniform vec3 uAmbientCol;
     uniform vec3 uHorizonCol;
     uniform vec3 uLampPos;
+    uniform vec3 uPavLampPos;
     uniform float uClipBelowWater;
 
     void main() {
@@ -1178,10 +1255,10 @@
 
       vec3 N = normalize(vWorldNormal);
       float grain = texture2D(uDetailTex, vWorldPos.xz * 0.85 + vec2(vWorldPos.y * 0.4)).a;
-      vec3 albedo = uBaseColor * (0.80 + 0.38 * grain);
+      vec3 albedo = uBaseColor * (0.78 + 0.42 * grain);
 
       float wet = smoothstep(0.45, 0.0, vWorldPos.y);
-      albedo *= (1.0 - wet * 0.45 - uRainFactor * 0.18);
+      albedo *= (1.0 - wet * 0.46 - uRainFactor * 0.18);
 
       if (uAllowSnow > 0.5 && uSnowFactor > 0.25) {
         float snowCap = smoothstep(0.56, 0.86, N.y) * smoothstep(0.25, 0.72, uSnowFactor) * (0.72 + 0.28 * grain);
@@ -1189,27 +1266,43 @@
       }
 
       vec3 lightDir = uNightFactor > 0.65 ? uMoonDir : uSunDir;
+      vec3 V = normalize(cameraPosition - vWorldPos);
       float diff = max(0.0, dot(N, lightDir));
-      float hemi = clamp(0.38 + 0.62 * N.y, 0.0, 1.0);
-      vec3 lit = albedo * (uDirectCol * diff * 0.95 + uAmbientCol * hemi * 0.82);
+      vec2 csUv = vWorldPos.xz * 0.0052 + vec2(uTime * (0.0055 + uWindSpeed * 0.004), uTime * 0.0018);
+      float csRaw = texture2D(uDetailTex, csUv).r * 0.65 + texture2D(uDetailTex, csUv * 1.9 - vec2(0.24, 0.17)).g * 0.35;
+      float cloudShadow = 1.0 - smoothstep(0.46, 0.78, csRaw) * (0.24 + 0.28 * uCloudCover) * uDayFactor * (1.0 - uRainFactor * 0.85);
+      float hemi = clamp(0.36 + 0.64 * N.y, 0.0, 1.0);
+      vec3 lit = albedo * (uDirectCol * diff * cloudShadow * 1.02 + uAmbientCol * hemi * 0.82);
 
+      // Subtle wet wood & stone sheen in rain / near waterline
+      if (uRainFactor > 0.08 || wet > 0.1) {
+        vec3 wetH = normalize(lightDir + V);
+        float wetSpec = pow(max(0.0, dot(N, wetH)), 26.0) * max(uRainFactor * 0.65, wet * 0.55);
+        lit += mix(uHorizonCol, vec3(0.9, 0.95, 1.0), 0.4) * wetSpec * 0.32;
+      }
+
+      // Dual warm architectural light sources: Pier Lantern + Pavilion Tea-House Window & Garden Lantern!
       vec3 toLamp = uLampPos - vWorldPos;
       float dLamp = length(toLamp);
       float lampDot = max(0.18, dot(N, toLamp / max(0.01, dLamp)));
-      float lampAtten = 1.0 / (1.0 + dLamp * dLamp * 0.12);
-      lit += albedo * vec3(1.55, 0.96, 0.42) * lampDot * lampAtten * 1.55 * uLampGlow;
+      float lampAtten = 1.0 / (1.0 + dLamp * dLamp * 0.11);
+      lit += albedo * vec3(1.58, 0.98, 0.42) * lampDot * lampAtten * 1.65 * uLampGlow;
+
+      vec3 toPav = uPavLampPos - vWorldPos;
+      float dPav = length(toPav);
+      float pavDot = max(0.22, dot(N, toPav / max(0.01, dPav)));
+      float pavAtten = 1.0 / (1.0 + dPav * dPav * 0.09);
+      lit += albedo * vec3(1.55, 0.94, 0.38) * pavDot * pavAtten * 1.38 * uLampGlow;
 
       float dist = length(vWorldPos - cameraPosition);
       float fogDensity = mix(0.0019, 0.0036, uRainFactor * 0.70 + uFogFactor * 0.95);
-      float aerialFog = min(mix(0.62, 0.36, uRainFactor), 1.0 - exp(-max(0.0, dist - 34.0) * fogDensity));
+      float aerialFog = min(mix(0.60, 0.35, uRainFactor), 1.0 - exp(-max(0.0, dist - 34.0) * fogDensity));
       float valleyMist = exp(-max(0.0, vWorldPos.y - 1.2) * 0.16) * smoothstep(72.0, 148.0, dist) * (0.14 + 0.36 * uRainFactor + 0.16 * uTwilightFactor + 0.34 * uFogFactor);
-      float totalFog = clamp(aerialFog + valleyMist * (1.0 - aerialFog * 0.65), 0.0, mix(0.68, 0.52, uRainFactor));
+      float totalFog = clamp(aerialFog + valleyMist * (1.0 - aerialFog * 0.65), 0.0, mix(0.66, 0.50, uRainFactor));
       vec3 finalCol = mix(lit, uHorizonCol, totalFog);
 
-      vec3 x = max(vec3(0.0), finalCol * 1.02 - 0.003);
-      finalCol = (x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06);
-
-      gl_FragColor = vec4(finalCol, 1.0);
+      finalCol = (finalCol * (2.51 * finalCol + 0.03)) / (finalCol * (2.43 * finalCol + 0.59) + 0.14);
+      gl_FragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
     }
   `
 
@@ -1240,6 +1333,7 @@
     uniform sampler2D uDetailTex;
     uniform float uTime;
     uniform float uWindSpeed;
+    uniform float uCloudCover;
     uniform float uDayFactor;
     uniform float uTwilightFactor;
     uniform float uNightFactor;
@@ -1254,6 +1348,7 @@
     uniform vec3 uLampPos;
     uniform vec3 uPavLampPos;
     uniform vec3 uBoatPos;
+    uniform vec3 uPierPos;
     uniform vec4 uRipples[6];
 
     float hash12(vec2 p) {
@@ -1283,15 +1378,19 @@
       float dist = length(viewVec);
       vec3 V = viewVec / max(0.001, dist);
 
-      vec2 wShift1 = vec2(uTime * 0.018 * uWindSpeed, uTime * 0.012);
-      vec2 wShift2 = vec2(-uTime * 0.014 * uWindSpeed, uTime * 0.022);
-      vec4 wTex1 = texture2D(uDetailTex, vWorldPos.xz * 0.048 + wShift1);
-      vec4 wTex2 = texture2D(uDetailTex, vWorldPos.xz * 0.145 + wShift2);
+      // Multi-octave organic wind lanes: alternating glassy mirror slicks & gently ruffled breeze bands!
+      vec2 wShift1 = vec2(uTime * 0.017 * uWindSpeed, uTime * 0.011);
+      vec2 wShift2 = vec2(-uTime * 0.015 * uWindSpeed, uTime * 0.023);
+      vec2 wShift3 = vec2(uTime * 0.026 * uWindSpeed, -uTime * 0.019);
+      vec4 wTex1 = texture2D(uDetailTex, vWorldPos.xz * 0.044 + wShift1);
+      vec4 wTex2 = texture2D(uDetailTex, vWorldPos.xz * 0.135 + wShift2);
+      vec4 wTex3 = texture2D(uDetailTex, vWorldPos.xz * 0.340 + wShift3);
+      float windLane = 0.42 + 0.58 * smoothstep(0.26, 0.78, texture2D(uDetailTex, vWorldPos.xz * 0.011 + vec2(uTime * 0.004, 0.0)).r);
 
-      float waveScale = (0.042 + 0.022 * uWindSpeed) / (1.0 + dist * 0.014);
+      float waveScale = (0.040 + 0.024 * uWindSpeed) * windLane / (1.0 + dist * 0.013);
       vec2 grad = vec2(
-        (wTex1.b - 0.5) * 0.62 + (wTex2.a - 0.5) * 0.38,
-        (wTex1.r - 0.5) * 0.62 + (wTex2.b - 0.5) * 0.38
+        (wTex1.b - 0.5) * 0.52 + (wTex2.a - 0.5) * 0.32 + (wTex3.r - 0.5) * 0.16,
+        (wTex1.r - 0.5) * 0.52 + (wTex2.b - 0.5) * 0.32 + (wTex3.g - 0.5) * 0.16
       ) * waveScale;
 
       float rippleSheen = 0.0;
@@ -1349,24 +1448,52 @@
       float cosTheta = max(0.0, dot(V, waterN));
       float fresnel = 0.08 + 0.92 * pow(1.0 - cosTheta, 3.8);
 
-      // Subtle crystal-clear shallow lakebed stones visible beneath translucent shore water (vDepth < 1.25m)
-      vec4 bedTex = texture2D(uDetailTex, vWorldPos.xz * 0.36 + waterN.xz * 0.16);
-      vec3 pebbleCol = mix(vec3(0.09, 0.18, 0.21), vec3(0.24, 0.34, 0.36), bedTex.r * 0.6 + bedTex.a * 0.4);
+      // Crystal-clear shallow lakebed stones + dancing daylight caustics beneath shore water (vDepth < 1.35m)
+      vec4 bedTex = texture2D(uDetailTex, vWorldPos.xz * 0.36 + waterN.xz * 0.18);
+      vec3 pebbleCol = mix(vec3(0.08, 0.17, 0.21), vec3(0.24, 0.34, 0.36), bedTex.r * 0.6 + bedTex.a * 0.4);
+      float caust1 = texture2D(uDetailTex, vWorldPos.xz * 0.22 + vec2(uTime * 0.032, -uTime * 0.024)).g;
+      float caust2 = texture2D(uDetailTex, vWorldPos.xz * 0.29 - vec2(uTime * 0.026, uTime * 0.035)).a;
+      float causticWeb = pow(clamp(1.0 - abs(caust1 - caust2) * 3.8, 0.0, 1.0), 3.0);
+      pebbleCol += uSunCol * causticWeb * 0.28 * uDayFactor * (1.0 - uRainFactor * 0.9);
       pebbleCol *= (0.35 + 0.65 * uDayFactor) * (1.0 - uNightFactor * 0.72);
-      float bedVis = smoothstep(1.25, 0.06, vDepth) * smoothstep(54.0, 12.0, dist);
-      vec3 shallowTint = mix(vec3(0.11, 0.34, 0.40), uWaterCol, smoothstep(0.0, 2.4, vDepth));
-      shallowTint = mix(shallowTint, pebbleCol, bedVis * 0.42);
-      vec3 bodyCol = mix(shallowTint, uWaterCol, smoothstep(0.3, 3.2, vDepth));
+      float bedVis = smoothstep(1.35, 0.05, vDepth) * smoothstep(56.0, 10.0, dist);
+      vec3 shallowTint = mix(vec3(0.08, 0.36, 0.44), uWaterCol, smoothstep(0.0, 2.5, vDepth));
+      shallowTint = mix(shallowTint, pebbleCol, bedVis * 0.46);
+      vec3 bodyCol = mix(shallowTint, uWaterCol, smoothstep(0.28, 3.4, vDepth));
+
+      // Drifting cloud shadows softly modulating lake body depth color
+      vec2 csUv = vWorldPos.xz * 0.0052 + vec2(uTime * (0.0055 + uWindSpeed * 0.004), uTime * 0.0018);
+      float csRaw = texture2D(uDetailTex, csUv).r * 0.65 + texture2D(uDetailTex, csUv * 1.9 - vec2(0.24, 0.17)).g * 0.35;
+      float cloudShadow = 1.0 - smoothstep(0.46, 0.78, csRaw) * (0.20 + 0.22 * uCloudCover) * uDayFactor * (1.0 - uRainFactor * 0.85);
+      bodyCol *= (0.76 + 0.24 * cloudShadow);
+
       vec3 waterCol = mix(bodyCol, reflCol, clamp(fresnel * 0.88 + 0.16, 0.18, 0.94));
 
-      // Sparkling Sun / Moon Glitter Path
+      // Analytical Contact Ambient Occlusion Shadows grounding the hollow wooden rowboat & pier deck into the lake!
+      // 1) Rowboat elliptical hull shadow (total world rotY = 0.56 - 0.26 = +0.30)
+      vec2 bRel = vWorldPos.xz - uBoatPos.xz;
+      float cb = 0.9553, sb = 0.2955;
+      vec2 bLoc = vec2(bRel.x * cb - bRel.y * sb, bRel.x * sb + bRel.y * cb);
+      float boatHullMask = exp(-pow(bLoc.x / 0.86, 2.0) - pow(bLoc.y / 2.05, 2.0));
+      // 2) Wooden pier rectangular underside shadow (origin at uPierPos, rotY = 0.56)
+      vec2 pRel = vWorldPos.xz - uPierPos.xz;
+      float cp = 0.8473, sp = 0.5312;
+      vec2 pLoc = vec2(pRel.x * cp - pRel.y * sp, pRel.x * sp + pRel.y * cp);
+      float pierFootX = 1.0 - smoothstep(1.12, 1.85, abs(pLoc.x));
+      float pierFootZ = smoothstep(2.6, 1.4, pLoc.y) * smoothstep(-11.4, -9.8, pLoc.y);
+      float contactAO = clamp(boatHullMask * 0.62 + pierFootX * pierFootZ * 0.52, 0.0, 0.66);
+      waterCol *= (1.0 - contactAO * (0.45 + 0.55 * (1.0 - uNightFactor * 0.5)));
+
+      // Crisp Broken Diamond-Sparkle Sun / Moon Glitter Path (zero harsh blown-out night blob!)
       vec3 activeLight = uNightFactor > 0.55 ? uMoonDir : uSunDir;
+      vec3 sparkleN = normalize(vec3(-grad.x * 2.15 - (wTex3.a - 0.5) * 0.09, 1.0, -grad.y * 2.15 - (wTex3.b - 0.5) * 0.09));
       vec3 halfVec = normalize(activeLight + V);
-      float specDot = max(0.0, dot(waterN, halfVec));
-      float sparkleNoise = smoothstep(0.36, 0.84, wTex2.a);
-      float spec = pow(specDot, 380.0) * 2.4 * (0.45 + 0.85 * sparkleNoise) + pow(specDot, 76.0) * 0.20 * sparkleNoise;
-      vec3 specTint = uNightFactor > 0.55 ? vec3(0.84, 0.92, 1.0) : uSunCol;
-      float lightVis = clamp(activeLight.y * 3.8 + 0.18, 0.0, 1.0) * (1.0 - uRainFactor * 0.85);
+      float specDot = max(0.0, dot(sparkleN, halfVec));
+      float facetGlint = smoothstep(0.46, 0.90, wTex2.a * 0.55 + wTex3.a * 0.45);
+      float nightClamp = uNightFactor > 0.55 ? 0.56 : 1.0;
+      float spec = (pow(specDot, 520.0) * 2.6 * facetGlint + pow(specDot, 96.0) * 0.14 * facetGlint) * nightClamp;
+      vec3 specTint = uNightFactor > 0.55 ? vec3(0.80, 0.90, 1.0) : uSunCol;
+      float lightVis = clamp(activeLight.y * 3.8 + 0.18, 0.0, 1.0) * (1.0 - uRainFactor * 0.85) * (0.65 + 0.35 * cloudShadow);
       waterCol += specTint * spec * lightVis;
 
       // Shimmering Golden Pier Lantern Reflection Pillar + Soft Distant Pavilion Shoji Shimmer
@@ -1375,16 +1502,16 @@
         float lampDist = length(toLamp);
         vec3 L = toLamp / max(0.01, lampDist);
         vec3 lampH = normalize(L + V);
-        float lampSpec = pow(max(0.0, dot(waterN, lampH)), 64.0) * (0.55 + 0.65 * wTex2.a);
-        float trailX = abs(vWorldPos.x - uLampPos.x + waterN.x * 3.8);
-        float lampPillar = exp(-trailX * 0.82) * exp(-lampDist * 0.085) * smoothstep(uLampPos.z - 2.0, uLampPos.z + 12.0, vWorldPos.z + 8.0);
-        waterCol += vec3(1.0, 0.66, 0.26) * (lampSpec * 1.15 + lampPillar * 0.45) * uLampGlow;
+        float lampSpec = pow(max(0.0, dot(sparkleN, lampH)), 74.0) * (0.50 + 0.70 * wTex2.a);
+        float trailX = abs(vWorldPos.x - uLampPos.x + waterN.x * 4.2);
+        float lampPillar = exp(-trailX * 0.84) * exp(-lampDist * 0.082) * smoothstep(uLampPos.z - 2.0, uLampPos.z + 12.0, vWorldPos.z + 8.0);
+        waterCol += vec3(1.0, 0.66, 0.26) * (lampSpec * 1.10 + lampPillar * 0.48) * uLampGlow;
 
         float pavTrailX = abs(vWorldPos.x - uPavLampPos.x + waterN.x * 5.2);
         float pavDz = vWorldPos.z - uPavLampPos.z;
         if (pavDz > 0.0 && pavDz < 28.0) {
           float pavShimmer = exp(-pavTrailX * 0.46) * exp(-pavDz * 0.11) * (0.55 + 0.55 * wTex2.a);
-          waterCol += vec3(1.0, 0.68, 0.30) * pavShimmer * 0.42 * uLampGlow;
+          waterCol += vec3(1.0, 0.68, 0.30) * pavShimmer * 0.44 * uLampGlow;
         }
       }
 
@@ -1396,10 +1523,11 @@
       waterCol += mix(uHorizonCol, vec3(1.0), 0.45) * rippleSheen;
 
       float fogDensity = mix(0.0019, 0.0036, uRainFactor * 0.70 + uFogFactor * 0.95);
-      float lakeFog = min(mix(0.62, 0.42, uRainFactor), 1.0 - exp(-max(0.0, dist - 34.0) * fogDensity));
+      float lakeFog = min(mix(0.60, 0.40, uRainFactor), 1.0 - exp(-max(0.0, dist - 34.0) * fogDensity));
       vec3 finalCol = mix(waterCol, uHorizonCol, lakeFog);
 
-      gl_FragColor = vec4(finalCol, 1.0);
+      finalCol = (finalCol * (2.51 * finalCol + 0.03)) / (finalCol * (2.43 * finalCol + 0.59) + 0.14);
+      gl_FragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
     }
   `
 
@@ -1476,6 +1604,7 @@
     uniform vec3 uAmbientCol;
     uniform vec3 uHorizonCol;
     uniform vec3 uLampPos;
+    uniform vec3 uPavLampPos;
 
     vec3 seasonalMix(vec3 spr, vec3 sum, vec3 aut, vec3 win, float s) {
       float w0 = max(0.0, 1.0 - abs(s - 0.0));
@@ -1510,11 +1639,15 @@
 
       float dLamp = length(vWorldPos - uLampPos);
       lit += vec3(1.0, 0.68, 0.30) * (1.0 / (1.0 + dLamp * dLamp * 0.07)) * 0.9 * uLampGlow;
+      float dPav = length(vWorldPos - uPavLampPos);
+      lit += vec3(1.0, 0.66, 0.28) * (1.0 / (1.0 + dPav * dPav * 0.06)) * 0.85 * uLampGlow;
 
       float dist = length(vWorldPos - cameraPosition);
       float fogDensity = mix(0.0019, 0.0036, uRainFactor * 0.70 + uFogFactor * 0.95);
-      float fog = min(mix(0.62, 0.40, uRainFactor), 1.0 - exp(-max(0.0, dist - 34.0) * fogDensity));
-      gl_FragColor = vec4(mix(lit, uHorizonCol, fog), 1.0);
+      float fog = min(mix(0.60, 0.38, uRainFactor), 1.0 - exp(-max(0.0, dist - 34.0) * fogDensity));
+      vec3 finalCol = mix(lit, uHorizonCol, fog);
+      finalCol = (finalCol * (2.51 * finalCol + 0.03)) / (finalCol * (2.43 * finalCol + 0.59) + 0.14);
+      gl_FragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
     }
   `
 
@@ -1548,6 +1681,175 @@
       float core = smoothstep(0.28, 0.02, d);
       float halo = smoothstep(0.50, 0.06, d) * 0.52;
       gl_FragColor = vec4(vColor, (core + halo) * vAlpha * uStarVis);
+    }
+  `
+
+  // Volumetric 3D Crepuscular Sunbeams slanting across the misty alpine valley at Dawn, Dusk & Autumn!
+  const GODRAY_VERT = `
+    varying vec2 vUv;
+    varying vec3 vWorldPos;
+    void main() {
+      vUv = uv;
+      vec4 wp = modelMatrix * vec4(position, 1.0);
+      vWorldPos = wp.xyz;
+      gl_Position = projectionMatrix * viewMatrix * wp;
+    }
+  `
+
+  const GODRAY_FRAG = `
+    precision mediump float;
+    varying vec2 vUv;
+    varying vec3 vWorldPos;
+    uniform sampler2D uDetailTex;
+    uniform float uTime;
+    uniform float uRayAlpha;
+    uniform vec3 uSunCol;
+    uniform float uClipBelowWater;
+
+    void main() {
+      if (uClipBelowWater > 0.5 && vWorldPos.y < 0.0) discard;
+      if (uRayAlpha < 0.005) discard;
+      float beamX = exp(-pow((vUv.x - 0.5) * 3.1, 2.0));
+      float beamY = smoothstep(0.0, 0.24, vUv.y) * smoothstep(1.0, 0.14, vUv.y);
+      float shimmer = 0.62 + 0.38 * texture2D(uDetailTex, vec2(vUv.x * 1.8 + uTime * 0.006, vUv.y * 0.65 - uTime * 0.008)).r;
+      float a = beamX * beamY * shimmer * uRayAlpha;
+      if (a < 0.004) discard;
+      gl_FragColor = vec4(uSunCol, a);
+    }
+  `
+
+  // Articulated 3D Soaring Alpine Lake Cranes / Birds (GPU wing-flapping + real-time mirror lake reflection!)
+  const BIRD3D_VERT = `
+    attribute float aWingSpan;
+    uniform float uTime;
+    uniform float uFlapSpeed;
+    uniform float uFlapPhase;
+    varying vec3 vWorldPos;
+    void main() {
+      vec3 pos = position;
+      float wing = abs(aWingSpan);
+      float flap = sin(uTime * uFlapSpeed + uFlapPhase - wing * 0.65) * 0.42;
+      pos.y += flap * wing * wing;
+      vec4 wp = modelMatrix * vec4(pos, 1.0);
+      vWorldPos = wp.xyz;
+      gl_Position = projectionMatrix * viewMatrix * wp;
+    }
+  `
+
+  const BIRD3D_FRAG = `
+    precision mediump float;
+    varying vec3 vWorldPos;
+    uniform vec3 uHorizonCol;
+    uniform float uTwilightFactor;
+    uniform float uClipBelowWater;
+    void main() {
+      if (uClipBelowWater > 0.5 && vWorldPos.y < 0.0) discard;
+      float dist = length(vWorldPos - cameraPosition);
+      float fog = min(0.55, 1.0 - exp(-max(0.0, dist - 28.0) * 0.0024));
+      vec3 bodyCol = mix(vec3(0.16, 0.21, 0.30), vec3(0.24, 0.17, 0.24), uTwilightFactor);
+      gl_FragColor = vec4(mix(bodyCol, uHorizonCol, fog), 1.0);
+    }
+  `
+
+  // 3D Lakeside Fireflies bobbing lazily above shoreline reeds, pier & pavilion garden (reflected in mirror lake!)
+  const FIREFLY3D_VERT = `
+    attribute float aPhase;
+    attribute float aRadius;
+    uniform float uTime;
+    uniform float uPixelRatio;
+    varying float vPulse;
+    varying vec3 vWorldPos;
+    void main() {
+      vec3 p = position;
+      p.x += sin(uTime * 0.58 + aPhase) * aRadius;
+      p.y += sin(uTime * 0.92 + aPhase * 1.7) * 0.38;
+      p.z += cos(uTime * 0.52 + aPhase * 1.3) * aRadius;
+      vPulse = 0.25 + 0.75 * pow(0.5 + 0.5 * sin(uTime * 2.1 + aPhase * 3.1), 2.0);
+      vec4 wp = modelMatrix * vec4(p, 1.0);
+      vWorldPos = wp.xyz;
+      vec4 mvPos = viewMatrix * wp;
+      gl_PointSize = clamp((135.0 / max(8.0, -mvPos.z)) * uPixelRatio, 3.0, 20.0);
+      gl_Position = projectionMatrix * mvPos;
+    }
+  `
+
+  const FIREFLY3D_FRAG = `
+    precision mediump float;
+    varying float vPulse;
+    varying vec3 vWorldPos;
+    uniform float uFireflyVis;
+    uniform float uClipBelowWater;
+    void main() {
+      if (uClipBelowWater > 0.5 && vWorldPos.y < 0.0) discard;
+      if (uFireflyVis < 0.02) discard;
+      float d = length(gl_PointCoord - vec2(0.5));
+      if (d > 0.5) discard;
+      float core = smoothstep(0.22, 0.0, d);
+      float halo = smoothstep(0.50, 0.04, d) * 0.65;
+      vec3 col = mix(vec3(0.95, 0.86, 0.34), vec3(1.0, 0.98, 0.78), core);
+      gl_FragColor = vec4(col, (core + halo) * vPulse * uFireflyVis);
+    }
+  `
+
+  // 3D Floating Seasonal Sakura Petals / Autumn Maple Leaves drifting directly on the calm lake water!
+  const WATERLEAF_VERT = `
+    attribute float aPhase;
+    attribute float aTone;
+    uniform float uTime;
+    uniform float uWindSpeed;
+    varying vec2 vUv;
+    varying float vTone;
+    varying vec3 vWorldPos;
+    void main() {
+      vUv = uv;
+      vTone = aTone;
+      vec3 pos = position;
+      float spin = uTime * 0.25 + aPhase;
+      float cs = cos(spin), sn = sin(spin);
+      vec2 rot = vec2(pos.x * cs - pos.z * sn, pos.x * sn + pos.z * cs);
+      pos.x = rot.x;
+      pos.z = rot.y;
+      vec4 wp = modelMatrix * instanceMatrix * vec4(pos, 1.0);
+      wp.x += sin(uTime * 0.22 * uWindSpeed + aPhase) * 1.15;
+      wp.z += cos(uTime * 0.18 + aPhase * 1.4) * 0.85;
+      wp.y = 0.032 + sin(uTime * 1.6 + aPhase * 2.0) * 0.012;
+      vWorldPos = wp.xyz;
+      gl_Position = projectionMatrix * viewMatrix * wp;
+    }
+  `
+
+  const WATERLEAF_FRAG = `
+    precision mediump float;
+    varying vec2 vUv;
+    varying float vTone;
+    varying vec3 vWorldPos;
+    uniform float uSeason;
+    uniform float uNightFactor;
+    uniform float uRainFactor;
+    uniform float uLampGlow;
+    uniform float uLeafVis;
+    uniform vec3 uDirectCol;
+    uniform vec3 uAmbientCol;
+    uniform vec3 uLampPos;
+    uniform vec3 uPavLampPos;
+    uniform float uClipBelowWater;
+
+    void main() {
+      if (uClipBelowWater > 0.5 || uLeafVis < 0.05) discard;
+      vec2 p = (vUv - 0.5) * 2.0;
+      float leafShape = length(vec2(p.x * 1.35, p.y));
+      if (leafShape > 0.92) discard;
+      vec3 sprCol = mix(vec3(0.98, 0.66, 0.79), vec3(1.0, 0.86, 0.92), vTone);
+      vec3 autCol = mix(vec3(0.84, 0.26, 0.14), vec3(0.96, 0.72, 0.18), vTone);
+      float isAut = smoothstep(1.2, 2.2, uSeason);
+      vec3 col = mix(sprCol, autCol, isAut);
+      vec3 lit = col * (uDirectCol * 0.65 + uAmbientCol * 0.85) * (1.0 - uNightFactor * 0.52) * (1.0 - uRainFactor * 0.15);
+      float dLamp = length(vWorldPos - uLampPos);
+      lit += vec3(1.0, 0.68, 0.30) * (1.0 / (1.0 + dLamp * dLamp * 0.08)) * 0.9 * uLampGlow;
+      float dPav = length(vWorldPos - uPavLampPos);
+      lit += vec3(1.0, 0.66, 0.28) * (1.0 / (1.0 + dPav * dPav * 0.06)) * 0.7 * uLampGlow;
+      lit = (lit * (2.51 * lit + 0.03)) / (lit * (2.43 * lit + 0.59) + 0.14);
+      gl_FragColor = vec4(clamp(lit, 0.0, 1.0), smoothstep(0.92, 0.68, leafShape) * uLeafVis);
     }
   `
 
@@ -1890,8 +2192,8 @@
     return g
   }
 
-  const buildTerrainGeometry = THREE => {
-    const geom = new THREE.PlaneGeometry(440, 270, 190, 135)
+  const buildTerrainGeometry = (THREE, mobile) => {
+    const geom = new THREE.PlaneGeometry(440, 270, mobile ? 168 : 224, mobile ? 120 : 160)
     geom.rotateX(-Math.PI / 2)
     geom.translate(0, 0, -90)
     const pos = geom.attributes.position
@@ -2068,6 +2370,43 @@
     const catenaryRope = new THREE.Mesh(new THREE.TubeGeometry(ropeCurve, 16, 0.017, 5, false), woodLightMat)
     group.add(catenaryRope)
 
+    // Cast-iron mooring bollard + coiled hemp rope ring right at pier tie-off point!
+    const bollard = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.085, 0.24, 8), ironDarkMat)
+    bollard.position.set(-0.84, 0.72, -8.02)
+    group.add(bollard)
+    const bollardCap = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.095, 0.04, 8), ironDarkMat)
+    bollardCap.position.set(-0.84, 0.85, -8.02)
+    group.add(bollardCap)
+    const ropeCoil = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.022, 6, 14), woodLightMat)
+    ropeCoil.rotation.x = Math.PI * 0.5
+    ropeCoil.position.set(-0.62, 0.64, -7.65)
+    group.add(ropeCoil)
+
+    // Weathered Lakeside Resting Bench facing the pavilion & snow peaks (inviting visitors to sit & rest!)
+    const benchGroup = new THREE.Group()
+    benchGroup.position.set(0.54, 0.62, -6.1)
+    benchGroup.rotation.y = -Math.PI * 0.5
+    const benchSeat = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.075, 0.44), woodLightMat)
+    benchSeat.position.y = 0.42
+    benchGroup.add(benchSeat)
+    const benchBack = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.24, 0.065), woodDarkMat)
+    benchBack.position.set(0, 0.70, -0.20)
+    benchBack.rotation.x = -0.14
+    benchGroup.add(benchBack)
+    for (const bx of [-0.66, 0.66]) {
+      const legF = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.42, 0.08), woodDarkMat)
+      legF.position.set(bx, 0.21, 0.14)
+      benchGroup.add(legF)
+      const legB = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.78, 0.08), woodDarkMat)
+      legB.position.set(bx, 0.39, -0.17)
+      benchGroup.add(legB)
+    }
+    // Small warm ceramic teacup resting peacefully on the pier bench
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.032, 0.075, 8), makeArchitectMat(THREE, baseUniforms, [0.76, 0.72, 0.66], false, false, false))
+    cup.position.set(0.52, 0.495, 0.04)
+    benchGroup.add(cup)
+    group.add(benchGroup)
+
     group.updateMatrixWorld(true)
     const lampWorldPos = new THREE.Vector3(0, 1.74, 0)
     lampGroup.localToWorld(lampWorldPos)
@@ -2095,11 +2434,19 @@
     plinth.position.y = 0.15
     group.add(plinth)
 
-    // 3 stone terrace steps leading from the veranda toward the island water's edge
+    // 3 stone terrace steps + tiny wooden lakeside landing jetty reaching the calm bay water
     for (let st = 0; st < 3; st += 1) {
       const step = new THREE.Mesh(new THREE.BoxGeometry(1.75 + st * 0.16, 0.26, 0.48), stoneMat)
       step.position.set(-0.6, 0.64 - st * 0.26, 2.52 + st * 0.44)
       group.add(step)
+    }
+    const jettyDeck = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.12, 2.15), timberMat)
+    jettyDeck.position.set(-0.6, -0.05, 4.65)
+    group.add(jettyDeck)
+    for (const jx of [-1.25, 0.05]) {
+      const jPost = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 1.4, 6), timberMat)
+      jPost.position.set(jx, -0.55, 5.55)
+      group.add(jPost)
     }
 
     // Miniature traditional stone garden lantern (石灯笼) tucked beside the island front-right edge
@@ -2175,10 +2522,21 @@
     upperRoof.position.y = 4.58
     group.add(upperRoof)
 
-    // Roof ridge beam + finial spire
-    const ridgeBeam = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.14, 0.16), darkRoofMat)
+    // Roof ridge beam + traditional bronze finial spire (宝顶) + curved eave rafter tails
+    const ridgeBeam = new THREE.Mesh(new THREE.BoxGeometry(1.22, 0.16, 0.18), darkRoofMat)
     ridgeBeam.position.y = 5.76
     group.add(ridgeBeam)
+    const finialBase = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.13, 0.18, 8), darkRoofMat)
+    finialBase.position.y = 5.92
+    group.add(finialBase)
+    const finialSpire = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.34, 8), darkRoofMat)
+    finialSpire.position.y = 6.16
+    group.add(finialSpire)
+    for (const rx of [-2.1, -1.05, 0.0, 1.05, 2.1]) {
+      const rafter = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.09, 0.55), timberMat)
+      rafter.position.set(rx, 3.24, 2.55)
+      group.add(rafter)
+    }
 
     // Tiny warm eaves lantern hanging from front right porch corner
     const eaveLamp = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.34, 0.24), winMat)
@@ -2338,6 +2696,13 @@
   let waterUniforms = null
   let starUniforms = null
   let mistUniforms = null
+  let mistBayUniforms = null
+  let mistPeakUniforms = null
+  let godRayUniforms = null
+  let godRayGroup = null
+  let birdFlock3D = []
+  let fireflyUniforms = null
+  let waterLeafUniforms = null
   let threeLoading = false
   let raycaster = null
   let waterPlane3D = null
@@ -2419,7 +2784,8 @@
         uMoonDir: { value: new THREE.Vector3(...pal.moonDir) },
         uLampPos: { value: new THREE.Vector3(6.5, 2.3, 11.2) },
         uPavLampPos: { value: new THREE.Vector3(-23.5, 3.8, -39.5) },
-        uBoatPos: { value: new THREE.Vector3(5.0, 0.0, 12.0) }
+        uBoatPos: { value: new THREE.Vector3(5.0, 0.0, 12.0) },
+        uPierPos: { value: new THREE.Vector3(12.2, 0.0, 20.0) }
       }
 
       // Pier, Lantern, Open Rowboat & Unobstructed Lakeside Pavilion
@@ -2563,9 +2929,9 @@
       cloudInstanced.renderOrder = 2
       scene.add(cloudInstanced)
 
-      // 4. 3D Sculpted Alpine Terrain Basin Mesh
+      // 4. 3D Sculpted Alpine Terrain Basin Mesh (High-Definition Chiseled Peaks)
       const terrainMesh = new THREE.Mesh(
-        buildTerrainGeometry(THREE),
+        buildTerrainGeometry(THREE, mobile),
         new THREE.ShaderMaterial({
           vertexShader: TERRAIN_VERT,
           fragmentShader: TERRAIN_FRAG,
@@ -2764,22 +3130,216 @@
       grassMesh.instanceMatrix.needsUpdate = true
       scene.add(grassMesh)
 
-      // 8. Drifting Alpine Mountain-Waist Mist Ribbon curling gently between the far forest & high peaks!
+      // 8. Three-Layer Parallax Alpine Mist Ribbons (Low Pavilion Bay Veil + Mid Pine-Belt Mist + High Glacier Cloud-Veil!)
       mistUniforms = Object.assign({}, sharedUniforms, {
         uMistAlpha: { value: 0.16 }
       })
-      const mistMat = new THREE.ShaderMaterial({
+      mistBayUniforms = Object.assign({}, sharedUniforms, {
+        uMistAlpha: { value: 0.10 }
+      })
+      mistPeakUniforms = Object.assign({}, sharedUniforms, {
+        uMistAlpha: { value: 0.12 }
+      })
+      const makeMistMat = u => new THREE.ShaderMaterial({
         vertexShader: MIST_VERT,
         fragmentShader: MIST_FRAG,
-        uniforms: mistUniforms,
+        uniforms: u,
         transparent: true,
         depthWrite: false,
         side: THREE.DoubleSide
       })
-      const mistPlane1 = new THREE.Mesh(new THREE.PlaneGeometry(330, 26), mistMat)
-      mistPlane1.position.set(0, 14.5, -128)
+      const mistBay = new THREE.Mesh(new THREE.PlaneGeometry(185, 11), makeMistMat(mistBayUniforms))
+      mistBay.position.set(-8, 3.2, -58)
+      mistBay.renderOrder = 5
+      scene.add(mistBay)
+
+      const mistPlane1 = new THREE.Mesh(new THREE.PlaneGeometry(330, 24), makeMistMat(mistUniforms))
+      mistPlane1.position.set(0, 12.2, -108)
       mistPlane1.renderOrder = 5
       scene.add(mistPlane1)
+
+      const mistPeak = new THREE.Mesh(new THREE.PlaneGeometry(360, 28), makeMistMat(mistPeakUniforms))
+      mistPeak.position.set(12, 25.5, -150)
+      mistPeak.renderOrder = 5
+      scene.add(mistPeak)
+
+      // 8b. Volumetric 3D Crepuscular Sunbeams (slanting golden rays across alpine valley at Dawn / Dusk / Autumn!)
+      godRayUniforms = Object.assign({}, sharedUniforms, {
+        uRayAlpha: { value: 0.0 }
+      })
+      const godRayMat = new THREE.ShaderMaterial({
+        vertexShader: GODRAY_VERT,
+        fragmentShader: GODRAY_FRAG,
+        uniforms: godRayUniforms,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide
+      })
+      godRayGroup = new THREE.Group()
+      const rayConfigs = mobile
+        ? [[-28, 30, -96, 28, 76], [8, 34, -112, 34, 84], [42, 28, -98, 26, 72]]
+        : [[-48, 28, -94, 24, 72], [-18, 32, -104, 30, 82], [12, 36, -116, 36, 90], [38, 30, -102, 28, 78], [62, 26, -92, 24, 70]]
+      for (let r = 0; r < rayConfigs.length; r += 1) {
+        const [rx, ry, rz, rw, rh] = rayConfigs[r]
+        const rayMesh = new THREE.Mesh(new THREE.PlaneGeometry(rw, rh), godRayMat)
+        rayMesh.position.set(rx, ry, rz)
+        rayMesh.rotation.z = -0.32
+        rayMesh.renderOrder = 5
+        godRayGroup.add(rayMesh)
+      }
+      scene.add(godRayGroup)
+
+      // 8c. Articulated 3D Soaring Alpine Lake Cranes / Birds (gliding above lake + reflected live in mirror water!)
+      const buildBird3DGeom = () => {
+        const pos = new Float32Array([
+          // Center torso ridge
+          0.0, 0.0, -0.45,
+          0.0, 0.03, 0.35,
+          // Left inner & outer wingtip
+          -0.62, 0.08, 0.05,
+          -1.22, 0.02, 0.24,
+          // Right inner & outer wingtip
+          0.62, 0.08, 0.05,
+          1.22, 0.02, 0.24
+        ])
+        const wingSpan = new Float32Array([0.0, 0.0, -0.55, -1.0, 0.55, 1.0])
+        const idx = [0, 1, 2, 2, 1, 3, 0, 4, 1, 4, 5, 1]
+        const g = new THREE.BufferGeometry()
+        g.setAttribute('position', new THREE.BufferAttribute(pos, 3))
+        g.setAttribute('aWingSpan', new THREE.BufferAttribute(wingSpan, 1))
+        g.setIndex(idx)
+        return g
+      }
+      const sharedBirdGeom = buildBird3DGeom()
+      birdFlock3D = []
+      const birdCount3D = mobile ? 5 : 7
+      for (let b = 0; b < birdCount3D; b += 1) {
+        const bUniforms = Object.assign({}, sharedUniforms, {
+          uFlapSpeed: { value: 4.2 + seededRand() * 1.4 },
+          uFlapPhase: { value: seededRand() * Math.PI * 2 }
+        })
+        const bMesh = new THREE.Mesh(
+          sharedBirdGeom,
+          new THREE.ShaderMaterial({
+            vertexShader: BIRD3D_VERT,
+            fragmentShader: BIRD3D_FRAG,
+            uniforms: bUniforms,
+            side: THREE.DoubleSide
+          })
+        )
+        const sc = 0.58 + seededRand() * 0.36
+        bMesh.scale.set(sc, sc, sc)
+        bMesh.renderOrder = 5
+        scene.add(bMesh)
+        birdFlock3D.push({
+          mesh: bMesh,
+          cx: -8 + (seededRand() - 0.5) * 26,
+          cz: -44 + (seededRand() - 0.5) * 24,
+          rx: 18 + seededRand() * 20,
+          rz: 12 + seededRand() * 14,
+          baseY: 11.5 + seededRand() * 10.5,
+          speed: 0.11 + seededRand() * 0.06,
+          phase: seededRand() * Math.PI * 2
+        })
+      }
+
+      // 8d. 3D Lakeside Fireflies glowing warmly above shoreline reeds, pier & pavilion garden at dusk & night!
+      const ffCount = mobile ? 34 : 60
+      const ffPos = new Float32Array(ffCount * 3)
+      const ffPhase = new Float32Array(ffCount)
+      const ffRad = new Float32Array(ffCount)
+      for (let f = 0; f < ffCount; f += 1) {
+        let fx, fy, fz
+        if (f < ffCount * 0.42) {
+          // Near foreground wooden pier, reeds & rowboat
+          fx = 5.5 + (seededRand() - 0.5) * 16.0
+          fz = 12.5 + (seededRand() - 0.5) * 14.0
+          fy = 0.65 + seededRand() * 2.8
+        } else if (f < ffCount * 0.72) {
+          // Around the lakeside sanctuary pavilion island
+          fx = -22.5 + (seededRand() - 0.5) * 16.0
+          fz = -38.5 + (seededRand() - 0.5) * 14.0
+          fy = 1.1 + seededRand() * 3.8
+        } else {
+          // Drifting along foreground left boulder bank & shallow cove
+          fx = -19.5 + (seededRand() - 0.5) * 14.0
+          fz = 12.0 + (seededRand() - 0.5) * 16.0
+          fy = 0.7 + seededRand() * 2.6
+        }
+        ffPos[f * 3] = fx
+        ffPos[f * 3 + 1] = fy
+        ffPos[f * 3 + 2] = fz
+        ffPhase[f] = seededRand() * Math.PI * 2
+        ffRad[f] = 0.55 + seededRand() * 1.35
+      }
+      const ffGeom = new THREE.BufferGeometry()
+      ffGeom.setAttribute('position', new THREE.BufferAttribute(ffPos, 3))
+      ffGeom.setAttribute('aPhase', new THREE.BufferAttribute(ffPhase, 1))
+      ffGeom.setAttribute('aRadius', new THREE.BufferAttribute(ffRad, 1))
+      fireflyUniforms = Object.assign({}, sharedUniforms, {
+        uPixelRatio: { value: bgDpr },
+        uFireflyVis: { value: 0.0 }
+      })
+      const fireflyPoints = new THREE.Points(
+        ffGeom,
+        new THREE.ShaderMaterial({
+          vertexShader: FIREFLY3D_VERT,
+          fragmentShader: FIREFLY3D_FRAG,
+          uniforms: fireflyUniforms,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending
+        })
+      )
+      fireflyPoints.renderOrder = 7
+      scene.add(fireflyPoints)
+
+      // 8e. 3D Floating Seasonal Petals / Maple Leaves drifting directly on the calm lake water!
+      const wlCount = mobile ? 26 : 46
+      const wlGeom = new THREE.PlaneGeometry(0.32, 0.24)
+      wlGeom.rotateX(-Math.PI / 2)
+      const wlPhases = new Float32Array(wlCount)
+      const wlTones = new Float32Array(wlCount)
+      const wlMatrices = []
+      const wlDummy = new THREE.Object3D()
+      let wlTries = 0
+      while (wlMatrices.length < wlCount && wlTries < 500) {
+        wlTries += 1
+        const lx = (seededRand() - 0.5) * 44.0
+        const lz = -34.0 + seededRand() * 54.0
+        if (getTerrainHeight(lx, lz) > -0.35) continue
+        wlDummy.position.set(lx, 0.03, lz)
+        wlDummy.rotation.set(0, seededRand() * Math.PI * 2, 0)
+        const s = 0.72 + seededRand() * 0.78
+        wlDummy.scale.set(s, 1, s)
+        wlDummy.updateMatrix()
+        wlPhases[wlMatrices.length] = seededRand() * Math.PI * 2
+        wlTones[wlMatrices.length] = seededRand()
+        wlMatrices.push(wlDummy.matrix.clone())
+      }
+      if (wlMatrices.length > 0) {
+        wlGeom.setAttribute('aPhase', new THREE.InstancedBufferAttribute(wlPhases.slice(0, wlMatrices.length), 1))
+        wlGeom.setAttribute('aTone', new THREE.InstancedBufferAttribute(wlTones.slice(0, wlMatrices.length), 1))
+        waterLeafUniforms = Object.assign({}, sharedUniforms, {
+          uLeafVis: { value: 0.8 }
+        })
+        const waterLeafMesh = new THREE.InstancedMesh(
+          wlGeom,
+          new THREE.ShaderMaterial({
+            vertexShader: WATERLEAF_VERT,
+            fragmentShader: WATERLEAF_FRAG,
+            uniforms: waterLeafUniforms,
+            transparent: true,
+            depthWrite: false
+          }),
+          wlMatrices.length
+        )
+        for (let i = 0; i < wlMatrices.length; i += 1) waterLeafMesh.setMatrixAt(i, wlMatrices[i])
+        waterLeafMesh.instanceMatrix.needsUpdate = true
+        waterLeafMesh.renderOrder = 7
+        scene.add(waterLeafMesh)
+      }
 
       // 9. 768x768 4x MSAA Real-Time Planar-Reflection 3D Mirror Lake (y = 0)
       const rippleVecs = []
@@ -2934,7 +3494,46 @@
         starPoints.rotation.y = (worldState.hour / 24) * Math.PI * 0.35
       }
       if (mistUniforms) {
-        mistUniforms.uMistAlpha.value = clamp(0.10 + pal.rainFactor * 0.44 + pal.fogFactor * 0.45 + pal.twilightFactor * 0.12, 0.08, 0.62)
+        mistUniforms.uMistAlpha.value = clamp(0.10 + pal.rainFactor * 0.42 + pal.fogFactor * 0.44 + pal.twilightFactor * 0.12, 0.06, 0.58)
+      }
+      if (mistBayUniforms) {
+        mistBayUniforms.uMistAlpha.value = clamp(0.05 + pal.rainFactor * 0.34 + pal.fogFactor * 0.36 + pal.twilightFactor * 0.16, 0.02, 0.46) * (1.0 - pal.nightFactor * 0.55)
+      }
+      if (mistPeakUniforms) {
+        mistPeakUniforms.uMistAlpha.value = clamp(0.08 + pal.rainFactor * 0.36 + pal.fogFactor * 0.38 + worldState.cloudCover * 0.12, 0.04, 0.48) * (1.0 - pal.nightFactor * 0.72)
+      }
+      if (godRayUniforms && godRayGroup) {
+        const rayVis = clamp((pal.twilightFactor * 0.95 + pal.dayFactor * 0.35) * (1.0 - pal.rainFactor * 0.92) * (1.0 - pal.nightFactor), 0, 1)
+        godRayUniforms.uRayAlpha.value = rayVis * 0.095
+        const rayTilt = clamp(-pal.sunDir[0] * 0.55, -0.58, 0.58)
+        for (let r = 0; r < godRayGroup.children.length; r += 1) {
+          godRayGroup.children[r].rotation.z = rayTilt + (r - 2) * 0.04
+        }
+      }
+      if (birdFlock3D.length > 0) {
+        const showBirds = pal.nightFactor < 0.25 && pal.rainFactor < 0.45 && worldState.season < 2.65
+        for (let b = 0; b < birdFlock3D.length; b += 1) {
+          const item = birdFlock3D[b]
+          item.mesh.visible = showBirds
+          if (!showBirds) continue
+          const ang = elapsedSec * item.speed + item.phase
+          const bx = item.cx + Math.cos(ang) * item.rx
+          const bz = item.cz + Math.sin(ang) * item.rz
+          const by = item.baseY + Math.sin(ang * 2.0 + item.phase) * 1.4
+          const vx = -Math.sin(ang) * item.rx
+          const vz = Math.cos(ang) * item.rz
+          item.mesh.position.set(bx, by, bz)
+          item.mesh.rotation.y = Math.atan2(vx, vz) + Math.PI
+          item.mesh.rotation.z = Math.sin(ang) * 0.16
+        }
+      }
+      if (fireflyUniforms) {
+        const ffVis = clamp((pal.nightFactor * 0.95 + pal.twilightFactor * 0.65) * (1.0 - pal.rainFactor * 0.85) * (1.0 - pal.snowFactor * 0.85), 0, 1)
+        fireflyUniforms.uFireflyVis.value = ffVis
+      }
+      if (waterLeafUniforms) {
+        const isSpringOrAutumn = Math.max(1.0 - Math.abs(worldState.season - 0.0), 1.0 - Math.abs(worldState.season - 2.0))
+        waterLeafUniforms.uLeafVis.value = clamp(isSpringOrAutumn * (1.0 - pal.snowFactor * 0.9), 0, 0.92)
       }
 
       for (let i = 0; i < MAX_RIPPLES; i += 1) {
@@ -3065,7 +3664,7 @@
     const isRain = Math.abs(worldState.weather - 2.0) < 0.6
     const isColdWinter = worldState.season > 2.5 || worldState.tempC <= 4
 
-    if (!isNight && !isRain && !isColdWinter) {
+    if (!isNight && !isRain && !isColdWinter && birdFlock3D.length === 0) {
       if (birds.length === 0) initBirds()
       const shiftX = -(camYaw + userLookYaw) * width * 0.22
       const shiftY = (camPitch + userLookPitch) * height * 0.16
@@ -3607,6 +4206,9 @@
     if (starUniforms) {
       starUniforms.uPixelRatio.value = bgDpr
     }
+    if (fireflyUniforms) {
+      fireflyUniforms.uPixelRatio.value = bgDpr
+    }
 
     fgCanvas.width = Math.floor(width * dpr)
     fgCanvas.height = Math.floor(height * dpr)
@@ -3788,6 +4390,15 @@
     }
     isDraggingWorld = false
   }
+
+  window.addEventListener('dblclick', event => {
+    if (isInteractiveUiTarget(event.target)) return
+    // Interactive skipping-stone ripples dancing outward across the alpine lake!
+    if (spawnWaterRippleAtScreen(event.clientX, event.clientY, 1.35)) {
+      window.setTimeout(() => spawnWaterRippleAtScreen(event.clientX + 26, event.clientY - 18, 0.95), 140)
+      window.setTimeout(() => spawnWaterRippleAtScreen(event.clientX + 54, event.clientY - 34, 0.65), 290)
+    }
+  }, { passive: true })
 
   window.addEventListener('pointerup', endWorldDrag, { passive: true })
   window.addEventListener('pointercancel', endWorldDrag, { passive: true })
