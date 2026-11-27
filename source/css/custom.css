@@ -4293,7 +4293,8 @@ html:not(.is-sanctuary-rest) .sanctuary-rest {
   font-size: 0.88rem;
   font-weight: 400;
   letter-spacing: 0.16em;
-  opacity: 0.86;
+  color: rgba(255, 255, 255, 0.90) !important;
+  opacity: 0.92;
 }
 
 .sanctuary-rest__quote {
@@ -4302,7 +4303,9 @@ html:not(.is-sanctuary-rest) .sanctuary-rest {
   font-weight: 400;
   letter-spacing: 0.06em;
   line-height: 1.8;
-  opacity: 0.84;
+  color: rgba(255, 255, 255, 0.92) !important;
+  text-shadow: 0 2px 18px rgba(6, 12, 26, 0.72);
+  opacity: 0.92;
   transition: opacity 0.38s ease;
 }
 

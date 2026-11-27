@@ -506,11 +506,13 @@
     c.width = 128
     c.height = 128
     const g = c.getContext('2d')
-    const grad = g.createRadialGradient(64, 64, 1, 64, 64, 62)
-    grad.addColorStop(0, 'rgba(255,252,238,1)')
-    grad.addColorStop(0.20, 'rgba(255,222,155,0.78)')
-    grad.addColorStop(0.52, 'rgba(255,176,92,0.22)')
-    grad.addColorStop(1, 'rgba(255,150,60,0)')
+    const grad = g.createRadialGradient(64, 64, 0, 64, 64, 62)
+    grad.addColorStop(0.0, 'rgba(255,253,242,1)')
+    grad.addColorStop(0.14, 'rgba(255,226,162,0.72)')
+    grad.addColorStop(0.32, 'rgba(255,186,98,0.30)')
+    grad.addColorStop(0.58, 'rgba(255,152,64,0.08)')
+    grad.addColorStop(0.82, 'rgba(255,135,50,0.015)')
+    grad.addColorStop(1.0, 'rgba(255,125,40,0)')
     g.fillStyle = grad
     g.fillRect(0, 0, 128, 128)
     const tex = new THREE.CanvasTexture(c)
@@ -803,7 +805,7 @@
   `
 
   const CLOUD_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying vec2 vUv;
     varying vec3 vWorldPos;
     varying float vShade;
@@ -1078,7 +1080,7 @@
   `
 
   const TREE_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying vec2 vUv;
     varying vec3 vWorldPos;
     varying vec3 vWorldNormal;
@@ -1224,7 +1226,7 @@
   `
 
   const ARCHITECT_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying vec3 vWorldPos;
     varying vec3 vWorldNormal;
 
@@ -1543,7 +1545,7 @@
   `
 
   const MIST_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying vec2 vUv;
     varying vec3 vWorldPos;
     uniform sampler2D uDetailTex;
@@ -1591,7 +1593,7 @@
   `
 
   const GRASS_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying float vHeight;
     varying float vTone;
     varying vec3 vWorldPos;
@@ -1670,7 +1672,7 @@
   `
 
   const STAR_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying vec3 vColor;
     varying float vAlpha;
     uniform float uStarVis;
@@ -1697,7 +1699,7 @@
   `
 
   const GODRAY_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying vec2 vUv;
     varying vec3 vWorldPos;
     uniform sampler2D uDetailTex;
@@ -1737,7 +1739,7 @@
   `
 
   const BIRD3D_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying vec3 vWorldPos;
     uniform vec3 uHorizonCol;
     uniform float uTwilightFactor;
@@ -1774,7 +1776,7 @@
   `
 
   const FIREFLY3D_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying float vPulse;
     varying vec3 vWorldPos;
     uniform float uFireflyVis;
@@ -1819,7 +1821,7 @@
   `
 
   const WATERLEAF_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying vec2 vUv;
     varying float vTone;
     varying vec3 vWorldPos;
@@ -2440,12 +2442,12 @@
       step.position.set(-0.6, 0.64 - st * 0.26, 2.52 + st * 0.44)
       group.add(step)
     }
-    const jettyDeck = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.12, 2.15), timberMat)
-    jettyDeck.position.set(-0.6, -0.05, 4.65)
+    const jettyDeck = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.14, 2.25), timberMat)
+    jettyDeck.position.set(-0.6, 0.14, 4.65)
     group.add(jettyDeck)
     for (const jx of [-1.25, 0.05]) {
       const jPost = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 1.4, 6), timberMat)
-      jPost.position.set(jx, -0.55, 5.55)
+      jPost.position.set(jx, -0.42, 5.60)
       group.add(jPost)
     }
 
@@ -2567,7 +2569,7 @@
     const smokeMat = new THREE.ShaderMaterial({
       vertexShader: MIST_VERT,
       fragmentShader: `
-        precision mediump float;
+        precision highp float;
         varying vec2 vUv;
         varying vec3 vWorldPos;
         uniform sampler2D uDetailTex;
@@ -2617,7 +2619,7 @@
     }
   `
   const RAW_FALLBACK_FRAG = `
-    precision mediump float;
+    precision highp float;
     varying vec2 vUv;
     uniform vec3 uZenithCol;
     uniform vec3 uMidSkyCol;
